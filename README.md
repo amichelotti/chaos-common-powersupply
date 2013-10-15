@@ -1,0 +1,1 @@
+Generate a common_<library> and a test executable to exercise/debug the library
