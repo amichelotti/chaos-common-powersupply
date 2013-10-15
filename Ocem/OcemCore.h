@@ -21,7 +21,7 @@
 #endif
 
 #ifndef OCEM_TERMINATOR
-#define OCEM_TERMINATOR "\r\n"
+#define OCEM_TERMINATOR ""
 #endif
 
 #include <map>
@@ -69,6 +69,9 @@ namespace common{
                 // return the number of characters sucessfully read or an error
                 int check_data(char*buf, int size,int timeout=OCEM_POLL_TIMEOUT);
                 
+		// performs polls for a given time
+		// returns numbero of characthers sucessfully read
+		int update_status(int timeout,int msxpoll=100);
             public:
                 OcemCore(const char *dev,int slave_id,int baudrate=9600,int parity=0,int bits=8,int stop=1);
                 ~OcemCore();
