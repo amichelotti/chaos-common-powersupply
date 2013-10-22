@@ -173,14 +173,14 @@ namespace common{
 		// return the number of internal data updated
 		int updateInternalData(char * stringa);
 		
-		int force_update();
+		int force_update(int timeout);
 
 		
 		/**
 		   update the status of the template
 		   @return the number of data updated, 0 or negative if nothing has been updated
 		 */
-		int update_status(common::debug::basic_timed*data ,char *cmd);
+		int update_status(common::debug::basic_timed*data ,char *cmd,int timeout);
 
 		static OcemProtocol_psh getOcemProtocol(const char *dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
                 static void removeOcemProtocol(const char*dev);
@@ -202,41 +202,41 @@ namespace common{
                 
                 
                 
-                virtual int setPolarity(int pol);
-		virtual int getPolarity(int* pol);
+                virtual int setPolarity(int pol,int timeo_ms=0);
+		virtual int getPolarity(int* pol,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
 
-                virtual int setCurrentSP(float current);
-                virtual int getCurrentSP(float* current);
+                virtual int setCurrentSP(float current,int timeo_ms=0);
+                virtual int getCurrentSP(float* current,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
 
-                virtual int startCurrentRamp();
+                virtual int startCurrentRamp(int timeo_ms=0);
                 
-                virtual int getCurrentOutput(float* curr);
-		virtual int getVoltageOutput(float* volt);
+                virtual int getCurrentOutput(float* curr,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+		virtual int getVoltageOutput(float* volt,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
                 
                 
 
-                virtual int setCurrentRampSpeed(float asup,float asdown);
+                virtual int setCurrentRampSpeed(float asup,float asdown,int timeo_ms=0);
 
-                virtual int resetAlarms(uint64_t alrm);
-                virtual int getAlarms(uint64_t*alrm);
+                virtual int resetAlarms(uint64_t alrm,int timeo_ms=0);
+                virtual int getAlarms(uint64_t*alrm,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
 
 		virtual float getCurrentSensibility();		
 		virtual float getVoltageSensibility();
 	     
 		virtual void getMaxMinCurrent(float*max,float*min);
 		virtual void getMaxMinVoltage(float*max,float*min);
-		virtual std::string getSWVersion();
-                virtual std::string getHWVersion();
+		virtual std::string getSWVersion(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+                virtual std::string getHWVersion(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
 
                 
                 /**
 		   \brief shuts down the powerSupply, the communication drops
 		   @return 0 if success
                  */
-                virtual int shutdown();
-		virtual int poweron();
-                virtual int standby();
-		virtual int getState(int* state,std::string&);
+                virtual int shutdown(int timeo_ms=0);
+		virtual int poweron(int timeo_ms=0);
+                virtual int standby(int timeo_ms=0);
+		virtual int getState(int* state,std::string&,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
 
                 virtual int init();
                 virtual int deinit();
@@ -282,7 +282,7 @@ namespace common{
 		   @param max max value
 		   @return 0 if success 
 		 */
-		int setChannel(int inout,int number, int min,int max);
+		int setChannel(int inout,int number, int min,int max,int timeo);
 
 		/**
 		   @brief get the given OCEM(input/output) channel
@@ -292,7 +292,7 @@ namespace common{
 		   @param max output max value
 		   @return 0 if success 
 		 */
-		int getChannel(int inout,int number, int* min,int* max);
+		int getChannel(int inout,int number, int* min,int* max,int timeo_ms);
 
 
 		/**

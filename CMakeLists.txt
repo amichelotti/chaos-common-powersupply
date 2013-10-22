@@ -23,10 +23,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
      
 INCLUDE_DIRECTORIES(. ../../  ${PROJECT_SOURCE_DIR}/usr/local/include)
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/usr/local/lib)
+#  -DOCEM_CORE_DEBUG
+ADD_DEFINITIONS(-g -O2 -Wall)
 
-ADD_DEFINITIONS(-g -O2 -Wall -DDEBUG)
-
-set(Ocem_src Ocem/OcemCore.cpp)
+set(Ocem_src Ocem/OcemE642X.cpp)
 #### put your libcommon_PowerSupply LIBRARY files here
 ###
 

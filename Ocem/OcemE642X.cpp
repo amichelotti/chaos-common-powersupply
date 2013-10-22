@@ -22,12 +22,12 @@ std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
 float  OcemE642X::voltage_sensibility=0;
 float  OcemE642X::current_sensibility=0;
 
-#define CMD_WRITE_AND_CHECK(value,cmdw,cmdr,cmdv)			\
+#define CMD_WRITE_AND_CHECK(value,timeo,cmdw,cmdr,cmdv)			\
   int ret;								\
   DPRINT("apply command \"" cmdw "\" and verify with \"" cmdr "\", expected \"" #cmdv "\" [%d]\n",(unsigned)cmdv); \
-  ret =send_command((char*)cmdw);						\
+  ret =send_command((char*)cmdw,timeo);					\
 if(ret>0){					\
-  if((ret=update_status(&value,(char*)cmdr))>0){	\
+  if((ret=update_status(&value,(char*)cmdr,timeo))>0){	\
     if(value.get()==cmdv){			\
       DPRINT("Command sucessfully applied\n");	\
       return 0;					\
@@ -44,10 +44,10 @@ DERR("error sending command\n");					\
 return POWER_SUPPLY_COMMAND_ERROR;					\
 
 
-#define GET_VALUE(value,cmdw)			\
+#define GET_VALUE(value,timeo,cmdw)					\
   int ret;								\
   DPRINT("apply command \"" cmdw "\""); \
-  if((ret=update_status((common::debug::basic_timed*)&value,(char*)cmdw))<=0){			\
+  if((ret=update_status((common::debug::basic_timed*)&value,(char*)cmdw,timeo))<=0){ \
     DERR("data is not in sync\n");					\
     return ret;								\
   }									\
@@ -77,17 +77,17 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(const char *dev,int baudrate,int par
     return unique_protocol[mydev];
 }
 
-int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd){
+int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,int timeout){
   char buf[1024];
   int ret;
   uint64_t stamp=common::debug::getUsTime();
-  if((ret=send_receive((char*)cmd,buf,sizeof(buf)))>0){
+  if((ret=send_receive((char*)cmd,buf,sizeof(buf),timeout,timeout))>0){
     if(data->mod_time()>stamp){
       return 1;
     } else {
       DPRINT("Data is not updated yet\n");
       // try again
-      update_status(1000,10);
+      update_status(timeout,10);
       if(data->mod_time()>stamp){
 	return 1;
       }
@@ -268,7 +268,7 @@ int OcemE642X::init(){
 
    
       // update status
-      if((ret=force_update())>0){
+      if((ret=force_update(1000))>0){
 	DPRINT("Ocem status has been refreshed %d\n",ret);
 	ret = 0;
       } else {
@@ -280,16 +280,16 @@ int OcemE642X::init(){
     
     return ret;
 }
-int OcemE642X::force_update(){
+int OcemE642X::force_update(int timeout){
   int rett;
   char buf[2048];
   DPRINT("forcing update\n");
-  if((rett=send_receive((char*)"RMT",buf,sizeof(buf),1000,1000))<=0){
+  if((rett=send_receive((char*)"RMT",buf,sizeof(buf),timeout,timeout))<=0){
     DERR("RMT command failed %d \n",rett);
     return rett;
   }
   DPRINT("updated %d data, check if something else\n",rett);
-  rett+=update_status(1000,100);
+  rett+=update_status(timeout,100);
   DPRINT("totale updated %d data\n",rett);
   return rett;
 }
@@ -362,10 +362,10 @@ int OcemE642X::receive_data(char*buf, int size,int timeout){
     return data_read;
 }
 
-std::string OcemE642X::getSWVersion(){
+std::string OcemE642X::getSWVersion(int timeo_ms){
     char stringa[1024];
     int ret;
-    if((ret=update_status(&version,(char*)"VER"))<=0){ 
+    if((ret=update_status(&version,(char*)"VER",timeo_ms))<=0){ 
       DERR("data is not in sync\n");					
       return std::string();							
     }	
@@ -375,30 +375,30 @@ std::string OcemE642X::getSWVersion(){
     return std::string(stringa);
 }
 
-std::string OcemE642X::getHWVersion(){
-    return getHWVersion();
+std::string OcemE642X::getHWVersion(int timeo_ms){
+    return getHWVersion(timeo_ms);
 }
 
 
-int OcemE642X::setPolarity(int pol){
+int OcemE642X::setPolarity(int pol,int timeo_ms){
   if(pol>0){
-    CMD_WRITE_AND_CHECK(polarity,"POS","POL",POL_POS);
+    CMD_WRITE_AND_CHECK(polarity,timeo_ms,"POS","POL",POL_POS);
   } else if(pol<0){
-    CMD_WRITE_AND_CHECK(polarity,"NEG","POL",POL_NEG);
+    CMD_WRITE_AND_CHECK(polarity,timeo_ms,"NEG","POL",POL_NEG);
   } else if(pol==0){
-    CMD_WRITE_AND_CHECK(polarity,"OPN","POL",POL_ZERO);
+    CMD_WRITE_AND_CHECK(polarity,timeo_ms,"OPN","POL",POL_ZERO);
   }
   return 0;
 }
 
- int OcemE642X::getPolarity(int* pol){
+ int OcemE642X::getPolarity(int* pol,int timeo_ms){
    *pol = polarity;
-   GET_VALUE(polarity,"POL");
+   GET_VALUE(polarity,timeo_ms,"POL");
    *pol = polarity;
    return 0;
  }
 
-int OcemE642X::setCurrentSP(float current){
+int OcemE642X::setCurrentSP(float current,int timeo_ms){
   char stringa[256];
   int ret;
   if(current<min_current || current>max_current)
@@ -407,7 +407,7 @@ int OcemE642X::setCurrentSP(float current){
   snprintf(stringa,sizeof(stringa),"SP %d",(int)(current/current_sensibility));
   
   sp_current = current/current_sensibility;
-  if((ret=send_command(stringa))<=0){
+  if((ret=send_command(stringa,timeo_ms))<=0){
     DERR("cannot execute \"%s\"\n",stringa);
     return ret;
   }
@@ -416,31 +416,31 @@ int OcemE642X::setCurrentSP(float current){
  }
 
 
- int OcemE642X::getCurrentSP(float* current){
+ int OcemE642X::getCurrentSP(float* current,int timeo_ms){
    *current = sp_current*current_sensibility;
    return 0;
  }
 
-int  OcemE642X::getCurrentOutput(float* curr){
+int  OcemE642X::getCurrentOutput(float* curr,int timeo_ms){
   *curr = current*current_sensibility;
-   GET_VALUE(current,"COR");
+  GET_VALUE(current,timeo_ms,"COR");
    *curr = current*current_sensibility;
   return 0;
 }
-int  OcemE642X::getVoltageOutput(float* volt){
+int  OcemE642X::getVoltageOutput(float* volt,int timeo_ms){
   *volt = voltage*current_sensibility;
-  GET_VALUE(voltage,"TEN");
+  GET_VALUE(voltage,timeo_ms,"TEN");
   *volt = voltage*current_sensibility;
   return 0;
 }
 
- int OcemE642X::startCurrentRamp(){
-   return send_command((char*)"STR");
+ int OcemE642X::startCurrentRamp(int timeo_ms){
+   return send_command((char*)"STR",timeo_ms);
  }
 
 
 
-int OcemE642X::setCurrentRampSpeed(float asup,float asdown){
+int OcemE642X::setCurrentRampSpeed(float asup,float asdown,int timeo_ms){
   int rsup,rsdown,ret;
   if(asup<OCEM_MIN_VOLTAGE || asup > OCEM_MAX_VOLTAGE)
     return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
@@ -450,11 +450,11 @@ int OcemE642X::setCurrentRampSpeed(float asup,float asdown){
   rsup=(asup/OCEM_MAX_VOLTAGE)*(1<<OCEM_CURRENT_RAMP_ADC);
   rsdown=(asdown/OCEM_MAX_VOLTAGE)*(1<<OCEM_CURRENT_RAMP_ADC);
   DPRINT("setting ramp rising speed to %f as (0x%x), falling speed to %f (0x%x)\n",asup,rsup,asdown,rsdown);
-  if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_UP,0,rsup))<0){
+  if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_UP,0,rsup,timeo_ms))<0){
     DERR("error setting current RAMP UP \n");
     return ret;
   }
-  if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_DOWN,0,rsdown))<0){
+  if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_DOWN,0,rsdown,timeo_ms))<0){
     DERR("error setting current RAMP DOWN \n");
     return ret;
   }
@@ -463,35 +463,35 @@ int OcemE642X::setCurrentRampSpeed(float asup,float asdown){
 
 
 
- int OcemE642X::resetAlarms(uint64_t alrm){
-   return send_command((char*)"RES");
+ int OcemE642X::resetAlarms(uint64_t alrm,int timeo_ms){
+   return send_command((char*)"RES",timeo_ms);
  }
 
- int OcemE642X::getAlarms(uint64_t*alrm){
+ int OcemE642X::getAlarms(uint64_t*alrm,int timeo_ms){
    *alrm = alarms;
-   GET_VALUE(alarms,"ALL");
+   GET_VALUE(alarms,timeo_ms,"ALL");
    *alrm = alarms;
    return 0;
  }
 
 
- int OcemE642X::shutdown(){
+ int OcemE642X::shutdown(int timeo_ms){
    regulator_state = REGULATOR_SHOULD_BE_OFF;
    // because we lose control once done this command
    DPRINT("SHUTDOWN command, we are going to lose control!!\n");
-   return send_command((char*)"OFF");
+   return send_command((char*)"OFF",timeo_ms);
  }
-int OcemE642X::poweron(){
-  CMD_WRITE_AND_CHECK(regulator_state,"ON","SEL",REGULATOR_ON);
+int OcemE642X::poweron(int timeo_ms){
+  CMD_WRITE_AND_CHECK(regulator_state,timeo_ms,"ON","SEL",REGULATOR_ON);
 }
 
- int OcemE642X::standby(){
-   CMD_WRITE_AND_CHECK(regulator_state,"STB","SEL",REGULATOR_STANDBY);
+ int OcemE642X::standby(int timeo_ms){
+   CMD_WRITE_AND_CHECK(regulator_state,timeo_ms,"STB","SEL",REGULATOR_STANDBY);
  }
   
 
-int  OcemE642X::getState(int* state,std::string &desc){
-  GET_VALUE(regulator_state,"SL");
+int  OcemE642X::getState(int* state,std::string &desc,int timeo_ms){
+  GET_VALUE(regulator_state,timeo_ms,"SL");
   *state = 0;
   if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
     *state |=POWER_SUPPLY_STATE_OFF;
@@ -523,7 +523,7 @@ int  OcemE642X::getState(int* state,std::string &desc){
   return 0;
 }
 
-int OcemE642X::setChannel(int inout,int number, int min,int max){
+int OcemE642X::setChannel(int inout,int number, int min,int max,int timeo_ms){
   char chtype;
   char um[3];
   char cmd[256];
@@ -546,16 +546,16 @@ int OcemE642X::setChannel(int inout,int number, int min,int max){
 
   snprintf(cmd,sizeof(cmd),"PRG %c%d %.7d %.7d %s",chtype,number,min,max,um);
   DPRINT("%s\n",cmd);
-  return send_command(cmd);
+  return send_command(cmd,timeo_ms);
 }
-int OcemE642X::getChannel(int inout,int number, int* min,int* max){
+int OcemE642X::getChannel(int inout,int number, int* min,int* max,int timeout){
   char buf[2048];
   uint64_t stamp=common::debug::getUsTime();
   if(!(min && max)){
     return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
   }
   send_receive((char*)"PRG S",buf,sizeof(buf));
-  update_status(1000,10);
+  update_status(timeout,10);
   if((inout==0) && (number < OCEM_INPUT_CHANNELS )) {
     *min = ichannel[number].get().min;
     *max = ichannel[number].get().max;

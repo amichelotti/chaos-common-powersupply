@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <string>
 #include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/powersupply/Ocem/OcemCore.h"
+#include "common/powersupply/Ocem/OcemE642X.h"
 
 namespace common {
   namespace powersupply {
