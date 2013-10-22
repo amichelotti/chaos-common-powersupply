@@ -136,7 +136,6 @@ int main(int argc, char *argv[])
       }
 
       if(ch=='4'){
-	int polarity;
 	uint64_t alm=0;
 	printf("\nResetting events\n");
 

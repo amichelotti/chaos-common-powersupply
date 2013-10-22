@@ -37,16 +37,17 @@ namespace common {
 	\brief Power supply function error return codes 
     */
     enum PowerSupplyError{
-      POWER_SUPPLY_BAD_INPUT_PARAMETERS=-300, // parameters not correct
-      POWER_SUPPLY_BAD_OUT_OF_RANGE_PARAMETERS, // parameters out of range
-      POWER_SUPPLY_NOT_READY, // power supply cannot execute command
-      POWER_SUPPLY_READOUT_INSTABLE, // the readout is not stable
-      POWER_SUPPLY_READOUT_OUTDATED, // the readout value is older than the command
-      POWER_SUPPLY_OFFLINE, // the power supply communication is interrupted
-      POWER_SUPPLY_EXCEPTION, // an exception/error avoid the completion of the command
-      POWER_SUPPLY_READBACK_FAILED, // read and written value don't match
-      POWER_SUPPLY_COMMAND_ERROR, // an error occur during a command
-      POWER_SUPPLY_RECEIVE_ERROR // an error occur during read of data 
+      POWER_SUPPLY_BAD_INPUT_PARAMETERS=-300, /// parameters not correct
+      POWER_SUPPLY_BAD_OUT_OF_RANGE_PARAMETERS, /// parameters out of range
+      POWER_SUPPLY_TIMEOUT,   /// timeout during operation
+      POWER_SUPPLY_NOT_READY, /// power supply cannot execute command
+      POWER_SUPPLY_READOUT_INSTABLE, /// the readout is not stable
+      POWER_SUPPLY_READOUT_OUTDATED, /// the readout value is older than the command
+      POWER_SUPPLY_OFFLINE, /// the power supply communication is interrupted
+      POWER_SUPPLY_EXCEPTION, /// an exception/error avoid the completion of the command
+      POWER_SUPPLY_READBACK_FAILED, /// read and written value don't match
+      POWER_SUPPLY_COMMAND_ERROR, /// an error occur during a command
+      POWER_SUPPLY_RECEIVE_ERROR /// an error occur during read of data 
     };
 
     /** 
@@ -80,123 +81,123 @@ namespace common {
           /**
             @brief sets the current polarity
             @param pol if >0 sets positive current polarity, if <0 sets negative current polarity, =0 opens the circuit, no current
-	    @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	    @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
 	    @return 0 if success or an error code
            */
-	virtual int setPolarity(int pol,int timeo_ms=0)=0;
+	virtual int setPolarity(int pol,uint32_t timeo_ms=0)=0;
       
           /**
            @brief gets the current polarity
            @param pol returns the polarity if >0 positive current polarity, if <0 negative current polarity, =0 circuit is open, no current
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success or an error code
            */
-	virtual int getPolarity(int* pol,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+	virtual int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
           /**
            @brief sets the current set point
            @param current the current set point to reach expressed in ampere
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success or an error code
            */
           
-	virtual int setCurrentSP(float current,int timeo_ms=0)=0;
+	virtual int setCurrentSP(float current,uint32_t timeo_ms=0)=0;
          
           
           /**
            @brief gets the actual current set point
            @param current returns the current readout expressed in ampere
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success or an error code
            */
           
-	virtual int getCurrentSP(float* current,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+	virtual int getCurrentSP(float* current,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
           /**
            @brief start ramp toward the predefined current set point
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success (current readout equal to set) or an error code
            */
           
-          virtual int startCurrentRamp(int timeo_ms=0)=0;
+          virtual int startCurrentRamp(uint32_t timeo_ms=0)=0;
           
           /**
            @brief gets the voltage output
            @param volt gets the voltage readout expressed in volt 
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
 	   @return 0 if success or an error code
            */
           
-          virtual int getVoltageOutput(float* volt,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int getVoltageOutput(float* volt,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
           
           
           /**
            @brief gets the current output
            @param current returns the current readout expressed in ampere
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success or an error code
            */
           
-          virtual int getCurrentOutput(float* current,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int getCurrentOutput(float* current,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
           
           
           /**
            @brief set the current rising/falling ramp speed 
            @param asup rising ramp speed expressed in ampere/second
            @param asdown rising ramp speed expressed in ampere/second
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success or an error code
            */
-          virtual int setCurrentRampSpeed(float asup,float asdown,int timeo_ms=0)=0;
+          virtual int setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms=0)=0;
           
                     
           /**
            @brief resets alarms
            @param alrm a 64 bit field containing the alarms to be reset (-1 all alarms)
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success
            */
-          virtual int resetAlarms(uint64_t alrm,int timeo_ms=0)=0;
+          virtual int resetAlarms(uint64_t alrm,uint32_t timeo_ms=0)=0;
           
           /**
            @brief get alarms
            @param alrm returns a 64 bit field PowerSupplyEvents containing the alarms
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success
            */
-          virtual int getAlarms(uint64_t*alrm,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int getAlarms(uint64_t*alrm,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
 
           /**
            @brief shuts down the power supply, the communication could drop
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success
            */
-          virtual int shutdown(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int shutdown(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
           
           
           /**
            @brief standby the power supply
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success
            */
-          virtual int standby(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int standby(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
           /**
            @brief poweron the power supply after a standby or shutdown (if possible)
-	   @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	   @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
            @return 0 if success
            */
-          virtual int poweron(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int poweron(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
 
 	  /**
 	     @brief gets the power supply state
 	     @param state returns a bit field of PowerSupplyStates
 	     @param desc return a string description
-	     @param timeo_ms timeout in ms for the completion of the operation (0= no wait, >0 ms to wait, <0 wait indefinitively)
+	     @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
 	     @return 0 if success or an error code
            */
-          virtual int getState(int* state,std::string& desc,int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual int getState(int* state,std::string& desc,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
 
           /**
@@ -215,13 +216,13 @@ namespace common {
            @brief returns the SW/FW version of the driver/FW
            @return a non empty string containing the information
            */
-          virtual std::string getSWVersion(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual std::string getSWVersion(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
           /**
            @brief returns the HW version of the powersupply
            @return a non empty string containing the information
            */
-          virtual std::string getHWVersion(int timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+          virtual std::string getHWVersion(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
 
 	  /**
 	     @brief returns the current sensibility of the power supply
@@ -246,6 +247,12 @@ namespace common {
 	     @param min returns the min voltage that the power supply can output
 	   */
 	  virtual void getMaxMinVoltage(float*max,float*min)=0;
+	  /**
+	     @brief returns the bitfield of implemented alarms
+	     @return 64bit bitfield containing the implemented alarms
+	  */
+	  virtual uint64_t getAlarmDesc()=0;
+
 
       };
     
