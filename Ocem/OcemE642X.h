@@ -184,11 +184,11 @@ namespace common{
 
 		static OcemProtocol_psh getOcemProtocol(const char *dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
                 static void removeOcemProtocol(const char*dev);
-		constexpr static const float max_current=OCEM_MAX_CURRENT;
-		constexpr static const float min_current=OCEM_MIN_CURRENT;
+		static const float max_current=OCEM_MAX_CURRENT;
+		static const float min_current=OCEM_MIN_CURRENT;
 
-		constexpr static const float max_voltage=OCEM_MAX_VOLTAGE;
-		constexpr static const float min_voltage=OCEM_MIN_VOLTAGE;
+		static const float max_voltage=OCEM_MAX_VOLTAGE;
+		static const float min_voltage=OCEM_MIN_VOLTAGE;
 
 		static const int voltage_adc=OCEM_VOLTAGE_ADC;
 		static const int current_adc=OCEM_CURRENT_ADC;
