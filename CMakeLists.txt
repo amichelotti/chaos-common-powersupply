@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.6)
 option(BUILD_FORCE_32 "Set to ON to enable 32 bit compilation" OFF)
 
 
