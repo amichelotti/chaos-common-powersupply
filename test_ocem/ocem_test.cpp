@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 
   boost::program_options::options_description desc("options");
-
+    std::string ver;
   desc.add_options()("help", "help");
   // put your additional options here
   desc.add_options()("dev", boost::program_options::value<std::string>(), "serial device where the ocem is attached");
@@ -71,8 +71,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  std::string ver = ps->getSWVersion();
-  if(ver.empty()==true){
+    if(  ps->getSWVersion(ver)!=0){
     printf("## cannot get SW version \n");
     return -3;
   }
