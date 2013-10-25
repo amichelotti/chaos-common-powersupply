@@ -99,11 +99,11 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
     uint64_t stamp=common::debug::getUsTime();
     int tim=0;
     uint64_t ret_time;
-    timeout*=1000;
+
     CMD_WRITE(cmd,timeout);
     while(((ret_time=data->mod_time())<stamp)){
-        if(((timeout>0) && ((common::debug::getUsTime()-stamp)>=timeout)) || (tim > 0)){
-            DPRINT("Timeout reading data type \"%s\" Start operation %10llu (duration %10llu) > %d timeout\n",data->get_name(),stamp,(common::debug::getUsTime()-stamp)/1000,timeout/1000);
+      if(((timeout>0) && ((common::debug::getUsTime()-stamp)>=(timeout*1000))) || (tim > 0)){
+            DPRINT("Timeout reading data type \"%s\" Start operation %10llu (duration %10llu) > %d timeout\n",data->get_name(),stamp,(common::debug::getUsTime()-stamp)/1000,timeout);
             tim++;
             break;
         }
@@ -215,7 +215,7 @@ int OcemE642X::updateInternalData(char * stringa){
                 DERR("error parsing SEL\n");
             }
         } else if(sscanf(pnt,"STA %3s",datac)==1){
-            if(!strncmp(datac,"ON",2)){
+            if(!strncmp(datac,"ATT",2)){
                 regulator_state = REGULATOR_ON;
                 DPRINT("got Regulator ON\n");
                 parsed++;
@@ -271,7 +271,8 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
     int ret;
     int updated=0;
     int timeo=0;
-    timeout*=1000;
+
+    DPRINT("fetching for %d ms\n",timeout);
     do{
         tstart= common::debug::getUsTime();
         ret = receive_data( buf, sizeof(buf),timeout,&timeo);
@@ -282,7 +283,7 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
         }
         if(msxpoll)
             usleep(msxpoll*1000);
-    } while((ret>0)&& ((totPollTime)<(unsigned)timeout) && (timeo==0));
+    } while((ret>0)&& ((totPollTime/1000)<(unsigned)timeout) && (timeo==0));
     return updated;
 }
 
@@ -383,7 +384,7 @@ int OcemE642X::receive_data(char*buf, int size,uint32_t timeout,int *timeo){
     int ret;
     int data_read=0;
     if(buf==NULL) return -1;
-    DPRINT("wait for messages from slave %d\n",slave_id);
+    DPRINT("wait for messages from slave %d, timeout %d\n",slave_id,timeout);
     ret=ocem_prot->poll(slave_id, buf, size,timeout,timeo);
     if(ret>0){
         DPRINT("received %d bytes (timeout %d) \"%s\"\n",ret,timeout,buf);
@@ -419,7 +420,7 @@ int OcemE642X::getSWVersion(std::string &ver,uint32_t timeo_ms){
 }
 
 int OcemE642X::getHWVersion(std::string&version,uint32_t timeo_ms){
-    return getHWVersion(version,timeo_ms);
+    return getSWVersion(version,timeo_ms);
 }
 
 

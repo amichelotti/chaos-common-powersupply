@@ -24,7 +24,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 INCLUDE_DIRECTORIES(. ../../  ${PROJECT_SOURCE_DIR}/usr/local/include)
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/usr/local/lib)
 #  -DOCEM_CORE_DEBUG
-ADD_DEFINITIONS(-g -O2 -Wall -DPOWER_SUPPLY_DEFAULT_TIMEOUT=1000)
+ADD_DEFINITIONS(-g -O2 -Wall -DOCEM_CORE_DEBUG -DPOWER_SUPPLY_DEFAULT_TIMEOUT=1000)
 
 set(Ocem_src Ocem/OcemE642X.cpp)
 #### put your libcommon_PowerSupply LIBRARY files here
@@ -45,5 +45,5 @@ INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/
 INSTALL(FILES powersupply.h DESTINATION include/common/powersupply/) 
 INSTALL(FILES ${ocem_src} DESTINATION include/common/powersupply/Ocem ) 
 
-INSTALL_TARGETS(/bin common_powersupply)
+INSTALL_TARGETS(/lib common_powersupply)
 INSTALL_TARGETS(/bin test_Ocem)
