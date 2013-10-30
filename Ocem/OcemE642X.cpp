@@ -22,6 +22,9 @@ std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
 float  OcemE642X::voltage_sensibility=0;
 float  OcemE642X::current_sensibility=0;
 
+#define CONV2ADC(what,x) (x/OCEM_MAX_ ## what)*(1<<OCEM_ ## what ## _ADC)
+#define ADC2CURRENT(what,x) (x/(1<<OCEM_ ## what ## _ADC))*OCEM_MAX_ ## what
+
 #define CMD_WRITE(_cmdw,_timeo) \
 {									\
 int _ret,_timeout=0;							\
@@ -448,7 +451,7 @@ int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
     if(current<min_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    snprintf(stringa,sizeof(stringa),"SP %d",(int)(current/current_sensibility));
+    snprintf(stringa,sizeof(stringa),"SP %.7d",(int)(current/current_sensibility));
     
     sp_current = current/current_sensibility;
     
@@ -483,23 +486,31 @@ int OcemE642X::startCurrentRamp(uint32_t timeo_ms){
 
 
 int OcemE642X::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
-    int rsup,rsdown,ret;
-    if(asup<OCEM_MIN_VOLTAGE || asup > OCEM_MAX_VOLTAGE)
+    int rsup,rsdown;
+    char stringa[256];
+    if(asup<OCEM_MIN_CURRENT || asup > OCEM_MAX_CURRENT)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    if(asdown<OCEM_MIN_VOLTAGE || asdown > OCEM_MAX_VOLTAGE)
+    if(asdown<OCEM_MIN_CURRENT || asdown > OCEM_MAX_CURRENT)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    rsup=(asup/OCEM_MAX_VOLTAGE)*(1<<OCEM_CURRENT_RAMP_ADC);
-    rsdown=(asdown/OCEM_MAX_VOLTAGE)*(1<<OCEM_CURRENT_RAMP_ADC);
+    rsup = CONV2ADC(CURRENT,asup);
+
+    rsdown = CONV2ADC(CURRENT,asdown);
+    sprintf(stringa,"VRUP %.7d",rsup);
     DPRINT("setting ramp rising speed to %f as (0x%x), falling speed to %f (0x%x)\n",asup,rsup,asdown,rsdown);
-    if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_UP,0,rsup,timeo_ms))<0){
-        DERR("error setting current RAMP UP \n");
-        return ret;
-    }
-    if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_DOWN,0,rsdown,timeo_ms))<0){
-        DERR("error setting current RAMP DOWN \n");
-        return ret;
-    }
+    CMD_WRITE(stringa,timeo_ms);
+    sprintf(stringa,"VRDW %.7d",rsdown);
+    CMD_WRITE(stringa,timeo_ms);
+    /*
+      if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_UP,0,rsup,timeo_ms))<0){
+      DERR("error setting current RAMP UP \n");
+      return ret;
+      }
+      if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_DOWN,0,rsdown,timeo_ms))<0){
+      DERR("error setting current RAMP DOWN \n");
+      return ret;
+      }
+    */
     return 0;
 }
 
@@ -631,12 +642,21 @@ int OcemE642X::getChannel(int inout,int number, int* min,int* max,uint32_t timeo
     
     return 0;
 }
-int OcemE642X::setThreashold(int channel,int value,uint32_t timeout){
+int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
     char cmd[256];
+    int val;
     if(channel>=4){
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    snprintf(cmd,sizeof(cmd),"TH I%d %d\n",channel,value);
+    if(channel==0){
+      // current;
+      val = CONV2ADC(CURRENT,value);
+    } else if(channel==1){
+      val = CONV2ADC(VOLTAGE,value);
+    } else {
+      return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+    }
+    snprintf(cmd,sizeof(cmd),"TH I%d %.5d\n",channel,val);
     CMD_WRITE(cmd,timeout);
     return 0;
 }
