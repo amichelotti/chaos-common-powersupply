@@ -72,15 +72,18 @@ return _ret;							\
 }									\
 }
 
-void OcemE642X::removeOcemProtocol(const char*dev){
-    std::string mydev(dev);
-    pthread_mutex_lock(&unique_ocem_core_mutex);
-    std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
+void OcemE642X::removeOcemProtocol(std::string& mydev){
+  DPRINT("removing protocol on \"%s\"\n",mydev.c_str());
+  pthread_mutex_lock(&unique_ocem_core_mutex);
+  std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
+  if(i!=unique_protocol.end()){
+    DPRINT("found removing \n");
     unique_protocol.erase(i);
-    pthread_mutex_unlock(&unique_ocem_core_mutex);
+  }
+  pthread_mutex_unlock(&unique_ocem_core_mutex);
 }
-OcemProtocol_psh OcemE642X::getOcemProtocol(const char *dev,int baudrate,int parity,int bits,int stop){
-    std::string mydev(dev);
+OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
+  DPRINT("getting protocol for \"%s\"\n",mydev.c_str());
     pthread_mutex_lock(&unique_ocem_core_mutex);
     std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
     if(i!=unique_protocol.end() && i->second!=NULL){
@@ -88,7 +91,7 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(const char *dev,int baudrate,int par
         DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),i->second.get());
         return i->second;
     }
-    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::OcemProtocol(dev,POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
     DPRINT("creating NEW serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),unique_protocol[mydev].get());
     
     pthread_mutex_unlock(&unique_ocem_core_mutex);

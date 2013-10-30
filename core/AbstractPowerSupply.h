@@ -26,7 +26,7 @@
 #include <string>
 
 #ifndef POWER_SUPPLY_DEFAULT_TIMEOUT
-#define POWER_SUPPLY_DEFAULT_TIMEOUT 500
+#define POWER_SUPPLY_DEFAULT_TIMEOUT 1000
 #endif
 
 namespace common {

@@ -89,7 +89,7 @@ namespace common{
             OcemProtocol_psh ocem_prot;
             
             /* connection parameters */
-            const char *dev;
+	    std::string dev;
             int baudrate;
             int parity;
             int bits;
@@ -182,8 +182,8 @@ namespace common{
              */
             int update_status(common::debug::basic_timed*data ,char *cmd,uint32_t timeout);
             
-            static OcemProtocol_psh getOcemProtocol(const char *dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
-            static void removeOcemProtocol(const char*dev);
+            static OcemProtocol_psh getOcemProtocol(std::string &dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
+            static void removeOcemProtocol(std::string &dev);
             static const float max_current=OCEM_MAX_CURRENT;
             static const float min_current=OCEM_MIN_CURRENT;
             
