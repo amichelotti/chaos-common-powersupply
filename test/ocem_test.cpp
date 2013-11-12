@@ -27,24 +27,7 @@ static int check_for_char(){
   return FD_ISSET(0,&fds);
   
 }
-int main(int argc, char *argv[])
-{
-
-
-  boost::program_options::options_description desc("options");
-    std::string ver;
-  desc.add_options()("help", "help");
-  // put your additional options here
-  desc.add_options()("dev", boost::program_options::value<std::string>(), "serial device where the ocem is attached");
-  desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID");
-  desc.add_options()("interactive", "interactive test");
-  //////
-  boost::program_options::variables_map vm;
-  boost::program_options::store(boost::program_options::parse_command_line(argc,argv, desc),vm);
-  boost::program_options::notify(vm);
-    
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
+static void printCommandHelp(){
     std::cout<<" Available commands:"<<std::endl;
     std::cout<<"\tPOL <1/0/-1> : set polarity"<<std::endl;
     std::cout<<"\tSP <float>   : set SetPoint"<<std::endl;
@@ -63,7 +46,29 @@ int main(int argc, char *argv[])
     std::cout<<"\tGETVER       : get HW/SW version"<<std::endl;
     std::cout<<"\tGETPOL       : get polarity"<<std::endl;
     std::cout<<"\t----------------------------"<<std::endl;
+    std::cout<<"\tHELP         : this help"<<std::endl;
     std::cout<<"\tQUIT         : quit program"<<std::endl;
+
+}
+int main(int argc, char *argv[])
+{
+
+
+  boost::program_options::options_description desc("options");
+    std::string ver;
+  desc.add_options()("help", "help");
+  // put your additional options here
+  desc.add_options()("dev", boost::program_options::value<std::string>(), "serial device where the ocem is attached");
+  desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID");
+  desc.add_options()("interactive", "interactive test");
+  //////
+  boost::program_options::variables_map vm;
+  boost::program_options::store(boost::program_options::parse_command_line(argc,argv, desc),vm);
+  boost::program_options::notify(vm);
+    
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    printCommandHelp();
     return 1;
   }
   if(vm.count("dev")==0){
@@ -90,7 +95,7 @@ int main(int argc, char *argv[])
       return -1;
     }
   }
-
+  printf("OK\n");
   if(vm.count("interactive")){
     if(  ps->getSWVersion(ver,DEFAULT_TIMEOUT)!=0){
       printf("## cannot get SW version \n");
@@ -194,6 +199,7 @@ int main(int argc, char *argv[])
   } else {
     char stringa[1024];
     char cmd[256],val[256];
+    printf("waiting commands (HELP for command list)\n");
     while(gets(stringa)){
       int ret;
       
@@ -301,7 +307,10 @@ int main(int argc, char *argv[])
 	  if( (ret=ps->getHWVersion(desc,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting state ret %d\n",ret);
 	  } else {
-	    printf("%s OK\n",desc.c_str());
+	    float cmax,cmin,vmax,vmin;
+	    ps->getMaxMinCurrent(&cmax,&cmin);
+	    ps->getMaxMinVoltage(&vmax,&vmin);
+	    printf("%s (max current %f, max voltage %f ) OK\n",desc.c_str(),cmax,vmax);
 	  }
 	} else if(!strcmp(cmd,"GETSP")){
 	  float curr;
@@ -314,6 +323,9 @@ int main(int argc, char *argv[])
 	} else if(!strcmp(cmd,"QUIT")){
 	  printf("quitting\n");
 	  break;
+	} else if(!strcmp(cmd,"HELP")){
+	  printCommandHelp();
+
 	} else {
 	  printf("## syntax error\n"); 
 	}

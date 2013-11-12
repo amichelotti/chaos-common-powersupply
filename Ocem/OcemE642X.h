@@ -153,7 +153,12 @@ namespace common{
                 CHANNEL_RAMP_UP=1,
                 CHANNEL_RAMP_DOWN=1,
             };
-            
+	    enum OcemModels {
+	      OCEM_NOMODEL,
+	      OCEM_MODEL234,
+	      OCEM_MODEL5A5B
+	    };
+
             common::debug::timed_value<ocem_channel> ichannel[OCEM_INPUT_CHANNELS];
             common::debug::timed_value<ocem_channel> ochannel[OCEM_OUTPUT_CHANNELS];
             common::debug::timed_value<unsigned> current;
@@ -184,19 +189,22 @@ namespace common{
             
             static OcemProtocol_psh getOcemProtocol(std::string &dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
             static void removeOcemProtocol(std::string &dev);
-            static const float max_current=OCEM_MAX_CURRENT;
-            static const float min_current=OCEM_MIN_CURRENT;
+            float max_current;
+            float min_current;
             
-            static const float max_voltage=OCEM_MAX_VOLTAGE;
-            static const float min_voltage=OCEM_MIN_VOLTAGE;
+            float max_voltage;
+            float min_voltage;
             
             static const int voltage_adc=OCEM_VOLTAGE_ADC;
             static const int current_adc=OCEM_CURRENT_ADC;
             static const int current_ramp_adc=OCEM_CURRENT_RAMP_ADC;
-            static float voltage_sensibility;
-            static float current_sensibility;
-            
+            float voltage_sensibility;
+            float current_sensibility;
+	    uint64_t available_alarms;
+	    OcemModels model;
+	    void updateParamsByModel(OcemModels model);
         public:
+
             OcemE642X(const char *dev,int slave_id,int baudrate=9600,int parity=0,int bits=8,int stop=1);
             ~OcemE642X();
             

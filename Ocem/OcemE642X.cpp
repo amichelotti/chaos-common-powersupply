@@ -19,8 +19,7 @@ using namespace common::powersupply;
 pthread_mutex_t OcemE642X::unique_ocem_core_mutex=PTHREAD_MUTEX_INITIALIZER;
 std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
 
-float  OcemE642X::voltage_sensibility=0;
-float  OcemE642X::current_sensibility=0;
+
 
 #define CONV2ADC(what,x) (x/OCEM_MAX_ ## what)*(1<<OCEM_ ## what ## _ADC)
 #define ADC2CURRENT(what,x) (x/(1<<OCEM_ ## what ## _ADC))*OCEM_MAX_ ## what
@@ -135,7 +134,7 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
 {
     int cnt;
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
-    
+    model = OCEM_NOMODEL;
     INITIALIZE_TIMED(regulator_state,REGULATOR_UKN);
     INITIALIZE_TIMED(selector_state,SELECTOR_UKN);
     INITIALIZE_TIMED(polarity, POL_UKN);
@@ -144,15 +143,22 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
     INITIALIZE_TIMED(sp_current, 0U);
     INITIALIZE_TIMED(alarms, 0ULL);
     INITIALIZE_TIMED(version, ocem_version());
+    // default values to be determined by type
+    max_current=OCEM_MAX_CURRENT;
+    min_current=OCEM_MIN_CURRENT;
+    max_voltage=OCEM_MAX_VOLTAGE;
+    min_voltage=OCEM_MIN_VOLTAGE;
     voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
     current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    available_alarms =0;
     for(cnt=0;cnt<OCEM_INPUT_CHANNELS;cnt++){
         INITIALIZE_TIMED(ichannel[cnt],ocem_channel(0,0));
     }
     for(cnt=0;cnt<OCEM_OUTPUT_CHANNELS;cnt++){
         INITIALIZE_TIMED(ochannel[cnt],ocem_channel(0,0));
     }
-    
+
+
 }
 
 OcemE642X::~OcemE642X(){
@@ -171,15 +177,14 @@ int OcemE642X::updateInternalData(char * stringa){
     while(pnt){
         if(sscanf(pnt,"PRG %c%u %u %u %c%c",&chtype,&channelnum,&channelmin,&channelmax,&unit0,&unit1)==6){
             if((chtype == 'I')&&(channelnum<OCEM_INPUT_CHANNELS)){
-                uint64_t tm;
                 ichannel[channelnum] = ocem_channel(channelmin,channelmax);
-                tm =  ichannel[channelnum].mod_time();
-                DPRINT("setting input channel %d at %.10llu us to (%d,%d)\n",channelnum,  tm, ichannel[channelnum].get().min, ichannel[channelnum].get().max);
+               
+                DPRINT("setting input channel %d at %.10llu us to (%d,%d)\n",channelnum,  ichannel[channelnum].mod_time(), ichannel[channelnum].get().min, ichannel[channelnum].get().max);
                 parsed++;
             } else if((chtype == 'O')&&(channelnum<OCEM_OUTPUT_CHANNELS)){
                 ochannel[channelnum] = ocem_channel(channelmin,channelmax);
-                uint64_t tm=  ochannel[channelnum].mod_time();
-                DPRINT("setting output channel %d at %.10llu us to (%d,%d)\n",channelnum,  tm, ochannel[channelnum].get().min, ochannel[channelnum].get().max);
+
+                DPRINT("setting output channel %d at %.10llu us to (%d,%d)\n",channelnum,  ochannel[channelnum].mod_time(), ochannel[channelnum].get().min, ochannel[channelnum].get().max);
                 parsed++;
             } else {
                 DERR("error parsing PRG\n");
@@ -273,7 +278,6 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
     uint64_t tstart;
     uint64_t totPollTime=0;
     char buf[2048];
-    int retry=0;
     int ret;
     int updated=0;
     int timeo=0;
@@ -294,6 +298,32 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
 }
 
 
+void OcemE642X::updateParamsByModel(OcemModels model){
+  min_current=OCEM_MIN_CURRENT;
+  min_voltage=OCEM_MIN_VOLTAGE;
+
+  switch(model){
+  case OCEM_MODEL234:{
+    max_current = 100;
+    max_voltage = 10;
+    model = OCEM_MODEL234;
+    break;
+  }
+  case OCEM_MODEL5A5B:{
+    max_current = 700;
+    max_voltage = 10;
+    model = OCEM_MODEL5A5B;
+    break;
+  }
+  default:
+    break;
+  }
+    
+  
+  voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+  current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+  available_alarms =0;
+}
 int OcemE642X::init(){
     int ret=-1;
     char buf[2048];
@@ -307,27 +337,35 @@ int OcemE642X::init(){
     } else {
         ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
         if(ocem_prot){
-            ret = ocem_prot->init();
+	  ret = ocem_prot->init();
         }
     }
     if(ret==0){
-        
+      int retry=3;
         // poll trial
         update_status(1000,10);
         
-        
-        // update status
-        if((ret=force_update(10000))<0){
+	do {
+	  // update status
+	  if((ret=force_update(10000))<0){
             DERR("Nothing has been refreshed  %d\n",ret);
-            return ret;
             
         } else {
             DPRINT("Ocem status has been refreshed %d\n",ret);
             ret = 0;
-        }
-        
+	  }
+	} while((ret<0) && retry-->0);
     }
-    
+    if(ret == 0){
+      if(strstr(version.get().type,"/2-3-4")){
+	DPRINT("type 2-3-4 detected max current 100A\n");
+	updateParamsByModel(OCEM_MODEL234);
+      } else if(strstr(version.get().type,"/1-5A-5B")){
+	DPRINT("type 2-5A-5B detected max current 700A\n");
+	updateParamsByModel(OCEM_MODEL5A5B);
+      }
+      
+    }
     return ret;
 }
 int OcemE642X::force_update(uint32_t timeout){
@@ -368,7 +406,7 @@ int OcemE642X::send_command(char*cmd,uint32_t timeout,int*tim){
 }
 // return the number of characters sucessfully read or an error
 int OcemE642X::send_receive(char*cmd,char*buf,int size,uint32_t timeos,uint32_t timeop,int *timeo){
-    int ret,retry=0;
+    int ret;
     uint64_t tstart;
     uint64_t totPollTime=0;
     DPRINT("sending command timeout set to %u ms\n",timeos);
@@ -419,7 +457,7 @@ int OcemE642X::getSWVersion(std::string &ver,uint32_t timeo_ms){
         return ret;
     }
     
-    sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %.2d/%.2d/%.2d type:%s\n",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
+    sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %.2d/%.2d/%.2d type:%.8s\n",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
     
     ver = stringa;
     return 0;
