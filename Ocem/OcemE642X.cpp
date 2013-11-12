@@ -9,7 +9,7 @@
 #define DEBUG
 #endif
 #include "common/debug/debug.h"
-
+#include <math.h>
 
 #include "OcemE642X.h"
 #include "common/debug/debug.h"
@@ -287,7 +287,7 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
         tstart= common::debug::getUsTime();
         ret = receive_data( buf, sizeof(buf),timeout,&timeo);
         totPollTime+= common::debug::getUsTime()-tstart;
-        DPRINT("Check returned %d retry %d checking result %d, tot Poll time %.10llu us\n",ret,retry++,ret,totPollTime);
+        DPRINT("Checking result %d, tot Poll time %.10llu us\n",ret,totPollTime);
         if(ret>0){
             updated+=ret;
         }
@@ -370,7 +370,7 @@ int OcemE642X::init(){
 }
 int OcemE642X::force_update(uint32_t timeout){
     DPRINT("forcing update timeout %d\n",timeout);
-    GET_VALUE(regulator_state,timeout,"RMT");
+    GET_VALUE(ochannel[OCEM_OUTPUT_CHANNELS-1],timeout,"RMT");
     
     return 0;
 }
@@ -418,7 +418,7 @@ int OcemE642X::send_receive(char*cmd,char*buf,int size,uint32_t timeos,uint32_t 
             tstart= common::debug::getUsTime();
             ret = receive_data( buf, size,timeop,timeo);
             totPollTime+= common::debug::getUsTime()-tstart;
-            DPRINT("retry %d checking result %d, tot Poll time %.10llu us, polling tim %.10llu ms max poll time %u ms, timeout %d\n",retry++,ret,totPollTime,(totPollTime/1000),timeop,*timeo);
+            DPRINT("checking result %d, tot Poll time %.10llu us, polling tim %.10llu ms max poll time %u ms, timeout %d\n",ret,totPollTime,(totPollTime/1000),timeop,*timeo);
         } while((ret<=0)&& (*timeo==0)&& (totPollTime/1000)<(unsigned)timeop);
     }
     return ret;
@@ -480,9 +480,9 @@ int OcemE642X::setPolarity(int pol,uint32_t timeo_ms){
 }
 
 int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
-    *pol = polarity;
-    GET_VALUE(polarity,timeo_ms,"POL");
-    *pol = polarity;
+  *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
+  GET_VALUE(polarity,timeo_ms,"POL");
+  *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
     return 0;
 }
 
@@ -492,7 +492,8 @@ int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
     if(current<min_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    snprintf(stringa,sizeof(stringa),"SP %.7d",(int)(current/current_sensibility));
+    
+    snprintf(stringa,sizeof(stringa),"SP %.7d",(int)round(current/current_sensibility));
     
     sp_current = current/current_sensibility;
     
