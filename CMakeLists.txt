@@ -35,11 +35,12 @@ TARGET_LINK_LIBRARIES(common_powersupply common_serial common_debug)
 
 SET(PowerSupplyOcem_test_src test/ocem_test.cpp )
 ###
-ADD_EXECUTABLE(test_Ocem ${PowerSupplyOcem_test_src})
-ADD_EXECUTABLE(test_ocem_array ${PowerSupplyOcem_test_src})
+ADD_EXECUTABLE(test_ocem ${PowerSupplyOcem_test_src})
+ADD_EXECUTABLE(test_ocem_array test/ocem_array.cpp)
 
 
-TARGET_LINK_LIBRARIES(test_Ocem common_powersupply common_serial common_debug boost_program_options)
+TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options)
+TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options)
 
 FILE(GLOB ocem_src Ocem/*.h)    
 INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/core) 
@@ -47,4 +48,5 @@ INSTALL(FILES powersupply.h DESTINATION include/common/powersupply/)
 INSTALL(FILES ${ocem_src} DESTINATION include/common/powersupply/Ocem ) 
 
 INSTALL_TARGETS(/lib common_powersupply)
-INSTALL_TARGETS(/bin test_Ocem)
+INSTALL_TARGETS(/bin test_ocem)
+INSTALL_TARGETS(/bin test_ocem_array)
