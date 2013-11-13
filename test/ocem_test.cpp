@@ -41,7 +41,7 @@ static void printCommandHelp(){
     std::cout<<"\tGETCURRENT   : get current"<<std::endl;
     std::cout<<"\tGETVOLTAGE   : get voltage"<<std::endl;
     std::cout<<"\tGETALARMS    : get alarms"<<std::endl;
-    std::cout<<"\tGETSTAT      : get state"<<std::endl;
+    std::cout<<"\tGETSTATE     : get state"<<std::endl;
     std::cout<<"\tGETSP        : get SetPoint"<<std::endl;
     std::cout<<"\tGETVER       : get HW/SW version"<<std::endl;
     std::cout<<"\tGETPOL       : get polarity"<<std::endl;
