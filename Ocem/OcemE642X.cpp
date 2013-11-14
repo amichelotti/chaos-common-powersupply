@@ -366,6 +366,8 @@ int OcemE642X::init(){
       }
       
     }
+    setThreashold(0,(1<<current_adc)-1,10000);
+    setThreashold(1,(1<<voltage_adc)-1,10000);
     return ret;
 }
 int OcemE642X::force_update(uint32_t timeout){
@@ -452,9 +454,11 @@ int OcemE642X::getSWVersion(std::string &ver,uint32_t timeo_ms){
         return 0;
     }
     
-    if((ret=update_status(&version,(char*)"VER",timeo_ms))<=0){
+    if(version.mod_time()<=0){
+      if((ret=update_status(&version,(char*)"VER",timeo_ms))<=0){
         DERR("data is not in sync\n");
         return ret;
+      }
     }
     
     sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %2.2d/%2.2d/%2.2d type:%.8s\n",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
@@ -483,7 +487,7 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
   GET_VALUE(polarity,timeo_ms,"POL");
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
-    return 0;
+  return 0;
 }
 
 int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
@@ -688,6 +692,17 @@ int OcemE642X::getChannel(int inout,int number, int* min,int* max,uint32_t timeo
     
     return 0;
 }
+int OcemE642X::setThreashold(int channel,int val,uint32_t timeout){
+    char cmd[256];
+
+    if(channel>=4){
+        return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+    }
+
+    snprintf(cmd,sizeof(cmd),"TH I%d %.5d\n",channel,val);
+    CMD_WRITE(cmd,timeout);
+    return 0;
+}
 int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
     char cmd[256];
     int val;
@@ -702,9 +717,8 @@ int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
     } else {
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    snprintf(cmd,sizeof(cmd),"TH I%d %.5d\n",channel,val);
-    CMD_WRITE(cmd,timeout);
-    return 0;
+
+    return setThreashold(channel,val,timeout);
 }
 
 

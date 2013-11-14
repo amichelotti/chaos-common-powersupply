@@ -311,6 +311,7 @@ namespace common{
              @return 0 if success 
              */
             int setThreashold(int channel,float value,uint32_t timeo_ms);
+            int setThreashold(int channel,int value,uint32_t timeo_ms);
             
             
             
