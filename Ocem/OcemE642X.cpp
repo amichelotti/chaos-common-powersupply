@@ -172,7 +172,7 @@ int OcemE642X::updateInternalData(char * stringa){
     char* pnt=strtok(stringa,"\n\r"),*pnta;
     char datac[5];
     char rilascio;
-    int anno,mese,giorno;
+    int anno=0,mese=0,giorno=0;
     char tipo[256];
     while(pnt){
         if(sscanf(pnt,"PRG %c%u %u %u %c%c",&chtype,&channelnum,&channelmin,&channelmax,&unit0,&unit1)==6){
@@ -457,7 +457,7 @@ int OcemE642X::getSWVersion(std::string &ver,uint32_t timeo_ms){
         return ret;
     }
     
-    sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %.2d/%.2d/%.2d type:%.8s\n",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
+    sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %2.2d/%2.2d/%2.2d type:%.8s\n",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
     
     ver = stringa;
     return 0;
@@ -488,13 +488,13 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
 
 int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
     char stringa[256];
-    
+    int val;
     if(current<min_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    
-    snprintf(stringa,sizeof(stringa),"SP %.7d",(int)round(current/current_sensibility));
-    
+    val =(int)round(current/current_sensibility);
+    snprintf(stringa,sizeof(stringa),"SP %.7d",val);
+    printf("-> %.7d (0x%x)\n",val,val); 
     sp_current = current/current_sensibility;
     
     CMD_WRITE(stringa,timeo_ms);
@@ -530,11 +530,15 @@ int OcemE642X::startCurrentRamp(uint32_t timeo_ms){
 int OcemE642X::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
     int rsup,rsdown;
     char stringa[256];
-    if(asup<OCEM_MIN_CURRENT || asup > OCEM_MAX_CURRENT)
-        return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    if(asdown<OCEM_MIN_CURRENT || asdown > OCEM_MAX_CURRENT)
-        return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+    if(asup<min_current || asup > max_current){
+      DERR("bad input parameters asup %f\n",asup);
+      return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+    }
+    if(asdown<min_current || asdown > max_current){
+      DERR("bad input parameters asdown %f\n",asdown);
+      return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+    }
     rsup = CONV2ADC(CURRENT,asup);
 
     rsdown = CONV2ADC(CURRENT,asdown);
