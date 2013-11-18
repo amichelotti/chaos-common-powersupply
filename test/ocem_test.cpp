@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "common/debug/debug.h"
 #define DEFAULT_TIMEOUT 10000
 static int check_for_char(){
   fd_set fds;
@@ -27,27 +28,41 @@ static int check_for_char(){
   return FD_ISSET(0,&fds);
   
 }
+static char* convToUpper(char*str){
+  char *b = str;
+  char *tmp=str;
+  if(str==NULL) return NULL;
+  while((*str!=0)){
+    *tmp=toupper(*str);
+    tmp++,str++;
+  }
+  *tmp=0;
+  return b;
+}
+
 static void printCommandHelp(){
-    std::cout<<" Available commands:"<<std::endl;
-    std::cout<<"\tPOL <1/0/-1> : set polarity"<<std::endl;
-    std::cout<<"\tSP <float>   : set SetPoint"<<std::endl;
-    std::cout<<"\tRAMP         : start ramp"<<std::endl;
-    std::cout<<"\tRSTALARMS    : reset alarms"<<std::endl;
-    std::cout<<"\t--------------------------"<<std::endl;
-    std::cout<<"\tSTANDBY      : force standby"<<std::endl;
-    std::cout<<"\tON           : force poweron"<<std::endl;
-    std::cout<<"\tOFF          : force powerof"<<std::endl;
-    std::cout<<"\t----------------------------"<<std::endl;
-    std::cout<<"\tGETCURRENT   : get current"<<std::endl;
-    std::cout<<"\tGETVOLTAGE   : get voltage"<<std::endl;
-    std::cout<<"\tGETALARMS    : get alarms"<<std::endl;
-    std::cout<<"\tGETSTATE     : get state"<<std::endl;
-    std::cout<<"\tGETSP        : get SetPoint"<<std::endl;
-    std::cout<<"\tGETVER       : get HW/SW version"<<std::endl;
-    std::cout<<"\tGETPOL       : get polarity"<<std::endl;
-    std::cout<<"\t----------------------------"<<std::endl;
-    std::cout<<"\tHELP         : this help"<<std::endl;
-    std::cout<<"\tQUIT         : quit program"<<std::endl;
+    std::cout<<" Available commands  :"<<std::endl;
+    std::cout<<"\tPOL <1/0/-1>       : set polarity"<<std::endl;
+    std::cout<<"\tSP <float>         : set SetPoint"<<std::endl;
+    std::cout<<"\tRAMP               : start ramp"<<std::endl;
+    std::cout<<"\tRSTALARMS          : reset alarms"<<std::endl;
+    std::cout<<"\t------------------------------------------"<<std::endl;
+    std::cout<<"\tSTANDBY            : force standby"<<std::endl;
+    std::cout<<"\tON                 : force poweron"<<std::endl;
+    std::cout<<"\tOFF                : force powerof"<<std::endl;
+    std::cout<<"\t------------------------------------------"<<std::endl;
+    std::cout<<"\tGETCURRENT         : get current"<<std::endl;
+    std::cout<<"\tGETVOLTAGE         : get voltage"<<std::endl;
+    std::cout<<"\tGETALARMS          : get alarms"<<std::endl;
+    std::cout<<"\tGETSTATE           : get state"<<std::endl;
+    std::cout<<"\tGETSP              : get SetPoint"<<std::endl;
+    std::cout<<"\tGETVER             : get HW/SW version"<<std::endl;
+    std::cout<<"\tGETPOL             : get polarity"<<std::endl;
+    std::cout<<"\t-------------------------------------------"<<std::endl;
+    std::cout<<"\tOPEN <ser> <slave> : open a new powersupply"<<std::endl;
+    std::cout<<"\tCLOSE              : close powersupply"<<std::endl;
+    std::cout<<"\tHELP               : this help"<<std::endl;
+    std::cout<<"\tQUIT               : quit program"<<std::endl;
 
 }
 int main(int argc, char *argv[])
@@ -189,6 +204,7 @@ int main(int argc, char *argv[])
 	  if(polarity==3){
 	    if( (ret=ps->shutdown(DEFAULT_TIMEOUT))<0){
 	      printf("\n## error setting OFF ret %d\n",ret);
+	      
 	    }
 	  }
 	
@@ -198,141 +214,167 @@ int main(int argc, char *argv[])
     }
   } else {
     char stringa[1024];
-    char cmd[256],val[256];
+    char cmd[256],val[256],val1[256];
     printf("waiting commands (HELP for command list)\n");
     while(gets(stringa)){
       int ret;
-      
-      if(sscanf(stringa,"%s %s",cmd,val)==2){
+      uint64_t tm;
+      char *t=stringa;
+      convToUpper(t);
+      tm = common::debug::getUsTime();
+      if(sscanf(stringa,"%s %s %s",cmd,val,val1)==3){
+	if(!strcmp(cmd,"OPEN")){
+	  if(ps!=NULL){
+	    printf("## device already open \"CLOSE\" before\n");
+	    continue;
+	  } else {
+	    ps= new common::powersupply::OcemE642X(val,atoi(val1));
+	    if(ps==NULL){
+	      printf("cannot allocate resources for \"%s:%s\"\n",val,val1);
+	      continue;
+	    } else {
+	      printf("Connecting to slave %s, via \"%s\"... \n",val1,val);
+	      if(ps->init()!=0){
+		printf("## cannot initialise power supply on \"%s:%s\"\n",val,val1);
+		delete ps;
+		ps = NULL;
+		continue;
+	      }
+	    }
+	  }
+	}
+      } else if(sscanf(stringa,"%s %s",cmd,val)==2){
 	int ival = atoi(val);
 	float fval = atof(val);
 	if(!strcmp(cmd,"POL")){
 
-	  printf("setting polarity to %d :",ival);
+	  printf("setting polarity to %d\n",ival);
 	  if( (ret=ps->setPolarity(ival,DEFAULT_TIMEOUT))<0){
 	    printf("## error setting polarity ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"SP")){
-	  printf("setting current SP to %f :",fval);
+	  printf("setting current SP to %4.4f\n",fval);
 	  if( (ret=ps->setCurrentSP(fval,DEFAULT_TIMEOUT))<0){
 	    printf("## error setting SP ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else {
 	  printf("## syntax error\n"); 
+	  continue;
 	}
       } else if(sscanf(stringa,"%s",cmd)==1){
 	if(!strcmp(cmd,"RAMP")){
-	  printf("start ramp..");
+	  printf("start ramp..\n");
 	  if( (ret=ps->startCurrentRamp(DEFAULT_TIMEOUT))<0){
 	    printf("## error starting ramp ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"STANDBY")){
-	  printf("setting stand by ");
+	  printf("setting standby\n");
 	  if( (ret=ps->standby(DEFAULT_TIMEOUT))<0){
 	    printf("## error STANDBY ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"ON")){
-	  printf("setting poweron ");
+	  printf("setting poweron\n");
 	  if( (ret=ps->poweron(DEFAULT_TIMEOUT))<0){
 	    printf("## error POWERON ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"OFF")){
-	  printf("setting shutdown ");
+	  printf("setting shutdown\n");
 	  if( (ret=ps->shutdown(DEFAULT_TIMEOUT))<0){
 	    printf("## error shutdown ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"RSTALARMS")){
-	  printf("reset alarms ");
+	  printf("resetting alarms\n");
 	  if( (ret=ps->resetAlarms(0,DEFAULT_TIMEOUT))<0){
-	    printf("## error shutdown ret %d\n",ret);
-	  } else {
-	    printf("OK\n");
-	  }
+	    printf("## error resetting allarms ret %d\n",ret);
+	    continue;
+	  } 
 	} else if(!strcmp(cmd,"GETCURRENT")){
 	  float curr;
-	  printf("get current ");
 	  if( (ret=ps->getCurrentOutput(&curr,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting current ret %d\n",ret);
+	    continue;
 	  } else {
-	    printf("%f OK\n",curr);
+	    printf("* %4.4f\n",curr);
 	  }
 	} else if(!strcmp(cmd,"GETVOLTAGE")){
 	  float curr;
-	  printf("get voltage ");
 	  if( (ret=ps->getVoltageOutput(&curr,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting voltage ret %d\n",ret);
+	    continue;
 	  } else {
-	    printf("%f OK\n",curr);
+	    printf("* %4.4f\n",curr);
 	  }
 	} else if(!strcmp(cmd,"GETALARMS")){
 	  uint64_t curr;
-	  printf("get alarms ");
+
 	  if( (ret=ps->getAlarms(&curr,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting alarms ret %d\n",ret);
+	    continue;
 	  } else {
-	    printf("%16llx OK\n",curr);
+	    printf("* %.16llx\n",curr);
 	  }
 	} else if(!strcmp(cmd,"GETSTATE")){
 	  int stat;
 	  std::string desc;
-	  printf("get state ");
 	  if( (ret=ps->getState(&stat,desc,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting state ret %d\n",ret);
+	    continue;
 	  } else {
-	    printf("0x%x (%s) OK\n",stat,desc.c_str());
+	    printf("* 0x%.8x (%s)\n",stat,desc.c_str());
 	  }
 	} else if(!strcmp(cmd,"GETPOL")){
 	  int stat;
-	  printf("get polarity");
+
 	  if( (ret=ps->getPolarity(&stat,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting polarity ret %d\n",ret);
+	    continue;
 	  } else {
-	    printf("%s OK\n",stat>0?"POS":stat<0?"NEG":"OPN");
+	    printf("* \"%s\"\n",stat>0?"POS":stat<0?"NEG":"OPN");
 	  }
 	} else if(!strcmp(cmd,"GETVER")){
 	  std::string desc;
-	  printf("get version ");
 	  if( (ret=ps->getHWVersion(desc,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting state ret %d\n",ret);
+	    continue;
 	  } else {
 	    float cmax,cmin,vmax,vmin;
 	    ps->getMaxMinCurrent(&cmax,&cmin);
 	    ps->getMaxMinVoltage(&vmax,&vmin);
-	    printf("%s (max current %f, max voltage %f ) OK\n",desc.c_str(),cmax,vmax);
+	    printf("* %s (max current %4.4f, max voltage %4.4f )\n",desc.c_str(),cmax,vmax);
 	  }
 	} else if(!strcmp(cmd,"GETSP")){
 	  float curr;
-	  printf("get SP ");
 	  if( (ret=ps->getCurrentSP(&curr,DEFAULT_TIMEOUT))<0){
 	    printf("## error getting SP ret %d\n",ret);
-	  } else {
-	    printf("%f OK\n",curr);
-	  }
+	    continue;
+	  } 
+	  printf("* %4.4f\n",curr);
 	} else if(!strcmp(cmd,"QUIT")){
 	  printf("quitting\n");
 	  break;
+	} else if(!strcmp(cmd,"CLOSE")){
+	  delete ps;
+	  ps = NULL;
+
 	} else if(!strcmp(cmd,"HELP")){
 	  printCommandHelp();
 
 	} else {
-	  printf("## syntax error\n"); 
+	  printf("## syntax error\n");
+	  continue;
 	}
       }
+      printf("* OK [%.8llu ms]\n",(common::debug::getUsTime()-tm)/1000);
     }
   }
   delete ps;
+  printf("* OK\n");
   return 0;
 }
 
