@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 option(BUILD_FORCE_32 "Set to ON to enable 32 bit compilation" OFF)
 
 
-IF( ($ENV{CHAOS32}) OR (BUILD_FORCE_32) )
+IF( (DEFINED ENV{CHAOS32}) OR (BUILD_FORCE_32) )
     MESSAGE(STATUS "Enabling 32 bit Compilation")
     set (CMAKE_C_FLAGS "-m32")
     set (CMAKE_CXX_FLAGS "-m32")
