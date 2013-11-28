@@ -47,7 +47,8 @@ namespace common {
             POWER_SUPPLY_EXCEPTION, /// an exception/error avoid the completion of the command
             POWER_SUPPLY_READBACK_FAILED, /// read and written value don't match
             POWER_SUPPLY_COMMAND_ERROR, /// an error occur during a command
-            POWER_SUPPLY_RECEIVE_ERROR /// an error occur during read of data
+            POWER_SUPPLY_RECEIVE_ERROR,/// an error occur during read of data
+            POWER_SUPPLY_COMMAND_IN_BAD_STATE
         };
         
         /**

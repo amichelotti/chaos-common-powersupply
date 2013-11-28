@@ -10,6 +10,8 @@
 		5303A941181A70800070356D /* ocem_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5303A940181A70800070356D /* ocem_test.cpp */; };
 		531889331817F20C0058D1F5 /* powersupply.h in Headers */ = {isa = PBXBuildFile; fileRef = 531889321817F20C0058D1F5 /* powersupply.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		531889361817F3B90058D1F5 /* OcemE642X.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 53ECE3E61817BB9300ABD226 /* OcemE642X.h */; };
+		53439F4618478349009635A5 /* SimPSupply.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 53439F4418478349009635A5 /* SimPSupply.cpp */; };
+		53439F4718478349009635A5 /* SimPSupply.h in Headers */ = {isa = PBXBuildFile; fileRef = 53439F4518478349009635A5 /* SimPSupply.h */; };
 		53ECE3E11817BB8800ABD226 /* AbstractPowerSupply.h in Headers */ = {isa = PBXBuildFile; fileRef = 53ECE3B41817BB8800ABD226 /* AbstractPowerSupply.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		53ECE3E71817BB9300ABD226 /* OcemE642X.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 53ECE3E51817BB9300ABD226 /* OcemE642X.cpp */; };
 		53ECE3E81817BB9300ABD226 /* OcemE642X.h in Headers */ = {isa = PBXBuildFile; fileRef = 53ECE3E61817BB9300ABD226 /* OcemE642X.h */; };
@@ -51,6 +53,8 @@
 		5303A940181A70800070356D /* ocem_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ocem_test.cpp; sourceTree = "<group>"; };
 		531889321817F20C0058D1F5 /* powersupply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = powersupply.h; sourceTree = "<group>"; };
 		533EF90317E9F252004094C6 /* libcommon_powersupply.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libcommon_powersupply.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		53439F4418478349009635A5 /* SimPSupply.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SimPSupply.cpp; sourceTree = "<group>"; };
+		53439F4518478349009635A5 /* SimPSupply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimPSupply.h; sourceTree = "<group>"; };
 		53ECE3B41817BB8800ABD226 /* AbstractPowerSupply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractPowerSupply.h; sourceTree = "<group>"; };
 		53ECE3E51817BB9300ABD226 /* OcemE642X.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcemE642X.cpp; sourceTree = "<group>"; };
 		53ECE3E61817BB9300ABD226 /* OcemE642X.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcemE642X.h; sourceTree = "<group>"; };
@@ -105,10 +109,20 @@
 		533EF90E17E9F300004094C6 /* common_PowerSupply */ = {
 			isa = PBXGroup;
 			children = (
+				53439F4318478349009635A5 /* Simulator */,
 				53ECE3E41817BB9300ABD226 /* Ocem */,
 				53ECE3B31817BB8800ABD226 /* core */,
 			);
 			name = common_PowerSupply;
+			sourceTree = "<group>";
+		};
+		53439F4318478349009635A5 /* Simulator */ = {
+			isa = PBXGroup;
+			children = (
+				53439F4418478349009635A5 /* SimPSupply.cpp */,
+				53439F4518478349009635A5 /* SimPSupply.h */,
+			);
+			path = Simulator;
 			sourceTree = "<group>";
 		};
 		53ECE3B31817BB8800ABD226 /* core */ = {
@@ -138,6 +152,7 @@
 				531889331817F20C0058D1F5 /* powersupply.h in Headers */,
 				53ECE3E11817BB8800ABD226 /* AbstractPowerSupply.h in Headers */,
 				53ECE3E81817BB9300ABD226 /* OcemE642X.h in Headers */,
+				53439F4718478349009635A5 /* SimPSupply.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,6 +227,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				53439F4618478349009635A5 /* SimPSupply.cpp in Sources */,
 				53ECE3E71817BB9300ABD226 /* OcemE642X.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,6 +325,8 @@
 				OTHER_LDFLAGS = (
 					"-lcommon_serial",
 					"-lcommon_debug",
+					"-lboost_thread",
+					"-lboost_system",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "$(PUBLIC_HEADERS_FOLDER_PATH)/core";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -333,6 +351,8 @@
 				OTHER_LDFLAGS = (
 					"-lcommon_serial",
 					"-lcommon_debug",
+					"-lboost_thread",
+					"-lboost_system",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "$(PUBLIC_HEADERS_FOLDER_PATH)/core";
 				PRODUCT_NAME = "$(TARGET_NAME)";
