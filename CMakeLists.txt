@@ -26,12 +26,13 @@ LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/usr/local/lib)
 #  -DOCEM_CORE_DEBUG -DOCEM_CORE_DEBUG 
 ADD_DEFINITIONS(-g  -O2 -Wall -DPOWER_SUPPLY_DEFAULT_TIMEOUT=2000)
 
-set(Ocem_src Ocem/OcemE642X.cpp)
+set(power_src Ocem/OcemE642X.cpp Simulator/SimPSupply.cpp)
+
 #### put your libcommon_PowerSupply LIBRARY files here
 ###
 
-ADD_LIBRARY(common_powersupply SHARED ${PowerSupply_src} ${Ocem_src})
-TARGET_LINK_LIBRARIES(common_powersupply common_serial common_debug)
+ADD_LIBRARY(common_powersupply SHARED ${PowerSupply_src} ${power_src})
+TARGET_LINK_LIBRARIES(common_powersupply common_serial common_debug boost_thread boost_system)
 
 SET(PowerSupplyOcem_test_src test/ocem_test.cpp )
 ###
@@ -39,13 +40,14 @@ ADD_EXECUTABLE(test_ocem ${PowerSupplyOcem_test_src})
 ADD_EXECUTABLE(test_ocem_array test/ocem_array.cpp)
 
 
-TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options)
-TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options)
+TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options boost_thread boost_system)
+TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options boost_thread boost_system)
 
 FILE(GLOB ocem_src Ocem/*.h)    
 INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/core) 
 INSTALL(FILES powersupply.h DESTINATION include/common/powersupply/) 
-INSTALL(FILES ${ocem_src} DESTINATION include/common/powersupply/Ocem ) 
+INSTALL(FILES Ocem/OcemE642X.h DESTINATION include/common/powersupply/Ocem ) 
+INSTALL(FILES Simulator/SimPSupply.h DESTINATION include/common/powersupply/Simulator ) 
 
 INSTALL_TARGETS(/lib common_powersupply)
 INSTALL_TARGETS(/bin test_ocem)

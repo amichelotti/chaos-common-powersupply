@@ -26,6 +26,7 @@
 #include <string>
 #include "common/powersupply/core/AbstractPowerSupply.h"
 #include "common/powersupply/Ocem/OcemE642X.h"
+#include "common/powersupply/Simulator/SimPSupply.h"
 
 namespace common {
   namespace powersupply {
