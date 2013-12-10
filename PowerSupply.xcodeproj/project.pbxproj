@@ -322,6 +322,10 @@
 				);
 				INSTALL_PATH = "$(SRCROOT)/../../usr/local/lib";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../usr/local/lib";
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"$(OTHER_CFLAGS)",
+					"-DSIMPSUPPLY_DEBUG",
+				);
 				OTHER_LDFLAGS = (
 					"-lcommon_serial",
 					"-lcommon_debug",

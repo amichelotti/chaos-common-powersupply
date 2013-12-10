@@ -77,7 +77,6 @@ void SimPSupply::run(){
 
 }
 int SimPSupply::init(){
-    int ret=-1;
     char buf[2048];
     FILE *f;
     *buf = 0;
@@ -85,6 +84,7 @@ int SimPSupply::init(){
     regulator_state = REGULATOR_STANDBY;
 
     if(f){
+        DPRINT("writing state\n");
         // get last state from file
         fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
         fclose(f);
@@ -93,7 +93,7 @@ int SimPSupply::init(){
     start_ramp=0;
     m_thread = boost::thread(&SimPSupply::run,this);
     m_thread.detach();
-    return ret;
+    return 0;
 }
 
 int SimPSupply::deinit(){
