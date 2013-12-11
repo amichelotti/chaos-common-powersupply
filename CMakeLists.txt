@@ -32,7 +32,7 @@ set(power_src Ocem/OcemE642X.cpp Simulator/SimPSupply.cpp)
 ###
 
 ADD_LIBRARY(common_powersupply SHARED ${PowerSupply_src} ${power_src})
-TARGET_LINK_LIBRARIES(common_powersupply common_serial common_debug boost_thread boost_system)
+TARGET_LINK_LIBRARIES(common_powersupply common_serial common_debug boost_thread boost_system boost_regex)
 
 SET(PowerSupplyOcem_test_src test/ocem_test.cpp )
 ###
@@ -40,8 +40,8 @@ ADD_EXECUTABLE(test_ocem ${PowerSupplyOcem_test_src})
 ADD_EXECUTABLE(test_ocem_array test/ocem_array.cpp)
 
 
-TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options boost_thread boost_system)
-TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options boost_thread boost_system)
+TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex)
+TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex)
 
 FILE(GLOB ocem_src Ocem/*.h)    
 INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/core) 

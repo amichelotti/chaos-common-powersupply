@@ -80,6 +80,7 @@ void SimPSupply::run(){
                 start_ramp=false;
             }
         }
+	update_state();
         usleep(update_delay);
     }
     DPRINT("Closing SimSupply service\n");
@@ -156,7 +157,7 @@ int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
         DERR("change of polarity not in STANDBY!!!!\n");
         
     }
-        polarity=pol;
+    polarity=pol;
     return 0;
 }
 
