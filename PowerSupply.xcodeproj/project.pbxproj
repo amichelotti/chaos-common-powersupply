@@ -331,6 +331,7 @@
 					"-lcommon_debug",
 					"-lboost_thread",
 					"-lboost_system",
+					"-lboost_regex",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "$(PUBLIC_HEADERS_FOLDER_PATH)/core";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -357,6 +358,7 @@
 					"-lcommon_debug",
 					"-lboost_thread",
 					"-lboost_system",
+					"-lboost_regex",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "$(PUBLIC_HEADERS_FOLDER_PATH)/core";
 				PRODUCT_NAME = "$(TARGET_NAME)";

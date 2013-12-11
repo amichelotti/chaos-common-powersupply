@@ -13,6 +13,10 @@
 
 #include "SimPSupply.h"
 #include "common/debug/debug.h"
+#include <boost/regex.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <sstream>
 using namespace common::powersupply;
 
 #define MIN(x,y) ((x<y)?x:y)
@@ -32,7 +36,12 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,int _write_latency_min,int
     alarms = 0;
     currSP=0;
     start_ramp=0;
-    state_name = "SimPSupplyState_" + dev + ".txt";
+    boost::regex rp("\\/");
+    std::stringstream sm;
+    
+    std::string rep=boost::regex_replace(dev, rp,std::string("_"));
+    sm<<"SimPSupplyState_" << rep << "_"<<slave_id<<".txt";
+    state_name = sm.str();
     ramp_speed_up=5/voltage_sensibility;
     ramp_speed_down=5/current_sensibility;
     
@@ -59,14 +68,14 @@ void SimPSupply::run(){
     while(running){
         if(start_ramp&& (regulator_state == REGULATOR_ON)){
             if(currSP>current){
-                DPRINT("Ramp up adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility/update_delay);
+                DPRINT("Ramp up adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000);
 
-                current+=MIN(currSP-current,ramp_speed_up/update_delay);
+                current+=MIN(currSP-current,ramp_speed_up*((float)update_delay/1000000.0));
                 
             } else if(currSP<current){
-                DPRINT("Ramp down adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility/update_delay);
+                DPRINT("Ramp down adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility*update_delay/1000000);
 
-                current-=MIN(current-currSP,ramp_speed_down/update_delay);
+                current-=MIN(current-currSP,ramp_speed_down*((float)update_delay/1000000.0));
             } else {
                 start_ramp=false;
             }
@@ -109,7 +118,7 @@ int SimPSupply::wait_write(){
     if(write_latency_max==write_latency_min){
         usleep(write_latency_max);
     }
-    int wait = (rand()/RAND_MAX)*write_latency_max + write_latency_min;
+    int wait = (rand()*1.0/RAND_MAX)*write_latency_max + write_latency_min;
     usleep(wait);
     return wait;
 }
@@ -119,7 +128,7 @@ int SimPSupply::wait_read(){
     if(read_latency_max==read_latency_min){
         usleep(read_latency_max);
     }
-    int wait = (rand()/RAND_MAX)*read_latency_max + read_latency_min;
+    int wait = (rand()*1.0/RAND_MAX)*read_latency_max + read_latency_min;
     usleep(wait);
     return wait;
 
@@ -130,7 +139,7 @@ int SimPSupply::getSWVersion(std::string &ver,uint32_t timeo_ms){
     sprintf(stringa,"Driver:SimPSupply max current:%f max voltage:%f curr_adc:%d volt_adc:%d current sensibility:%f\n",max_current,max_voltage,current_adc,voltage_adc,current_sensibility);
     
     ver = stringa;
-    if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
     return 0;
 }
@@ -141,25 +150,30 @@ int SimPSupply::getHWVersion(std::string&version,uint32_t timeo_ms){
 
 
 int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     if(regulator_state!=REGULATOR_STANDBY){
         DERR("change of polarity not in STANDBY!!!!\n");
         
     }
-    polarity=pol;
+        polarity=pol;
     return 0;
 }
 
 int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
-  if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+  boost::mutex::scoped_lock lock;
+
+  if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     *pol = polarity;
   return 0;
 }
 
 int SimPSupply::setCurrentSP(float current,uint32_t timeo_ms){
+    boost::mutex::scoped_lock lock;
+
     if(current<min_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
     currSP = current/current_sensibility;
     
@@ -168,26 +182,44 @@ int SimPSupply::setCurrentSP(float current,uint32_t timeo_ms){
 
 
 int SimPSupply::getCurrentSP(float* current,uint32_t timeo_ms){
-    if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     *current = currSP*current_sensibility;
     return 0;
 }
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
-    if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
-    
-    *curr = current*current_sensibility;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+  
+    if(polarity==0){
+        *curr = 0;
+    } else {
+        *curr = current*current_sensibility;
+    }
     return 0;
 }
 int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
-    if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
     *volt = voltage*current_sensibility;
     return 0;
 }
 
 int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    uint32_t simdel=wait_write();
+    
+    if((simdel>(timeo_ms*1000))&&(timeo_ms>0)){
+        DERR("timeout spent %u us max was %u us\n",simdel,timeo_ms);
+        return POWER_SUPPLY_TIMEOUT;
+    }
+    
     start_ramp=1;
 
     return 0;
@@ -196,6 +228,7 @@ int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
 
 
 int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
+    boost::mutex::scoped_lock lock;
     
     if(asup<min_current || asup > max_current){
       DERR("bad input parameters asup %f\n",asup);
@@ -205,7 +238,7 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
       DERR("bad input parameters asdown %f\n",asdown);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
     ramp_speed_up = asup/current_sensibility;
     ramp_speed_down = asdown/current_sensibility;
@@ -216,13 +249,17 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
 
 
 int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     alarms = 0;
     return 0;
 }
 
 int SimPSupply::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
     *alrm = alarms;
     return 0;
@@ -233,18 +270,22 @@ int SimPSupply::shutdown(uint32_t timeo_ms){
    
     // because we lose control once done this command
     DPRINT("SHUTDOWN command, we are going to lose control!!\n");
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state = REGULATOR_SHOULD_BE_OFF;
     return 0;
 }
 int SimPSupply::poweron(uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state= REGULATOR_ON;
     return 0;
 }
 
 int SimPSupply::standby(uint32_t timeo_ms){
-    if(wait_write()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+    boost::mutex::scoped_lock lock;
+
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state= REGULATOR_STANDBY;
 
     return 0;
@@ -252,7 +293,9 @@ int SimPSupply::standby(uint32_t timeo_ms){
 
 
 int  SimPSupply::getState(int* state,std::string &desc,uint32_t timeo_ms){
-    if(wait_read()>(timeo_ms*1000)) return POWER_SUPPLY_TIMEOUT;
+     boost::mutex::scoped_lock lock;
+
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     *state = 0;
     if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
         *state |=POWER_SUPPLY_STATE_OFF;
