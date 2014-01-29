@@ -102,12 +102,10 @@ int SimPSupply::init(){
     running = true;
     start_ramp=0;
     m_thread = boost::thread(&SimPSupply::run,this);
-    m_thread.detach();
     return 0;
 }
 
 int SimPSupply::deinit(){
-    
     running = false;
     m_thread.join();
     update_state();
