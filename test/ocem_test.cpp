@@ -74,8 +74,10 @@ int main(int argc, char *argv[])
   desc.add_options()("help", "help");
   // put your additional options here
   desc.add_options()("dev", boost::program_options::value<std::string>(), "serial device where the ocem is attached");
-  desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID");
+  desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID, ");
   desc.add_options()("interactive", "interactive test");
+  desc.add_options()("span,s", "span devices find devices on the bus");
+  
   //////
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc,argv, desc),vm);
@@ -93,13 +95,37 @@ int main(int argc, char *argv[])
   std::string param = vm["dev"].as<std::string>();
 
 
+  if(vm.count("span")){
+    std::cout<<"finding device on the bus"<<std::endl;
+    int id=0;
+    int found=0;
+    if(vm.count("id")!=0){
+      id = vm["id"].as<int>();
+    }
+    for(;id<32;id++){
+      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),id);
+      if(ps==NULL){
+	std::cout<<"## cannot initiasize resources"<<std::endl;
+	return -2;
+	
+      }
+      std::cout<<"Trying address:"<<id<<std::endl;
+      if(ps->init()==0){
+	std::cout<<"found:"<<id<<std::endl;
+	found ++;
+      }
+      delete ps;
+    }
+    return found;
+  }
+
   if(vm.count("id")==0){
     std::cout<<"## you must specify an existing slave id [0:31]"<<desc<<std::endl;
     return -1;
   }
   int slave_id = vm["id"].as<int>();
 
-
+  
   printf("Connecting to slave %d, via \"%s\"... \n",slave_id,param.c_str());
 
   common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),slave_id);
