@@ -15,19 +15,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "common/debug/debug.h"
+#include <boost/regex.hpp>
+#include <string>
 #define DEFAULT_TIMEOUT 10000
-static int check_for_char(){
-  fd_set fds;
-  FD_ZERO(&fds);
-  FD_SET(0,&fds);
-  struct timeval tm;
-  tm.tv_sec = 0;
-  tm.tv_usec = 0;
+using boost::regex;
 
-  select(1,&fds,0,0,&tm);
-  return FD_ISSET(0,&fds);
-  
-}
 static char* convToUpper(char*str){
   char *b = str;
   char *tmp=str;
@@ -40,6 +32,75 @@ static char* convToUpper(char*str){
   return b;
 }
 
+
+static void printRawCommandHelp(){
+    std::cout<<"\tSELECT <OCEMID> <CMD>      : perform a select"<<std::endl;
+    std::cout<<"\tPOLL <OCEMID> : perform a poll and dump result"<<std::endl;
+    std::cout<<"\tHELP               : this help"<<std::endl;
+    std::cout<<"\tQUIT               : quit program"<<std::endl;
+  
+}
+void raw_test(common::serial::OcemProtocol*oc){
+  char stringa[1024];
+  boost::regex cmd_match("(\\w+) (\\d+) (.*)");
+  if(oc->init()!=0 ){
+    printf("## cannot initialize protocol\n");
+    return;
+  }
+  printRawCommandHelp();
+  while(gets(stringa)){
+      uint64_t tm;
+      char *t=stringa;
+      boost::smatch match;
+      convToUpper(t);
+
+      tm = common::debug::getUsTime();
+      if(boost::regex_match(std::string(t),match,cmd_match,boost::match_extra)){
+	int ret;
+	std::string ids=match[2];
+	int id = atoi(ids.c_str());
+	if(match[1] == "SELECT"){
+	  int timeout=0;
+	  std::string cmd=match[3];
+	  ret=oc->select(id,(char*)cmd.c_str(),5000,&timeout);
+	  if(ret<0){
+	    printf("## error sending ret:%d, timeout :%d\n",ret,timeout);
+	  }
+	}
+
+	if(match[1] == "POLL"){
+	  int timeout=0;
+	  char buf[1024];
+	  ret=oc->poll(id,buf,sizeof(buf),5000,&timeout);
+	  if(ret<0){
+	    printf("## error polling ret:%d, timeout %d\n",ret,timeout);
+	  } else {
+	    char outbuf[1024];
+	    oc->decodeBuf(buf,outbuf,sizeof(outbuf));
+	  }
+	}
+      } else if(!strcmp(t,"QUIT")){
+	return;
+      } else if(!strcmp(t,"HELP")){
+	printRawCommandHelp();
+	return;
+      }
+  }
+}
+
+
+static int check_for_char(){
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(0,&fds);
+  struct timeval tm;
+  tm.tv_sec = 0;
+  tm.tv_usec = 0;
+
+  select(1,&fds,0,0,&tm);
+  return FD_ISSET(0,&fds);
+  
+}
 static void printCommandHelp(){
     std::cout<<" Available commands  :"<<std::endl;
     std::cout<<"\tPOL <1/0/-1>       : set polarity"<<std::endl;
@@ -77,6 +138,7 @@ int main(int argc, char *argv[])
   desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID, ");
   desc.add_options()("interactive", "interactive test");
   desc.add_options()("span,s", "span devices find devices on the bus");
+  desc.add_options()("raw,r", "raw access to ocem bus");
   
   //////
   boost::program_options::variables_map vm;
@@ -118,12 +180,21 @@ int main(int argc, char *argv[])
     }
     return found;
   }
+  if(vm.count("raw")){
+    common::serial::OcemProtocol* oc= new common::serial::OcemProtocol(param.c_str());
+    if(oc) 
+      raw_test(oc);
+
+    delete oc;
+    return 0;
+  }
 
   if(vm.count("id")==0){
     std::cout<<"## you must specify an existing slave id [0:31]"<<desc<<std::endl;
     return -1;
   }
   int slave_id = vm["id"].as<int>();
+
 
   
   printf("Connecting to slave %d, via \"%s\"... \n",slave_id,param.c_str());

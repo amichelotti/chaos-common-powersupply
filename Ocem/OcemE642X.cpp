@@ -704,7 +704,7 @@ int OcemE642X::setThreashold(int channel,int val,uint32_t timeout){
     return 0;
 }
 int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
-    char cmd[256];
+    
     int val;
     if(channel>=4){
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
