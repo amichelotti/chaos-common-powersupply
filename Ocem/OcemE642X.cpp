@@ -743,7 +743,20 @@ int OcemE642X::getMaxMinVoltage(float*max,float*min){
     return 0;
 }
 
+int OcemE642X::forceMaxCurrent(float max){
+    max_current = max;
+    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    return 0;
+}
+
+int OcemE642X::forceMaxVoltage(float max){
+    max_voltage = max;
+    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    return 0;
+}
+
+
 int OcemE642X::getAlarmDesc(uint64_t*desc){
     *desc = POWER_SUPPLY_EVENT_DOOR_OPEN;
     return 0;
-}			
+}

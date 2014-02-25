@@ -268,6 +268,19 @@ namespace common {
              */
             virtual int getAlarmDesc(uint64_t* alarm)=0;
             
+            /**
+             @brief force max current, it is used to calculated max current of the powersupply
+             @param max the max current that the power supply can output
+             @return 0 if success or an error code
+             */
+            virtual int forceMaxCurrent(float max)=0;
+            
+            /**
+             @brief force max voltage, it is used to calculated max current of the powersupply
+             @param max the max voltage that the power supply can output
+             @return 0 if success or an error code
+             */
+            virtual int forceMaxVoltage(float max)=0;
             
         };
         

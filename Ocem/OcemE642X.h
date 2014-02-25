@@ -314,6 +314,21 @@ namespace common{
             int setThreashold(int channel,int value,uint32_t timeo_ms);
             
             
+            /**
+             @brief force max current, it is used to calculated max current of the powersupply
+             @param max the max current that the power supply can output
+             @return 0 if success or an error code
+             */
+            int forceMaxCurrent(float max);
+            
+            /**
+             @brief force max voltage, it is used to calculated max current of the powersupply
+             @param max the max voltage that the power supply can output
+             @return 0 if success or an error code
+             */
+            int forceMaxVoltage(float max);
+
+            
             
         };
     };

@@ -351,4 +351,17 @@ int SimPSupply::getMaxMinVoltage(float*max,float*min){
 int SimPSupply::getAlarmDesc(uint64_t*desc){
     *desc = POWER_SUPPLY_EVENT_DOOR_OPEN;
     return 0;
-}			
+}
+
+int SimPSupply::forceMaxCurrent(float max){
+    max_current = max;
+    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    return 0;
+}
+
+int SimPSupply::forceMaxVoltage(float max){
+    max_voltage = max;
+    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    return 0;
+}
+
