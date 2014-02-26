@@ -132,10 +132,17 @@ int main(int argc, char *argv[])
 
   boost::program_options::options_description desc("options");
     std::string ver;
+    float maxcurrent=100;
+    float maxvoltage=10;
+    
   desc.add_options()("help", "help");
   // put your additional options here
   desc.add_options()("dev", boost::program_options::value<std::string>(), "serial device where the ocem is attached");
   desc.add_options()("id", boost::program_options::value<int>(), "slave destination ID, ");
+  desc.add_options()("maxcurr", boost::program_options::value<float>(), "max current ");
+  desc.add_options()("maxvolt", boost::program_options::value<float>(), "max voltage ");
+
+
   desc.add_options()("interactive", "interactive test");
   desc.add_options()("span,s", "span devices find devices on the bus");
   desc.add_options()("raw,r", "raw access to ocem bus");
@@ -154,8 +161,20 @@ int main(int argc, char *argv[])
     std::cout<<"## you must specify a valid serial device:"<<desc<<std::endl;
     return -1;
   }
-  std::string param = vm["dev"].as<std::string>();
 
+    std::string param = vm["dev"].as<std::string>();
+
+    if(vm.count("maxcurr")){
+        maxcurrent=vm["maxcurr"].as<float>();
+        std::cout << "max current set to:"<<maxcurrent<<std::endl;
+    }
+    
+
+    if(vm.count("maxvolt")){
+        maxvoltage=vm["maxvolt"].as<float>();
+        std::cout << "max voltage set to:"<<maxvoltage<<std::endl;
+
+    }
 
   if(vm.count("span")){
     std::cout<<"finding device on the bus"<<std::endl;
@@ -165,7 +184,7 @@ int main(int argc, char *argv[])
       id = vm["id"].as<int>();
     }
     for(;id<32;id++){
-      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),id);
+      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),id,maxcurrent,maxvoltage);
       if(ps==NULL){
 	std::cout<<"## cannot initiasize resources"<<std::endl;
 	return -2;
@@ -199,7 +218,7 @@ int main(int argc, char *argv[])
   
   printf("Connecting to slave %d, via \"%s\"... \n",slave_id,param.c_str());
 
-  common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),slave_id);
+  common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),slave_id,maxcurrent,maxvoltage);
 
   if(ps){
     if(ps->init()!=0){
