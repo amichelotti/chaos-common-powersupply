@@ -205,6 +205,7 @@ namespace common{
 	    void updateParamsByModel(OcemModels model);
         public:
 
+	    OcemE642X(const char *dev,int slave_id,float maxcurr,float maxvoltage);
             OcemE642X(const char *dev,int slave_id,int baudrate=9600,int parity=0,int bits=8,int stop=1);
             ~OcemE642X();
             

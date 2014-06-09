@@ -82,7 +82,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
   pthread_mutex_unlock(&unique_ocem_core_mutex);
 }
 OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
-  DPRINT("getting protocol for \"%s\"\n",mydev.c_str());
+  DPRINT("getting protocol for \"%s\" baudrate %d , parity %d bits %d stop %d\n",mydev.c_str(),baudrate,parity,bits,stop);
     pthread_mutex_lock(&unique_ocem_core_mutex);
     std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
     if(i!=unique_protocol.end() && i->second!=NULL){
@@ -130,6 +130,7 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
 }
 
 
+
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
 {
     int cnt;
@@ -161,6 +162,35 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
 
 }
 
+OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
+    int cnt;
+    ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
+    model = OCEM_NOMODEL;
+    INITIALIZE_TIMED(regulator_state,REGULATOR_UKN);
+    INITIALIZE_TIMED(selector_state,SELECTOR_UKN);
+    INITIALIZE_TIMED(polarity, POL_UKN);
+    INITIALIZE_TIMED(current, 0U);
+    INITIALIZE_TIMED(voltage, 0U);
+    INITIALIZE_TIMED(sp_current, 0U);
+    INITIALIZE_TIMED(alarms, 0ULL);
+    INITIALIZE_TIMED(version, ocem_version());
+    // default values to be determined by type
+    max_current=maxcurr;
+    min_current=0;
+    max_voltage=maxvoltage;
+    min_voltage=0;
+    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    available_alarms =0;
+    for(cnt=0;cnt<OCEM_INPUT_CHANNELS;cnt++){
+        INITIALIZE_TIMED(ichannel[cnt],ocem_channel(0,0));
+    }
+    for(cnt=0;cnt<OCEM_OUTPUT_CHANNELS;cnt++){
+        INITIALIZE_TIMED(ochannel[cnt],ocem_channel(0,0));
+    }
+
+
+}
 OcemE642X::~OcemE642X(){
     deinit();
 }
