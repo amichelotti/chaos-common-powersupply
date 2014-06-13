@@ -66,7 +66,7 @@ CMD_WRITE(cmdw,_timeo)
 int _ret;								\
 DPRINT("apply command \"%s\" timeout %d\n",cmdw,_timeo);		\
 if((_ret=update_status((common::debug::basic_timed*)&value,(char*)cmdw,_timeo))<=0){ \
-DERR("data is not in sync, ret %d\n",_ret);				\
+  DERR("cmd \"%s\" data is not in sync, ret %d\n",cmdw,_ret);		\
 return _ret;							\
 }									\
 }
@@ -87,11 +87,11 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int 
     std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
     if(i!=unique_protocol.end() && i->second!=NULL){
         pthread_mutex_unlock(&unique_ocem_core_mutex);
-        DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),i->second.get());
+        DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),(unsigned int)i->second.get());
         return i->second;
     }
     unique_protocol[mydev] =OcemProtocol_psh(new common::serial::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
-    DPRINT("creating NEW serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),unique_protocol[mydev].get());
+    DPRINT("creating NEW serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),(unsigned int)unique_protocol[mydev].get());
     
     pthread_mutex_unlock(&unique_ocem_core_mutex);
     
@@ -121,21 +121,18 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
         return 1;
     } else {
         if(tim>0){
-            DERR("Timeout retriving data \n");
+	  DERR("Timeout retriving data \"%s\"\n",data->get_name());
             return POWER_SUPPLY_TIMEOUT;
-        }
+        } 
     }
     DERR("Data is not updated yet\n");
     return POWER_SUPPLY_READOUT_OUTDATED;
 }
 
 
-
-OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
-{
-    int cnt;
-    ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
-    model = OCEM_NOMODEL;
+void OcemE642X::init_internal(){
+  int cnt;
+  model = OCEM_NOMODEL;
     INITIALIZE_TIMED(regulator_state,REGULATOR_UKN);
     INITIALIZE_TIMED(selector_state,SELECTOR_UKN);
     INITIALIZE_TIMED(polarity, POL_UKN);
@@ -157,53 +154,40 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
     }
     for(cnt=0;cnt<OCEM_OUTPUT_CHANNELS;cnt++){
         INITIALIZE_TIMED(ochannel[cnt],ocem_channel(0,0));
+	
     }
+}
+OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
+{
 
+    ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
+    init_internal();
 
 }
 
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
-    int cnt;
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
-    model = OCEM_NOMODEL;
-    INITIALIZE_TIMED(regulator_state,REGULATOR_UKN);
-    INITIALIZE_TIMED(selector_state,SELECTOR_UKN);
-    INITIALIZE_TIMED(polarity, POL_UKN);
-    INITIALIZE_TIMED(current, 0U);
-    INITIALIZE_TIMED(voltage, 0U);
-    INITIALIZE_TIMED(sp_current, 0U);
-    INITIALIZE_TIMED(alarms, 0ULL);
-    INITIALIZE_TIMED(version, ocem_version());
-    // default values to be determined by type
+    init_internal();
     max_current=maxcurr;
-    min_current=0;
     max_voltage=maxvoltage;
-    min_voltage=0;
-    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
-    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
-    available_alarms =0;
-    for(cnt=0;cnt<OCEM_INPUT_CHANNELS;cnt++){
-        INITIALIZE_TIMED(ichannel[cnt],ocem_channel(0,0));
-    }
-    for(cnt=0;cnt<OCEM_OUTPUT_CHANNELS;cnt++){
-        INITIALIZE_TIMED(ochannel[cnt],ocem_channel(0,0));
-    }
-
-
 }
+
 OcemE642X::~OcemE642X(){
     deinit();
 }
 
 int OcemE642X::updateInternalData(char * stringa){
-    unsigned channelnum, channelmin,channelmax,datau;
-    char chtype,unit0,unit1;
+    unsigned channelnum=0, channelmin=0,channelmax=0,datau=0;
+    char chtype=0,unit0=0,unit1=0;
     int parsed=0;
-    char* pnt=strtok(stringa,"\n\r"),*pnta;
+    char*pnta=0;
+    char* pnt=0;
     char datac[5];
-    char rilascio;
+    char rilascio=0;
     int anno=0,mese=0,giorno=0;
     char tipo[256];
+    *tipo=0;
+    pnt =strtok(stringa,"\n\r");
     while(pnt){
         if(sscanf(pnt,"PRG %c%u %u %u %c%c",&chtype,&channelnum,&channelmin,&channelmax,&unit0,&unit1)==6){
             if((chtype == 'I')&&(channelnum<OCEM_INPUT_CHANNELS)){
@@ -284,7 +268,7 @@ int OcemE642X::updateInternalData(char * stringa){
             version= ocem_version(rilascio,giorno,mese,anno,tipo);
             parsed++;
         } else if((pnta=strstr(pnt,"ALL"))){
-            char *ptr_tmp;
+            char *ptr_tmp=0;
             char *pntt=strtok_r(pnta," \n",&ptr_tmp);
             alarms = 0ULL;
             while (pntt){
@@ -371,19 +355,20 @@ int OcemE642X::init(){
         }
     }
     if(ret==0){
-      int retry=3;
+      int retry=10;
         // poll trial
-        update_status(1000,10);
+      //        update_status(60000,10);
         
 	do {
 	  // update status
-	  if((ret=force_update(10000))<0){
+	  if((ret=force_update(60000))<0){
             DERR("Nothing has been refreshed  %d\n",ret);
             
-        } else {
+	  } else {
             DPRINT("Ocem status has been refreshed %d\n",ret);
             ret = 0;
 	  }
+	  sleep(1);
 	} while((ret<0) && retry-->0);
     }
     if(ret == 0){
@@ -393,16 +378,19 @@ int OcemE642X::init(){
       } else if(strstr(version.get().type,"/1-5A-5B")){
 	DPRINT("type 2-5A-5B detected max current 700A\n");
 	updateParamsByModel(OCEM_MODEL5A5B);
+      } else {
+	DPRINT("uknown type:\"%s\"\n",version.get().type);
       }
       
     }
     setThreashold(0,(1<<current_adc)-1,10000);
     setThreashold(1,(1<<voltage_adc)-1,10000);
+    DPRINT("Initialisation returned %d\n",ret);
     return ret;
 }
 int OcemE642X::force_update(uint32_t timeout){
     DPRINT("forcing update timeout %d\n",timeout);
-    GET_VALUE(ochannel[OCEM_OUTPUT_CHANNELS-1],timeout,"RMT");
+    GET_VALUE(version,timeout,"RMT");
     
     return 0;
 }
@@ -426,11 +414,11 @@ int OcemE642X::send_command(char*cmd,uint32_t timeout,int*tim){
     snprintf(command,sizeof(command),"%s" OCEM_TERMINATOR,cmd);
     ret =ocem_prot->select(slave_id, command,timeout,tim);
     if(ret>0){
-        DPRINT("command sent %d bytes (timeout %d, occured %d) sucessfully \n",ret,timeout,*tim);
+      DPRINT("command sent %d bytes to slave %d (timeout %d, occured %d) sucessfully \n",ret,slave_id,timeout,*tim);
     } else if(ret == 0){
         DPRINT("nothing has been sent, (timeout %d, occured %d)\n",timeout,*tim);
     } else {
-        DERR("error %d occurred (timeout %d, occured %d)\n",ret,timeout,*tim);
+      DERR("error %d occurred slave id %d (timeout %d, occured %d)\n",ret,slave_id,timeout,*tim);
         
     }
     
@@ -463,14 +451,14 @@ int OcemE642X::receive_data(char*buf, int size,uint32_t timeout,int *timeo){
     DPRINT("wait for messages from slave %d, timeout %d\n",slave_id,timeout);
     ret=ocem_prot->poll(slave_id, buf, size,timeout,timeo);
     if(ret>0){
-        DPRINT("received %d bytes (timeout %d) \"%s\"\n",ret,timeout,buf);
+      DPRINT("received %d bytes from %d (timeout %d) \"%s\"\n",ret,slave_id,timeout,buf);
         data_read=updateInternalData(buf);
     } else if(ret == 0){
-        DPRINT("nothing received, timeout %d (timeout arised %d)\n",timeout,*timeo);
+      DPRINT("nothing received from slave id %d, timeout %d (timeout arised %d)\n",slave_id,timeout,*timeo);
         return 0;
     } else {
-        DERR("error %d occurred (timeout %d) (timeout arised %d)\n",ret,timeout,*timeo);
-        return ret;
+      DERR("error %d occurred, slave id %d (timeout %d) (timeout arised %d)\n",ret,slave_id,timeout,*timeo);
+      return ret;
     }
     
     return data_read;
@@ -514,9 +502,16 @@ int OcemE642X::setPolarity(int pol,uint32_t timeo_ms){
 }
 
 int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
+
+  #if 0
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
   GET_VALUE(polarity,timeo_ms,"POL");
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
+#else
+  CMD_WRITE("POL",timeo_ms);
+  update_status(1000,10);
+  *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
+#endif
   return 0;
 }
 
@@ -542,9 +537,15 @@ int OcemE642X::getCurrentSP(float* current,uint32_t timeo_ms){
 }
 
 int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
+#if 0
     *curr = current*current_sensibility;
     GET_VALUE(current,timeo_ms,"COR");
     *curr = current*current_sensibility;
+#else
+    CMD_WRITE("COR",timeo_ms);
+    update_status(1000,10);
+    *curr = current*current_sensibility;
+#endif
     return 0;
 }
 int  OcemE642X::getVoltageOutput(float* volt,uint32_t timeo_ms){
@@ -628,8 +629,10 @@ int OcemE642X::standby(uint32_t timeo_ms){
 
 
 int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
-    GET_VALUE(regulator_state,timeo_ms,"SL");
-    *state = 0;
+  *state = 0;
+  
+  GET_VALUE(regulator_state,timeo_ms,"SL");
+
     if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
         *state |=POWER_SUPPLY_STATE_OFF;
         desc += "off ";

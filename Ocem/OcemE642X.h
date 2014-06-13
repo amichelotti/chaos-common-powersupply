@@ -80,11 +80,14 @@ namespace common{
         
         
         class OcemE642X: public AbstractPowerSupply {
-            
+	  
             static std::map<std::string,OcemProtocol_psh > unique_protocol;
-            
+          
             static pthread_mutex_t unique_ocem_core_mutex;
             
+
+	private:
+	    void init_internal();
         protected:
             OcemProtocol_psh ocem_prot;
             
