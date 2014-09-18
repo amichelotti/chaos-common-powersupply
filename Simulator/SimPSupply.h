@@ -114,7 +114,7 @@ namespace common{
             float max_voltage;
             float min_voltage;
             
-            int ramp_speed_up,ramp_speed_down;
+            float ramp_speed_up,ramp_speed_down;
             int voltage_adc;
             int current_adc;
             int current_ramp_adc;

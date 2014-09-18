@@ -566,11 +566,11 @@ int OcemE642X::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
     int rsup,rsdown;
     char stringa[256];
     
-    if(asup<min_current || asup > max_current){
+    if(asup<min_current || asup > max_current || asup ==0){
       DERR("bad input parameters asup %f\n",asup);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    if(asdown<min_current || asdown > max_current){
+    if(asdown<min_current || asdown > max_current || asdown==0){
       DERR("bad input parameters asdown %f\n",asdown);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }

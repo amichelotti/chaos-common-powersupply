@@ -42,8 +42,8 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,int _write_latency_min,int
     std::string rep=boost::regex_replace(dev, rp,std::string("_"));
     sm<<"SimPSupplyState_" << rep << "_"<<slave_id<<".txt";
     state_name = sm.str();
-    ramp_speed_up=5/voltage_sensibility;
-    ramp_speed_down=5/current_sensibility;
+    ramp_speed_up=5.0/voltage_sensibility;
+    ramp_speed_down=5.0/current_sensibility;
     
 
 }
@@ -68,12 +68,12 @@ void SimPSupply::run(){
     while(running){
         if(start_ramp&& (regulator_state == REGULATOR_ON)){
             if(currSP>current){
-                DPRINT("Ramp up adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000);
+	      DPRINT("Ramp up adccurr %d (%f) set point %f increments %f, ramp speed up %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000,ramp_speed_up);
 
                 current+=MIN(currSP-current,ramp_speed_up*((float)update_delay/1000000.0));
                 
             } else if(currSP<current){
-                DPRINT("Ramp down adccurr %d (%f) set point %f increments %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility*update_delay/1000000);
+	      DPRINT("Ramp down adccurr %d (%f) set point %f increments %f,ramp speed down %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility*update_delay/1000000,ramp_speed_down);
 
                 current-=MIN(current-currSP,ramp_speed_down*((float)update_delay/1000000.0));
             } else {
@@ -238,10 +238,19 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if(asup==0){
+      DERR("invalid setting ramp speed %f, not changing",asup);
+    } else {
+      ramp_speed_up = asup/current_sensibility;
+    }
+    if(asdown<=0){
+      DERR("invalid setting ramp speed down %f, not changing",asdown);
+    } else {
+      ramp_speed_down = asdown/current_sensibility;
+    }
     
-    ramp_speed_up = asup/current_sensibility;
-    ramp_speed_down = asdown/current_sensibility;
     
+    DPRINT("setting ramp speed up %f(%f), ramp speed down %f(%f)",asup,ramp_speed_up,asdown,ramp_speed_down);    
     return 0;
 }
 
@@ -252,6 +261,7 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     alarms = 0;
+    DPRINT("reset alarms x%llx",alrm);
     return 0;
 }
 
@@ -278,6 +288,7 @@ int SimPSupply::poweron(uint32_t timeo_ms){
 
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state= REGULATOR_ON;
+    DPRINT("set poweron");
     return 0;
 }
 
@@ -286,7 +297,7 @@ int SimPSupply::standby(uint32_t timeo_ms){
 
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state= REGULATOR_STANDBY;
-
+    DPRINT("set standby");
     return 0;
 }
 
