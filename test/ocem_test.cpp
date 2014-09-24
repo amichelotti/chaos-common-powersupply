@@ -42,7 +42,7 @@ static void printRawCommandHelp(){
 }
 void raw_test(common::serial::OcemProtocol*oc){
   char stringa[1024];
-  boost::regex cmd_match("(\\w+) (\\d+) (.*)");
+  boost::regex cmd_match("^(\\w+) (\\d+)(\\s+(.+)|)");
   if(oc->init()!=0 ){
     printf("## cannot initialize protocol\n");
     return;
@@ -55,20 +55,19 @@ void raw_test(common::serial::OcemProtocol*oc){
       convToUpper(t);
 
       tm = common::debug::getUsTime();
-      if(boost::regex_match(std::string(t),match,cmd_match,boost::match_extra)){
+      if(boost::regex_match(std::string(t),match,cmd_match,boost::match_perl)){
 	int ret;
+          std::string op=match[1];
 	std::string ids=match[2];
 	int id = atoi(ids.c_str());
-	if(match[1] == "SELECT"){
+	if(op == "SELECT"){
 	  int timeout=0;
-	  std::string cmd=match[3];
+	  std::string cmd=match[4];
 	  ret=oc->select(id,(char*)cmd.c_str(),5000,&timeout);
 	  if(ret<0){
 	    printf("## error sending ret:%d, timeout :%d\n",ret,timeout);
 	  }
-	}
-
-	if(match[1] == "POLL"){
+	} else if(op == "POLL"){
 	  int timeout=0;
 	  char buf[1024];
 	  ret=oc->poll(id,buf,sizeof(buf),5000,&timeout);

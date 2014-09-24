@@ -19,7 +19,7 @@ using namespace common::powersupply;
 pthread_mutex_t OcemE642X::unique_ocem_core_mutex=PTHREAD_MUTEX_INITIALIZER;
 std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
 
-
+#define INIT_RETRY 10
 
 #define CONV2ADC(what,x) (x/OCEM_MAX_ ## what)*(1<<OCEM_ ## what ## _ADC)
 #define ADC2CURRENT(what,x) (x/(1<<OCEM_ ## what ## _ADC))*OCEM_MAX_ ## what
@@ -355,10 +355,18 @@ int OcemE642X::init(){
         }
     }
     if(ret==0){
-      int retry=10;
+      int retry=INIT_RETRY;
         // poll trial
       //        update_status(60000,10);
+
+    do {
+        int tim;
+        char trialbuf[1024];
+        send_command("RMT",10000,&tim);
+        ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
+    } while((ret<=0) && retry-->0);
         
+    retry = INIT_RETRY;
 	do {
 	  // update status
 	  if((ret=force_update(60000))<0){
