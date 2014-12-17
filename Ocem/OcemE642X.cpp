@@ -87,11 +87,11 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int 
     std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
     if(i!=unique_protocol.end() && i->second!=NULL){
         pthread_mutex_unlock(&unique_ocem_core_mutex);
-        DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),(unsigned int)i->second.get());
+        DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%Lx\n",mydev.c_str(),(unsigned long long)i->second.get());
         return i->second;
     }
     unique_protocol[mydev] =OcemProtocol_psh(new common::serial::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
-    DPRINT("creating NEW serial ocem protocol on \"%s\" @x%x\n",mydev.c_str(),(unsigned int)unique_protocol[mydev].get());
+    DPRINT("creating NEW serial ocem protocol on \"%s\" @x%Lx\n",mydev.c_str(),(unsigned long long)unique_protocol[mydev].get());
     
     pthread_mutex_unlock(&unique_ocem_core_mutex);
     
@@ -276,7 +276,7 @@ int OcemE642X::updateInternalData(char * stringa){
                     int al=atoi(pntt);
                     if((al>=0) && (al <OCEM_ALARM_NUMBER)){
                         alarms = (1LL<<al) | (uint64_t) alarms;
-                        DPRINT("setting alarm \"%d\", alarm mask 0x%llx\n",al, (uint64_t)alarms);
+                        DPRINT("setting alarm \"%d\", alarm mask 0x%llx\n",al, (unsigned long long)alarms);
                     }
                 }
                 pntt=strtok_r(NULL," \n",&ptr_tmp);

@@ -58,7 +58,7 @@ void SimPSupply::update_state(){
     f= fopen(state_name.c_str(),"w");
     if(f){
         // get last state from file
-        fprintf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu\n",voltage,current,currSP,polarity,regulator_state,alarms);
+      fprintf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu\n",voltage,current,currSP,polarity,regulator_state,(unsigned long long )alarms);
         fclose(f);
     }
 
