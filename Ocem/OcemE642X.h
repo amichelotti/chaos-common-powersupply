@@ -75,7 +75,7 @@
 namespace common{
     namespace powersupply {
         
-        typedef boost::shared_ptr<common::serial::OcemProtocol> OcemProtocol_psh;
+      typedef boost::shared_ptr< ::common::serial::OcemProtocol > OcemProtocol_psh;
         
         
         
@@ -162,17 +162,17 @@ namespace common{
 	      OCEM_MODEL5A5B
 	    };
 
-            common::debug::timed_value<ocem_channel> ichannel[OCEM_INPUT_CHANNELS];
-            common::debug::timed_value<ocem_channel> ochannel[OCEM_OUTPUT_CHANNELS];
-            common::debug::timed_value<unsigned> current;
-            common::debug::timed_value<unsigned> voltage;
-            common::debug::timed_value<Polarity> polarity;
-            common::debug::timed_value<uint64_t> alarms;
-            common::debug::timed_value<RegulatorState> regulator_state;
-            common::debug::timed_value<SelectorState> selector_state;
-            common::debug::timed_value<ocem_version> version;
+            ::common::debug::timed_value<ocem_channel> ichannel[OCEM_INPUT_CHANNELS];
+            ::common::debug::timed_value<ocem_channel> ochannel[OCEM_OUTPUT_CHANNELS];
+            ::common::debug::timed_value<unsigned> current;
+            ::common::debug::timed_value<unsigned> voltage;
+            ::common::debug::timed_value<Polarity> polarity;
+            ::common::debug::timed_value<uint64_t> alarms;
+            ::common::debug::timed_value<RegulatorState> regulator_state;
+            ::common::debug::timed_value<SelectorState> selector_state;
+            ::common::debug::timed_value<ocem_version> version;
             
-            common::debug::timed_value<unsigned> sp_current;
+            ::common::debug::timed_value<unsigned> sp_current;
             
             // performs polls for a given time
             // returns numbero of items updated
@@ -188,7 +188,7 @@ namespace common{
              update the status of the template
              @return the number of data updated, 0 or negative if nothing has been updated
              */
-            int update_status(common::debug::basic_timed*data ,char *cmd,uint32_t timeout);
+            int update_status(::common::debug::basic_timed*data ,char *cmd,uint32_t timeout);
             
             static OcemProtocol_psh getOcemProtocol(std::string &dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
             static void removeOcemProtocol(std::string &dev);
