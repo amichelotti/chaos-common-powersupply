@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 include($ENV{CHAOS_BUNDLE}/tools/project_template/CMakeChaos.txt)
 
-#   -DOCEM_CORE_DEBUG  -DOCEM_CORE_DEBUG -DOCEM_CORE_DEBUG -DOCEM_CORE_DEBUG
+#     -DOCEM_CORE_DEBUG
 ADD_DEFINITIONS(-DSIMPSUPPLY_DEBUG -DPOWER_SUPPLY_DEFAULT_TIMEOUT=4000)
 
 set(power_src Ocem/OcemE642X.cpp Simulator/SimPSupply.cpp)
