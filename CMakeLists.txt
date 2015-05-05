@@ -20,8 +20,8 @@ ADD_EXECUTABLE(test_ocem ${PowerSupplyOcem_test_src})
 ADD_EXECUTABLE(test_ocem_array test/ocem_array.cpp)
 
 
-TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex pthread)
-TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex pthread)
+TARGET_LINK_LIBRARIES(test_ocem common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex boost_atomic pthread)
+TARGET_LINK_LIBRARIES(test_ocem_array common_powersupply common_serial common_debug boost_program_options boost_thread boost_system boost_regex boost_atomic pthread)
 
 FILE(GLOB ocem_src Ocem/*.h)    
 INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/core) 
