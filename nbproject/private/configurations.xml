@@ -5,7 +5,7 @@
       <df name="build">
       </df>
       <df name="CMakeFiles">
-        <df name="2.8.12.2">
+        <df name="3.2.2">
           <df name="CompilerIdC">
             <in>CMakeCCompilerId.c</in>
           </df>
@@ -29,6 +29,8 @@
           <df name="test">
           </df>
         </df>
+        <in>feature_tests.c</in>
+        <in>feature_tests.cxx</in>
       </df>
       <df name="core">
         <in>AbstractPowerSupply.h</in>

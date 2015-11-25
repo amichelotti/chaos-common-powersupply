@@ -28,6 +28,10 @@
 #include "common/powersupply/Ocem/OcemE642X.h"
 #include "common/powersupply/Simulator/SimPSupply.h"
 
+#define PSLAPP		LAPP_ << "[PowerSupply] "
+#define PSDBG		LDBG_ << "[PowerSupply "<<__PRETTY_FUNCTION__<<" ]"
+#define PSERR		LERR_ << "[PowerSupply "<<__PRETTY_FUNCTION__<<" ]"
+
 namespace common {
   namespace powersupply {
 };
