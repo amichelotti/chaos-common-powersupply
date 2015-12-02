@@ -18,7 +18,7 @@
 /*
 
 */
-#define ALEDEBUG
+//#define ALEDEBUG
 namespace common
 {
     class CompareStdStr
