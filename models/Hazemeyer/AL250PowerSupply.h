@@ -8,7 +8,7 @@
 #ifndef AL250POWERSUPPLY_H
 #define	AL250POWERSUPPLY_H
 
-#include "common/powersupply/core/AbstractPowerSupply.h"
+#include <common/powersupply/core/AbstractPowerSupply.h>
 #include <common/modbus/models/HAZEMEYER/HazemeyerLib.h>
 #include <map>
 #include <vector>

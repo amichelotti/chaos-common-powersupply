@@ -24,9 +24,9 @@
 // include your class/functions headers here
 #include <stdint.h>
 #include <string>
-#include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/powersupply/Ocem/OcemE642X.h"
-#include "common/powersupply/Simulator/SimPSupply.h"
+#include <common/powersupply/core/AbstractPowerSupply.h>
+#include <common/powersupply/models/Ocem/OcemE642X.h>
+#include <common/powersupply/models/Simulator/SimPSupply.h>
 
 #define PSLAPP		LAPP_ << "[PowerSupply] "
 #define PSDBG		LDBG_ << "[PowerSupply "<<__PRETTY_FUNCTION__<<" ]"
