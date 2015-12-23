@@ -13,7 +13,7 @@ ELSE()
   LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/build ${CMAKE_INSTALL_PREFIX}/lib)
 ENDIF()
 
-
+ADD_DEFINITIONS(-DDEBUG)
 
 IF(FrameworkLib)
 SET(libs chaos_common ${FrameworkLib})

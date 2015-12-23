@@ -2,15 +2,11 @@
 <configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
-      <df name="Ocem">
-        <in>OcemE642X.cpp</in>
-      </df>
-      <df name="Simulator">
-        <in>SimPSupply.cpp</in>
-      </df>
-      <df name="test">
-        <in>ocem_array.cpp</in>
-        <in>ocem_test.cpp</in>
+      <df name="models">
+        <df name="Hazemeyer">
+          <in>AL250PowerSupply.cpp</in>
+          <in>test.cpp</in>
+        </df>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -33,6 +29,10 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-fPIC -fPIC -fPIC -O3 -O2 -O2"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -43,199 +43,35 @@
           <executablePath>build/test_ocem_array</executablePath>
         </makeTool>
       </makefileType>
-      <item path="Ocem/OcemE642X.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Simulator/SimPSupply.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <folder path="0/Ocem">
+      <folder path="0/models">
         <ccTool>
           <incDir>
-            <pElem>../debug</pElem>
-            <pElem>core</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr/detail</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr</pElem>
-            <pElem>Ocem</pElem>
-            <pElem>../../usr/local/include/boost</pElem>
-            <pElem>../serial/core</pElem>
-            <pElem>../serial/Ocem</pElem>
-            <pElem>../../usr/local/include/boost/config</pElem>
-            <pElem>../../usr/local/include/boost/exception</pElem>
-            <pElem>../../usr/local/include/boost/detail</pElem>
-            <pElem>../..</pElem>
-            <pElem>../../usr/local/include</pElem>
             <pElem>.</pElem>
+            <pElem>../..</pElem>
+            <pElem>..</pElem>
+            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>models/Hazemeyer</pElem>
+            <pElem>models</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>CHAOS</Elem>
+            <Elem>DEBUG</Elem>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
-      <folder path="0/Simulator">
-        <ccTool>
-          <incDir>
-            <pElem>core</pElem>
-            <pElem>../../usr/local/include/boost/exception</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr/detail</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr</pElem>
-            <pElem>../../usr/local/include/boost/exception/detail</pElem>
-            <pElem>Simulator</pElem>
-            <pElem>../../usr/local/include/boost/regex/v4</pElem>
-            <pElem>../../usr/local/include/boost</pElem>
-            <pElem>../../usr/local/include/boost/thread/detail</pElem>
-            <pElem>../../usr/local/include/boost/bind</pElem>
-            <pElem>../../usr/local/include/boost/thread</pElem>
-            <pElem>../../usr/local/include/boost/system</pElem>
-            <pElem>../../usr/local/include/boost/thread/pthread</pElem>
-            <pElem>../../usr/local/include/boost/regex</pElem>
-            <pElem>../../usr/local/include/boost/functional/hash</pElem>
-            <pElem>../debug</pElem>
-            <pElem>../serial/core</pElem>
-            <pElem>../../usr/local/include/boost/config</pElem>
-            <pElem>../../usr/local/include/boost/detail</pElem>
-            <pElem>../../usr/local/include/boost/integer</pElem>
-            <pElem>../../usr/local/include/boost/function</pElem>
-            <pElem>../../usr/local/include/boost/mpl/aux_</pElem>
-            <pElem>../../usr/local/include/boost/mpl</pElem>
-            <pElem>../../usr/local/include/boost/type_traits/detail</pElem>
-            <pElem>../../usr/local/include/boost/move/detail</pElem>
-            <pElem>../../usr/local/include/boost/date_time</pElem>
-            <pElem>../../usr/local/include/boost/date_time/gregorian</pElem>
-            <pElem>../../usr/local/include/boost/date_time/posix_time</pElem>
-            <pElem>../../usr/local/include/boost/ratio/detail</pElem>
-            <pElem>../../usr/local/include/boost/type_traits</pElem>
-            <pElem>../../usr/local/include/boost/chrono/detail</pElem>
-            <pElem>../../usr/local/include/boost/chrono</pElem>
-            <pElem>../../usr/local/include/boost/optional</pElem>
-            <pElem>../../usr/local/include/boost/functional/hash/detail</pElem>
-            <pElem>../../usr/local/include/boost/atomic/detail</pElem>
-            <pElem>../../usr/local/include/boost/tuple/detail</pElem>
-            <pElem>../../usr/local/include/boost/io</pElem>
-            <pElem>../../usr/local/include/boost/regex/pending</pElem>
-            <pElem>../../usr/local/include/boost/ratio</pElem>
-            <pElem>../../usr/local/include/boost/move</pElem>
-            <pElem>../..</pElem>
-            <pElem>../../usr/local/include</pElem>
-            <pElem>.</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
-      <folder path="0/test">
-        <ccTool>
-          <incDir>
-            <pElem>../../usr/local/include/boost/exception</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr/detail</pElem>
-            <pElem>../../usr/local/include/boost/smart_ptr</pElem>
-            <pElem>../../usr/local/include/boost</pElem>
-            <pElem>../../usr/local/include/boost/program_options</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
-      <item path="test/ocem_array.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
-          <incDir>
-            <pElem>../../usr/local/include/boost/function</pElem>
-            <pElem>../../usr/local/include/boost/system</pElem>
-            <pElem>test</pElem>
-            <pElem>../../usr/local/include/boost/program_options/detail</pElem>
-            <pElem>../../usr/local/include/boost/exception/detail</pElem>
-            <pElem>core</pElem>
-            <pElem>../serial/core</pElem>
-            <pElem>../debug</pElem>
-            <pElem>../../usr/local/include/boost/config</pElem>
-            <pElem>../../usr/local/include/boost/detail</pElem>
-            <pElem>../../usr/local/include/boost/integer</pElem>
-            <pElem>../../usr/local/include/boost/thread/pthread</pElem>
-            <pElem>../../usr/local/include/boost/type_traits/detail</pElem>
-            <pElem>../../usr/local/include/boost/mpl/aux_</pElem>
-            <pElem>../../usr/local/include/boost/mpl</pElem>
-            <pElem>../../usr/local/include/boost/mpl/aux_/preprocessed/gcc</pElem>
-            <pElem>../../usr/local/include/boost/move/detail</pElem>
-            <pElem>../../usr/local/include/boost/date_time</pElem>
-            <pElem>../../usr/local/include/boost/date_time/gregorian</pElem>
-            <pElem>../../usr/local/include/boost/date_time/posix_time</pElem>
-            <pElem>../../usr/local/include/boost/ratio/detail</pElem>
-            <pElem>../../usr/local/include/boost/type_traits</pElem>
-            <pElem>../../usr/local/include/boost/chrono/detail</pElem>
-            <pElem>../../usr/local/include/boost/chrono</pElem>
-            <pElem>../../usr/local/include/boost/thread</pElem>
-            <pElem>../../usr/local/include/boost/optional</pElem>
-            <pElem>../../usr/local/include/boost/functional/hash/detail</pElem>
-            <pElem>../../usr/local/include/boost/atomic/detail</pElem>
-            <pElem>../../usr/local/include/boost/thread/detail</pElem>
-            <pElem>../../usr/local/include/boost/tuple/detail</pElem>
-            <pElem>../../usr/local/include/boost/numeric/conversion/detail</pElem>
-            <pElem>../../usr/local/include/boost/numeric/conversion</pElem>
-            <pElem>../../usr/local/include/boost/math/tools</pElem>
-            <pElem>../../usr/local/include/boost/math/policies</pElem>
-            <pElem>../../usr/local/include/boost/iterator/detail</pElem>
-            <pElem>../../usr/local/include/boost/range</pElem>
-            <pElem>../../usr/local/include/boost/range/detail</pElem>
-            <pElem>../../usr/local/include/boost/concept/detail</pElem>
-            <pElem>../../usr/local/include/boost/container</pElem>
-            <pElem>../../usr/local/include/boost/regex/v4</pElem>
-            <pElem>../../usr/local/include/boost/regex</pElem>
-            <pElem>../../usr/local/include/boost/bind</pElem>
-            <pElem>../../usr/local/include/boost/io</pElem>
-            <pElem>../../usr/local/include/boost/ratio</pElem>
-            <pElem>../../usr/local/include/boost/move</pElem>
-            <pElem>../../usr/local/include</pElem>
-            <pElem>.</pElem>
-          </incDir>
+      <item path="models/Hazemeyer/AL250PowerSupply.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+        <ccTool flags="1">
+          <preprocessorList>
+            <Elem>hazemeyer_powersupply_EXPORTS</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="test/ocem_test.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
-          <incDir>
-            <pElem>../../usr/local/include/boost/regex/v4</pElem>
-            <pElem>test</pElem>
-            <pElem>../../usr/local/include/boost/function</pElem>
-            <pElem>../../usr/local/include/boost/system</pElem>
-            <pElem>../../usr/local/include/boost/program_options/detail</pElem>
-            <pElem>../../usr/local/include/boost/math/special_functions/detail</pElem>
-            <pElem>../../usr/local/include/boost/math/special_functions</pElem>
-            <pElem>../../usr/local/include/boost/regex</pElem>
-            <pElem>../../usr/local/include/boost/exception/detail</pElem>
-            <pElem>core</pElem>
-            <pElem>../serial/core</pElem>
-            <pElem>../debug</pElem>
-            <pElem>../serial/Ocem</pElem>
-            <pElem>../../usr/local/include/boost/config</pElem>
-            <pElem>../../usr/local/include/boost/detail</pElem>
-            <pElem>../../usr/local/include/boost/integer</pElem>
-            <pElem>../../usr/local/include/boost/thread/pthread</pElem>
-            <pElem>../../usr/local/include/boost/type_traits/detail</pElem>
-            <pElem>../../usr/local/include/boost/mpl/aux_</pElem>
-            <pElem>../../usr/local/include/boost/mpl</pElem>
-            <pElem>../../usr/local/include/boost/mpl/aux_/preprocessed/gcc</pElem>
-            <pElem>../../usr/local/include/boost/move/detail</pElem>
-            <pElem>../../usr/local/include/boost/date_time</pElem>
-            <pElem>../../usr/local/include/boost/date_time/gregorian</pElem>
-            <pElem>../../usr/local/include/boost/date_time/posix_time</pElem>
-            <pElem>../../usr/local/include/boost/ratio/detail</pElem>
-            <pElem>../../usr/local/include/boost/type_traits</pElem>
-            <pElem>../../usr/local/include/boost/chrono/detail</pElem>
-            <pElem>../../usr/local/include/boost/chrono</pElem>
-            <pElem>../../usr/local/include/boost/thread</pElem>
-            <pElem>../../usr/local/include/boost/optional</pElem>
-            <pElem>../../usr/local/include/boost/functional/hash/detail</pElem>
-            <pElem>../../usr/local/include/boost/atomic/detail</pElem>
-            <pElem>../../usr/local/include/boost/thread/detail</pElem>
-            <pElem>../../usr/local/include/boost/tuple/detail</pElem>
-            <pElem>../../usr/local/include/boost/numeric/conversion/detail</pElem>
-            <pElem>../../usr/local/include/boost/numeric/conversion</pElem>
-            <pElem>../../usr/local/include/boost/math/tools</pElem>
-            <pElem>../../usr/local/include/boost/math/policies</pElem>
-            <pElem>../../usr/local/include/boost/iterator/detail</pElem>
-            <pElem>../../usr/local/include/boost/range</pElem>
-            <pElem>../../usr/local/include/boost/range/detail</pElem>
-            <pElem>../../usr/local/include/boost/concept/detail</pElem>
-            <pElem>../../usr/local/include/boost/container</pElem>
-            <pElem>../../usr/local/include/boost/bind</pElem>
-            <pElem>../../usr/local/include/boost/io</pElem>
-            <pElem>../../usr/local/include/boost/regex/pending</pElem>
-            <pElem>../../usr/local/include/boost/ratio</pElem>
-            <pElem>../../usr/local/include/boost/move</pElem>
-            <pElem>../..</pElem>
-            <pElem>../../usr/local/include</pElem>
-            <pElem>.</pElem>
-          </incDir>
+      <item path="models/Hazemeyer/test.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
         </ccTool>
       </item>
     </conf>

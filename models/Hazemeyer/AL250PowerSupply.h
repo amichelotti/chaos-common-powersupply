@@ -13,8 +13,12 @@
 #include <map>
 #include <vector>
 #include <string>
-
-
+#ifdef CHAOS
+#include <chaos/common/chaos_constants.h>
+#define NODE_OPERATION_NOT_SUPPORTED chaos::ErrorCode::EC_NODE_OPERATION_NOT_SUPPORTED
+#else
+#define NODE_OPERATION_NOT_SUPPORTED -10000
+#endif
 /*
 
 */
@@ -37,7 +41,7 @@ public:
         
         class AL250: public AbstractPowerSupply 
         {
-            static const int DEFAULT_NOT_ALLOWED=-1;
+            static const int DEFAULT_NOT_ALLOWED=NODE_OPERATION_NOT_SUPPORTED;
             static const int NumChannels=9;
             
         public:
@@ -131,8 +135,8 @@ public:
             int getState(int* state,std::string& desc,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int init();
             int deinit();
-            int getSWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {return DEFAULT_NOT_ALLOWED;}
-            int getHWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {return DEFAULT_NOT_ALLOWED;}
+            int getSWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {version = "AL250SW"; return DEFAULT_NOT_ALLOWED;}
+            int getHWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {version = "AL250HW"; return DEFAULT_NOT_ALLOWED;}
             int getCurrentSensibility(float *sens);
             int getCurrentSensibilityOnSet(float *sens);
             int getVoltageSensibility(float *sens);
