@@ -14,7 +14,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "common/debug/debug.h"
+#include <common/debug/core/debug.h>
 #include <boost/regex.hpp>
 #include <string>
 #define DEFAULT_TIMEOUT 10000
@@ -104,6 +104,7 @@ static void printCommandHelp(){
     std::cout<<" Available commands  :"<<std::endl;
     std::cout<<"\tPOL <1/0/-1>       : set polarity"<<std::endl;
     std::cout<<"\tSP <float>         : set SetPoint"<<std::endl;
+    std::cout<<"\tSLOPE <up A/s> <down A/s>: set Slope rising and falling"<<std::endl;
     std::cout<<"\tRAMP               : start ramp"<<std::endl;
     std::cout<<"\tRSTALARMS          : reset alarms"<<std::endl;
     std::cout<<"\t------------------------------------------"<<std::endl;
@@ -357,7 +358,20 @@ int main(int argc, char *argv[])
 	      }
 	    }
 	  }
+	  
+	} else if(!strcmp(cmd,"SLOPE")){
+	  float up = atof(val);
+	  float down=atof(val1);
+	  printf("setting current SLOPE UP %4.4f DOWN %4.4f\n",up,down);
+	  if( (ret=ps->setCurrentRampSpeed(up,down,DEFAULT_TIMEOUT))<0){
+	    printf("## error setting SLOPE ret %d\n",ret);
+	    continue;
+	  } 
+	} else {
+	  printf("## syntax error, syntax is SLOPE <UP> <DOWN>\n"); 
+	  continue;
 	}
+      
       } else if(sscanf(stringa,"%s %s",cmd,val)==2){
 	int ival = atoi(val);
 	float fval = atof(val);
@@ -378,7 +392,7 @@ int main(int argc, char *argv[])
 	  printf("## syntax error\n"); 
 	  continue;
 	}
-      } else if(sscanf(stringa,"%s",cmd)==1){
+      }  else if(sscanf(stringa,"%s",cmd)==1){
 	if(!strcmp(cmd,"RAMP")){
 	  printf("start ramp..\n");
 	  if( (ret=ps->startCurrentRamp(DEFAULT_TIMEOUT))<0){

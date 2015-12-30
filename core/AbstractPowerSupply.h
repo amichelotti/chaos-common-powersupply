@@ -29,6 +29,8 @@
 #define POWER_SUPPLY_DEFAULT_TIMEOUT 1000
 #endif
 
+
+
 namespace common {
     namespace powersupply {
         
@@ -55,7 +57,16 @@ namespace common {
          Power supply supported events
          */
         enum PowerSupplyEvents{
-            POWER_SUPPLY_EVENT_DOOR_OPEN=0x1
+            POWER_SUPPLY_EVENT_DOOR_OPEN=0x1,
+            POWER_SUPPLY_EVENT_OVER_TEMP=0x2,
+            POWER_SUPPLY_FUSE_FAULT=0x4,
+            POWER_SUPPLY_EARTH_FAULT=0x8,
+            POWER_SUPPLY_OVER_VOLTAGE=0x10,
+            POWER_SUPPLY_OVER_CURRENT=0x20,
+            POWER_SUPPLY_COMMUNICATION_FAILURE=0x40,
+            POWER_SUPPLY_MAINUNIT_FAIL=0x80   // only for multichannels powersupply
+                    
+              
         };
         
         

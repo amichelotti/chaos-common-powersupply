@@ -8,11 +8,12 @@
 #ifdef OCEM_CORE_DEBUG
 #define DEBUG
 #endif
-#include "common/debug/debug.h"
+
+#include <common/debug/core/debug.h>
+
 #include <math.h>
 
 #include "OcemE642X.h"
-#include "common/debug/debug.h"
 using namespace common::powersupply;
 
 
@@ -142,12 +143,15 @@ void OcemE642X::init_internal(){
     INITIALIZE_TIMED(alarms, 0ULL);
     INITIALIZE_TIMED(version, ocem_version());
     // default values to be determined by type
-    max_current=OCEM_MAX_CURRENT;
-    min_current=OCEM_MIN_CURRENT;
-    max_voltage=OCEM_MAX_VOLTAGE;
-    min_voltage=OCEM_MIN_VOLTAGE;
+    /*
+      max_current=OCEM_MAX_CURRENT;
+      min_current=OCEM_MIN_CURRENT;
+      max_voltage=OCEM_MAX_VOLTAGE;
+      min_voltage=OCEM_MIN_VOLTAGE;
+      
     voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
     current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    */
     available_alarms =0;
     for(cnt=0;cnt<OCEM_INPUT_CHANNELS;cnt++){
         INITIALIZE_TIMED(ichannel[cnt],ocem_channel(0,0));
@@ -159,17 +163,26 @@ void OcemE642X::init_internal(){
 }
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
 {
+  
 
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
+    max_current=0;
+    min_current=0;
+    max_voltage=0;
+    min_voltage=0;
+    
     init_internal();
-
+    
 }
 
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
+
+    if(maxcurr>0)
+      forceMaxCurrent(maxcurr);
+    if(maxvoltage>0)
+      forceMaxVoltage(maxvoltage);
     init_internal();
-    max_current=maxcurr;
-    max_voltage=maxvoltage;
 }
 
 OcemE642X::~OcemE642X(){
@@ -318,13 +331,25 @@ void OcemE642X::updateParamsByModel(OcemModels model){
 
   switch(model){
   case OCEM_MODEL234:{
-    max_current = 100;
-    max_voltage = 10;
+    if(max_current==0){
+      max_current = 100;
+      DPRINT("MODEL 234 auto detecting max current %f\n",max_current);
+    } else {
+      DPRINT("MODEL 234 max current forced to %f\n",max_current);
+    }
+    if(max_voltage==0)
+      max_voltage = 10;
+    
     model = OCEM_MODEL234;
     break;
   }
   case OCEM_MODEL5A5B:{
-    max_current = 700;
+    if(max_current==0){
+      max_current = 700;
+      DPRINT("MODEL 5A5B auto detecting max current %f\n",max_current);
+    } else {
+      DPRINT("MODEL 5A5B forced to max current %f\n",max_current);
+    }
     max_voltage = 10;
     model = OCEM_MODEL5A5B;
     break;
@@ -334,8 +359,8 @@ void OcemE642X::updateParamsByModel(OcemModels model){
   }
     
   
-  voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
-  current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+  forceMaxCurrent(max_current);
+  forceMaxVoltage(max_voltage);
   available_alarms =0;
 }
 int OcemE642X::init(){
@@ -388,8 +413,12 @@ int OcemE642X::init(){
 	updateParamsByModel(OCEM_MODEL5A5B);
       } else {
 	DPRINT("uknown type:\"%s\"\n",version.get().type);
+	updateParamsByModel(OCEM_UKNOWN);
       }
-      
+    }
+    if(current_sensibility==0 || max_current==0){
+      DERR("No max current set\n");
+      return -2;
     }
     setThreashold(0,(1<<current_adc)-1,10000);
     setThreashold(1,(1<<voltage_adc)-1,10000);

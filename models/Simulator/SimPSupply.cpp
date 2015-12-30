@@ -8,11 +8,10 @@
 #ifdef SIMPSUPPLY_DEBUG
 #define DEBUG
 #endif
-#include <common/debug/debug.h>
+#include <common/debug/core/debug.h>
 #include <math.h>
 
 #include "SimPSupply.h"
-#include "common/debug/debug.h"
 #include <boost/regex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>

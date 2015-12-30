@@ -159,7 +159,8 @@ namespace common{
 	    enum OcemModels {
 	      OCEM_NOMODEL,
 	      OCEM_MODEL234,
-	      OCEM_MODEL5A5B
+	      OCEM_MODEL5A5B,
+	      OCEM_UKNOWN
 	    };
 
             ::common::debug::timed_value<ocem_channel> ichannel[OCEM_INPUT_CHANNELS];
