@@ -81,6 +81,29 @@ namespace common{
         
         class OcemE642X: public AbstractPowerSupply {
 	  
+            enum OcemAlarms{
+                AC_UNBALANCE=1,
+                PHASE_LOSS,
+                AIR_FLOW,
+                DOORS,
+                TRASFORMER_OVT,
+                SNUBBER_FUSE,
+                SCR_FUSE,
+                SCR_OVT,
+                CHOKE_OVT,
+                PASS_FILTER,
+                DIODE_FAULT,
+                DIODE_OVT,
+                ACTIVE_FILTER_OVT,
+                ACTIVE_FILTER_FUSE,
+                DCCT_FAULT,
+                DCT_OVT,
+                EARTH_FAULT,
+                CUBICLE_OVT,
+                SETPOINT_CARD_FAULT,
+                EXTERNAL_INTERLOCK
+            };
+            
             static std::map<std::string,OcemProtocol_psh > unique_protocol;
           
             static pthread_mutex_t unique_ocem_core_mutex;
