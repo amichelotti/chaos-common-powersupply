@@ -336,9 +336,57 @@ int OcemE642X::updateInternalData(char * stringa){
                                 alarms=common::powersupply::POWER_SUPPLY_DIODE_FAULT | alarms;
                                 DPRINT("DIODE_FAULT");
                                 break;
+                            case DIODE_OVT:
+                            alarms=common::powersupply::POWER_SUPPLY_DIODE_OVT | alarms;
+                            DPRINT("DIODE_OVT");
+                            break;
+                            
+                            case ACTIVE_FILTER_OVT:
+                            alarms=common::powersupply::POWER_SUPPLY_ACTIVE_FILTER_OVT | alarms;
+                            DPRINT("ACTIVE_FILTER_OVT");
+                            break;
+                            
+                            case ACTIVE_FILTER_FUSE:
+                            alarms=common::powersupply::POWER_SUPPLY_ACTIVE_FILTER_FUSE | alarms;
+                            DPRINT("ACTIVE_FILTER_FUSE");
+                            break;
+                            
+                            case DCCT_FAULT:
+                            alarms=common::powersupply::POWER_SUPPLY_DCCT_FAULT | alarms;
+                            DPRINT("DCCT_FAULT");
+                            break;
+                            
+                            case DCCT_OVT:
+                            alarms=common::powersupply::POWER_SUPPLY_DCCT_OVT | alarms;
+                            DPRINT("DCCT_OVT");
+                            break;
 
+                            case EARTH_FAULT:
+                            alarms=common::powersupply::POWER_SUPPLY_EARTH_FAULT | alarms;
+                            DPRINT("EARTH_FAULT");
+                            break;
+                            
+                            case CUBICLE_OVT:
+                            alarms=common::powersupply::POWER_SUPPLY_CUBICLE_OVT | alarms;
+                            DPRINT("CUBICLE_OVT");
+                            break;
+                            
+                            case SETPOINT_CARD_FAULT:
+                            alarms=common::powersupply::POWER_SUPPLY_SETPOINT_CARD_FAULT | alarms;
+                            DPRINT("SETPOINT_CARD_FAULT");
+                            break;
+                            
+                            case EXTERNAL_INTERLOCK:
+                                alarms=common::powersupply::POWER_SUPPLY_EXTERNAL_INTERLOCK | alarms;
+                                DPRINT("EXTERNAL_INTERLOCK");
+                            break;
+                                
+                            default:
+                                alarms=common::powersupply::POWER_SUPPLY_ALARM_UNDEF | alarms;
+                                DPRINT("POWER_SUPPLY_ALARM_UNDEF");
+                            break;
                         }
-                        alarms = (1LL<<al) | (uint64_t) alarms;
+                        
                         DPRINT("setting alarm \"%d\", alarm mask 0x%llx",al, (unsigned long long)alarms);
                     }
                 }

@@ -97,11 +97,12 @@ namespace common{
                 ACTIVE_FILTER_OVT,
                 ACTIVE_FILTER_FUSE,
                 DCCT_FAULT,
-                DCT_OVT,
+                DCCT_OVT,
                 EARTH_FAULT,
                 CUBICLE_OVT,
                 SETPOINT_CARD_FAULT,
-                EXTERNAL_INTERLOCK
+                EXTERNAL_INTERLOCK,
+                ALARM_UNDEFINED
             };
             
             static std::map<std::string,OcemProtocol_psh > unique_protocol;

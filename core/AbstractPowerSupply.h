@@ -67,8 +67,8 @@ namespace common {
             POWER_SUPPLY_MAINUNIT_FAIL=0x80,   // only for multichannels powersupply
             POWER_SUPPLY_EXTERNAL_INTERLOCK=0x100,
             POWER_SUPPLY_SETPOINT_CARD_FAULT=0x200,
-            POWER_SUPPLY_CUBICLE_OVER_TEMP=0x400,
-            POWER_SUPPLY_DC_OVERCURRENT=0x800,
+            POWER_SUPPLY_CUBICLE_OVT=0x400,
+            POWER_SUPPLY_DCCT_OVT=0x800,
             POWER_SUPPLY_DCCT_FAULT=0x1000,
             POWER_SUPPLY_ACTIVE_FILTER_FUSE=0x2000,
             POWER_SUPPLY_ACTIVE_FILTER_OVT=0x4000,
@@ -83,13 +83,8 @@ namespace common {
             POWER_SUPPLY_SCR_OVT=0x800000,
             POWER_SUPPLY_CHOKE_OVT=0x1000000,
             POWER_SUPPLY_PASS_FILTER=0x2000000,
-
-
-
-
-
-                    
-              
+            POWER_SUPPLY_ALARM_UNDEF=0x4000000
+                                  
         };
         
         
@@ -114,6 +109,8 @@ namespace common {
             
         public:
             
+            
+            static std::string decodeEvent(PowerSupplyEvents ev);
             virtual ~AbstractPowerSupply(){};
             /**
              @brief sets the current polarity
