@@ -107,14 +107,23 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
     uint64_t ret_time;
 
     CMD_WRITE(cmd,timeout);
+    DPRINT("data type \"%s\" last update at %10llu, command issued at %10llu",data->get_name(),ret_time,stamp);
     while(((ret_time=data->mod_time())<stamp)){
-      if(((timeout>0) && ((common::debug::getUsTime()-stamp)>=(timeout*1000))) || (tim > 0)){
-            DPRINT("Timeout reading data type \"%s\" Start operation %10llu (duration %10llu) > %d timeout",data->get_name(),stamp,(common::debug::getUsTime()-stamp)/1000,timeout);
-            tim++;
-            break;
-        }
-        DPRINT("data type \"%s\" last update at %10llu, command issued at %10llu, timeout occur:%d",data->get_name(),ret_time,stamp, tim);
-        receive_data( buf, sizeof(buf),timeout,&tim);
+       int ret;
+       
+       if((ret=receive_data( buf, sizeof(buf),timeout,&tim))>0){
+       
+	  DPRINT("read again ");
+ 
+       } else {
+
+	 if(((timeout>0) && ((common::debug::getUsTime()-stamp)>=(timeout*1000))) || (tim > 0)){
+	   DPRINT("Timeout reading data type \"%s\" Start operation %10llu (duration %10llu) > %d timeout",data->get_name(),stamp,(common::debug::getUsTime()-stamp)/1000,timeout);
+	   tim++;
+	   break;
+	 }
+       }
+     
     }
     
     if(data->mod_time()>stamp){
@@ -164,7 +173,7 @@ void OcemE642X::init_internal(){
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
 {
   
-
+    DPRINT("creating %s id %d",_dev,_slave_id);
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
     max_current=0;
     min_current=0;
@@ -176,6 +185,7 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
 }
 
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
+    DPRINT("creating %s id %d",_dev,_slave_id);
     ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
 
     if(maxcurr>0)
@@ -464,6 +474,7 @@ void OcemE642X::updateParamsByModel(OcemModels model){
 int OcemE642X::init(){
     int ret=-1;
     char buf[2048];
+    int cnt,max,min;
     *buf = 0;
     regulator_state = REGULATOR_UKN;
     selector_state = SELECTOR_UKN;
@@ -489,17 +500,22 @@ int OcemE642X::init(){
     }
     
     int retry=INIT_RETRY;
+          int tim;
+
     // poll trial
     //        update_status(60000,10);
-    
+	
+	  send_command("RMT",1000,&tim);
     do {
-      int tim;
-      char trialbuf[1024];
-      send_command("RMT",10000,&tim);
-      ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
-    } while((ret<=0) && retry-->0);
+      DPRINT("INITIALIZING removing previous data");
+      ret=receive_data(buf,sizeof(buf),5000,&tim);
       
+
+    } while((ret>0) );
+     
+    
     retry = INIT_RETRY;
+#if 0
     do {
       // update status
       if((ret=force_update(60000))<0){
@@ -511,7 +527,7 @@ int OcemE642X::init(){
       }
       sleep(1);
     } while((ret<0) && retry-->0);
-
+#endif
     if(ret == 0){
       if(strstr(version.get().type,"/2-3-4")){
 	DPRINT("type 2-3-4 detected max current 100A");
@@ -531,7 +547,47 @@ int OcemE642X::init(){
     setThreashold(0,(1<<current_adc)-1,10000);
     setThreashold(1,(1<<voltage_adc)-1,10000);
     DPRINT("Initialisation returned %d",ret);
-    return ret;
+    /** setting channels to maximum sensibility*/
+    /**setting */
+    setChannel(0,0,0,(1<<current_adc)-1,10000); // current
+    setChannel(0,1,0,(1<<voltage_adc)-1,10000); // voltage
+    
+    setChannel(1,0,0,(1<<current_adc)-1,10000); // set point corrente
+    setChannel(1,1,0,(1<<current_ramp_adc)-1,10000); // ramp up
+    setChannel(1,2,0,(1<<current_ramp_adc)-1,10000); // ramp down
+    /*
+    // check parameters
+    getChannel(0,0,&min,&max,10000);
+    if(min!=0 || max!=((1<<current_adc)-1)){
+        ERR("## failed to set current input channel sensibility now min 0x%x max 0x%x",min,max);
+        return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+    }
+    
+    getChannel(0,1,&min,&max,10000);
+    if(min!=0 || max!=((1<<voltage_adc)-1)){
+        ERR("## failed to set voltage input channel sensibility now min 0x%x max 0x%x",min,max);
+        return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+    }
+    
+    getChannel(1,0,&min,&max,10000);
+    if(min!=0 || max!=((1<<current_adc)-1)){
+        ERR("## failed to set SP output channel sensibility now min 0x%x max 0x%x",min,max);
+        return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+    }
+    
+    getChannel(1,1,&min,&max,10000);
+    if(min!=0 || max!=((1<<current_ramp_adc)-1)){
+        ERR("## failed to set RAMP UP output channel sensibility now min 0x%x max 0x%x",min,max);
+        return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+    }
+    getChannel(1,2,&min,&max,10000);
+    if(min!=0 || max!=((1<<current_ramp_adc)-1)){
+        ERR("## failed to set RAMP DOWN output channel sensibility now min 0x%x max 0x%x",min,max);
+        return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+    }
+    */
+    
+    return 0;
 }
 int OcemE642X::force_update(uint32_t timeout){
     DPRINT("forcing update timeout %d",timeout);
@@ -710,33 +766,24 @@ int OcemE642X::startCurrentRamp(uint32_t timeo_ms){
 int OcemE642X::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
     int rsup,rsdown;
     char stringa[256];
-    
-    if(asup<min_current || asup > max_current || asup ==0){
+    float sensibility=((max_current/10.0 -1.0)*1.0)/(1<<current_ramp_adc);
+    if(asup<1.0 || asup > (max_current/10.0)){
       ERR("bad input parameters asup %f",asup);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    if(asdown<min_current || asdown > max_current || asdown==0){
+    if(asdown<1.0 || asdown > (max_current/10.0)){
       ERR("bad input parameters asdown %f",asdown);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    rsup = CONV2ADC(CURRENT,asup);
+    rsup = asup/sensibility;
 
-    rsdown = CONV2ADC(CURRENT,asdown);
+    rsdown = asdown/sensibility;
     sprintf(stringa,"VRUP %.7d",rsup);
     DPRINT("setting ramp rising speed to %f as (0x%x), falling speed to %f (0x%x)",asup,rsup,asdown,rsdown);
     CMD_WRITE(stringa,timeo_ms);
     sprintf(stringa,"VRDW %.7d",rsdown);
     CMD_WRITE(stringa,timeo_ms);
-    /*
-      if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_UP,0,rsup,timeo_ms))<0){
-      ERR("error setting current RAMP UP ");
-      return ret;
-      }
-      if((ret=setChannel(CHANNEL_OUT,CHANNEL_RAMP_DOWN,0,rsdown,timeo_ms))<0){
-      ERR("error setting current RAMP DOWN ");
-      return ret;
-      }
-    */
+   
     return 0;
 }
 
@@ -843,7 +890,9 @@ int OcemE642X::getChannel(int inout,int number, int* min,int* max,uint32_t timeo
     //  send_receive((char*)"PRG S",buf,sizeof(buf));
     //update_status(timeout,10);
     if((inout==0) && (number < OCEM_INPUT_CHANNELS )) {
-        GET_VALUE(ichannel[number],timeout,"PRG S");
+        DPRINT("get channel INPUT number %d, timeo %d",number,timeout);
+
+        GET_VALUE(ichannel[number],timeout*3,"PRG S");
         *min = ichannel[number].get().min;
         *max = ichannel[number].get().max;
         if(ichannel[number].mod_time()> stamp){
@@ -854,6 +903,7 @@ int OcemE642X::getChannel(int inout,int number, int* min,int* max,uint32_t timeo
             return POWER_SUPPLY_READOUT_OUTDATED;
         }
     } else if((inout==1) && (number < OCEM_OUTPUT_CHANNELS )) {
+        DPRINT("get channel OUTPUT number %d, timeo %d",number,timeout);
         GET_VALUE(ochannel[number],timeout,"PRG S");
         *min = ochannel[number].get().min;
         *max = ochannel[number].get().max;
@@ -889,9 +939,9 @@ int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
     }
     if(channel==0){
       // current;
-      val = CONV2ADC(CURRENT,value);
+      val = value/current_sensibility;
     } else if(channel==1){
-      val = CONV2ADC(VOLTAGE,value);
+      val = value/voltage_sensibility;
     } else {
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
