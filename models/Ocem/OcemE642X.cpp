@@ -501,17 +501,26 @@ int OcemE642X::init(){
     
     int retry=INIT_RETRY;
           int tim;
-
-    // poll trial
-    //        update_status(60000,10);
-	
-	  send_command("RMT",1000,&tim);
     do {
-      DPRINT("INITIALIZING removing previous data");
-      ret=receive_data(buf,sizeof(buf),5000,&tim);
-      
+        char trialbuf[1024];
+        send_command("RMT",10000,&tim);
+            usleep(500000);
 
-    } while((ret>0) );
+        ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
+    } while((ret<=0) && retry-->0);
+        
+    do {
+	  // update status
+	  if((ret=force_update(60000))<0){
+            DERR("Nothing has been refreshed  %d\n",ret);
+            
+	  } else {
+            DPRINT("Ocem status has been refreshed %d\n",ret);
+            ret = 0;
+	  }
+	  sleep(1);
+	} while((ret<0) && retry-->0);
+    // poll trial
      
     
     retry = INIT_RETRY;
@@ -545,16 +554,30 @@ int OcemE642X::init(){
       return -2;
     }
     setThreashold(0,(1<<current_adc)-1,10000);
+        usleep(500000);
+
     setThreashold(1,(1<<voltage_adc)-1,10000);
+        usleep(500000);
+
     DPRINT("Initialisation returned %d",ret);
     /** setting channels to maximum sensibility*/
     /**setting */
     setChannel(0,0,0,(1<<current_adc)-1,10000); // current
+    usleep(500000);
     setChannel(0,1,0,(1<<voltage_adc)-1,10000); // voltage
-    
+    usleep(500000);
     setChannel(1,0,0,(1<<current_adc)-1,10000); // set point corrente
+    usleep(500000);
     setChannel(1,1,0,(1<<current_ramp_adc)-1,10000); // ramp up
+    usleep(500000);
     setChannel(1,2,0,(1<<current_ramp_adc)-1,10000); // ramp down
+    usleep(500000);
+    do {
+        char trialbuf[1024];
+        // do polls and update variables
+        ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
+    } while((ret<=0) && retry-->0);
+    
     /*
     // check parameters
     getChannel(0,0,&min,&max,10000);

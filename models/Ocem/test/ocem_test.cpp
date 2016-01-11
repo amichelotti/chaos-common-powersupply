@@ -122,6 +122,8 @@ static void printCommandHelp(){
     std::cout<<"\tGETVER             : get HW/SW version"<<std::endl;
     std::cout<<"\tGETPOL             : get polarity"<<std::endl;
     std::cout<<"\t-------------------------------------------"<<std::endl;
+    std::cout<<"\tPOLL               : get Ocem answer"<<std::endl;
+    std::cout<<"\t-------------------------------------------"<<std::endl;
     std::cout<<"\tOPEN <ser> <slave> : open a new powersupply"<<std::endl;
     std::cout<<"\tCLOSE              : close powersupply"<<std::endl;
     std::cout<<"\tHELP               : this help"<<std::endl;
@@ -220,7 +222,7 @@ std::string ver;
   
   printf("Connecting to slave %d, via \"%s\"... \n",slave_id,dev.c_str());
 
-  common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(dev.c_str(),slave_id,maxcurrent,maxvoltage);
+  common::powersupply::OcemE642X *ps= new common::powersupply::OcemE642X(dev.c_str(),slave_id,maxcurrent,maxvoltage);
 
   if(ps){
     if(ps->init()!=0){
@@ -407,6 +409,16 @@ std::string ver;
 	    printf("## error STANDBY ret %d\n",ret);
 	    continue;
 	  } 
+	} else if(!strcmp(cmd,"POLL")){
+          char buffer[1024];
+          int tim;
+	  printf("executing poll\n");
+	  if( (ret=ps->receive_data(buffer,sizeof(buffer),5000,&tim))<0){
+	    printf("## error POLLING ret %d\n",ret);
+	    continue;
+	  }  else {
+              printf("->\"%s\"\n",buffer);
+          }
 	} else if(!strcmp(cmd,"ON")){
 	  printf("setting poweron\n");
 	  if( (ret=ps->poweron(DEFAULT_TIMEOUT))<0){
