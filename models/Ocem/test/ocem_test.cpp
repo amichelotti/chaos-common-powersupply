@@ -7,7 +7,6 @@
 //
 
 
-
 #include "common/powersupply/powersupply.h"
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
@@ -17,6 +16,9 @@
 #include <common/debug/core/debug.h>
 #include <boost/regex.hpp>
 #include <string>
+#ifdef CHAOS
+#include <chaos/ui_toolkit/ChaosUIToolkit.h>
+#endif
 #define DEFAULT_TIMEOUT 10000
 using boost::regex;
 
@@ -129,11 +131,31 @@ static void printCommandHelp(){
 int main(int argc, char *argv[])
 {
 
-
-  boost::program_options::options_description desc("options");
-    std::string ver;
+std::string ver;
     float maxcurrent=100;
     float maxvoltage=10;
+    bool span=false;
+    bool interactive=false;
+    int slave_id;
+    std::string dev;
+ 
+#ifdef CHAOS
+    
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("dev,d", po::value<std::string>(&dev), "The serial device /dev/ttyxx");
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("id", po::value<int>(&slave_id), "slave destination ID, ");
+      
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
+     chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
+      chaos::ui::ChaosUIToolkit::getInstance()->init(argc, argv);
+
+      
+   
+
+
+#else
+    boost::program_options::options_description desc("options");
     
   desc.add_options()("help", "help");
   // put your additional options here
@@ -145,46 +167,31 @@ int main(int argc, char *argv[])
 
   desc.add_options()("interactive", "interactive test");
   desc.add_options()("span,s", "span devices find devices on the bus");
-  desc.add_options()("raw,r", "raw access to ocem bus");
-  
+  desc.add_options()("raw,r", "raw access to ocem bus"); 
+  if(vm.count("id")==0){
+        std::cout<<"## you must specify an existing slave id [0:31]"<<desc<<std::endl;
+     return -1;
+  }
+     if(vm.count("dev")==0){
+        std::cout<<"## you must specify a valid device"<<desc<<std::endl;
+     return -1;
+    }
+   slave_id = vm["id"].as<int>();
+   dev = vm[dev].as<std::string>();
+   if(vm.count("interactive"))
+       interactive=true;
+#endif
   //////
-  boost::program_options::variables_map vm;
-  boost::program_options::store(boost::program_options::parse_command_line(argc,argv, desc),vm);
-  boost::program_options::notify(vm);
-    
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
-    printCommandHelp();
-    return 1;
-  }
-  if(vm.count("dev")==0){
-    std::cout<<"## you must specify a valid serial device:"<<desc<<std::endl;
-    return -1;
-  }
+ 
 
-    std::string param = vm["dev"].as<std::string>();
 
-    if(vm.count("maxcurr")){
-        maxcurrent=vm["maxcurr"].as<float>();
-        std::cout << "max current set to:"<<maxcurrent<<std::endl;
-    }
-    
-
-    if(vm.count("maxvolt")){
-        maxvoltage=vm["maxvolt"].as<float>();
-        std::cout << "max voltage set to:"<<maxvoltage<<std::endl;
-
-    }
-
-  if(vm.count("span")){
+  if(span){
     std::cout<<"finding device on the bus"<<std::endl;
     int id=0;
     int found=0;
-    if(vm.count("id")!=0){
-      id = vm["id"].as<int>();
-    }
+   
     for(;id<32;id++){
-      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),id,maxcurrent,maxvoltage);
+      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(dev.c_str(),id,maxcurrent,maxvoltage);
       if(ps==NULL){
 	std::cout<<"## cannot initiasize resources"<<std::endl;
 	return -2;
@@ -199,7 +206,7 @@ int main(int argc, char *argv[])
     }
     return found;
   }
-  if(vm.count("raw")){
+ /* if(vm.count("raw")){
     common::serial::OcemProtocol* oc= new common::serial::OcemProtocol(param.c_str());
     if(oc) 
       raw_test(oc);
@@ -207,18 +214,13 @@ int main(int argc, char *argv[])
     delete oc;
     return 0;
   }
-
-  if(vm.count("id")==0){
-    std::cout<<"## you must specify an existing slave id [0:31]"<<desc<<std::endl;
-    return -1;
-  }
-  int slave_id = vm["id"].as<int>();
-
+*/
+  
 
   
-  printf("Connecting to slave %d, via \"%s\"... \n",slave_id,param.c_str());
+  printf("Connecting to slave %d, via \"%s\"... \n",slave_id,dev.c_str());
 
-  common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(param.c_str(),slave_id,maxcurrent,maxvoltage);
+  common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(dev.c_str(),slave_id,maxcurrent,maxvoltage);
 
   if(ps){
     if(ps->init()!=0){
@@ -227,7 +229,7 @@ int main(int argc, char *argv[])
     }
   }
   printf("OK\n");
-  if(vm.count("interactive")){
+  if(interactive){
     if(  ps->getSWVersion(ver,DEFAULT_TIMEOUT)!=0){
       printf("## cannot get SW version \n");
       return -3;

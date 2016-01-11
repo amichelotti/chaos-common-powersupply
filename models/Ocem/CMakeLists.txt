@@ -20,7 +20,7 @@ ADD_DEFINITIONS(-DSIMPSUPPLY_DEBUG      -DOCEM_CORE_DEBUG -DPOWER_SUPPLY_DEFAULT
 
 set(power_src OcemE642X.cpp)
 IF(FrameworkLib)
-SET(libs chaos_common ${FrameworkLib})
+SET(libs chaos_common chaos_uitoolkit ${FrameworkLib})
 ELSE()
 SET(libs boost_program_options boost_thread boost_system boost_regex boost_atomic pthread)
 ENDIF()
