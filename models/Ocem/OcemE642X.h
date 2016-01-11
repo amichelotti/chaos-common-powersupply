@@ -75,7 +75,7 @@
 namespace common{
     namespace powersupply {
         
-      typedef boost::shared_ptr< ::common::serial::OcemProtocol > OcemProtocol_psh;
+      typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocol > OcemProtocol_psh;
         
         
         

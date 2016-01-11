@@ -42,7 +42,7 @@ static void printRawCommandHelp(){
     std::cout<<"\tQUIT               : quit program"<<std::endl;
   
 }
-void raw_test(common::serial::OcemProtocol*oc){
+void raw_test(common::serial::ocem::OcemProtocol*oc){
   char stringa[1024];
   boost::regex cmd_match("^(\\w+) (\\d+)(\\s+(.+)|)");
   if(oc->init()!=0 ){
