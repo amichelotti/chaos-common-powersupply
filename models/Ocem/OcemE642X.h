@@ -12,7 +12,7 @@
 
 #include <iostream>
 #include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/serial/Ocem/OcemProtocol.h"
+#include "common/serial/models/Ocem/OcemProtocol.h"
 #include <string.h>
 
 #ifndef OCEM_SELECT_TIMEOUT
