@@ -12,7 +12,8 @@
 
 #include <iostream>
 #include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/serial/models/Ocem/OcemProtocol.h"
+#include <common/serial/models/Ocem/OcemProtocol.h>
+#include <common/serial/models/Ocem/OcemProtocolBuffered.h>
 #include <string.h>
 
 #ifndef OCEM_SELECT_TIMEOUT
@@ -75,12 +76,14 @@
 namespace common{
     namespace powersupply {
         
-      typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocol > OcemProtocol_psh;
+
         
-        
+      //	  typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocol > OcemProtocol_psh;
+      typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolBuffered > OcemProtocol_psh;        
         
         class OcemE642X: public AbstractPowerSupply {
 	  
+
             enum OcemAlarms{
                 AC_UNBALANCE=1,
                 PHASE_LOSS,

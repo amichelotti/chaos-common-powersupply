@@ -91,7 +91,8 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int 
         DPRINT("RETRIVING serial ocem protocol on \"%s\" @x%Lx",mydev.c_str(),(unsigned long long)i->second.get());
         return i->second;
     }
-    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+    //    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
     DPRINT("creating NEW serial ocem protocol on \"%s\" @x%Lx",mydev.c_str(),(unsigned long long)unique_protocol[mydev].get());
     
     pthread_mutex_unlock(&unique_ocem_core_mutex);
