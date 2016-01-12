@@ -11,8 +11,7 @@
 
 
 #include <iostream>
-#include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/serial/Ocem/OcemProtocol.h"
+#include <common/powersupply/core/AbstractPowerSupply.h>
 #include <string.h>
 
 #ifndef SIMPSUPPLY_SELECT_TIMEOUT

@@ -28,7 +28,7 @@ std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
 #define CMD_WRITE(_cmdw,_timeo) \
 {									\
 int _ret,_timeout=0;							\
-DPRINT("CMD_WRITE apply command \"%s\" timeout %d",_cmdw,_timeo);			\
+DPRINT("[%d] CMD_WRITE apply command \"%s\" timeout %d",slave_id,_cmdw,_timeo);			\
 _ret =send_command((char*)_cmdw,_timeo,&_timeout);			\
 if(_timeout==1) return POWER_SUPPLY_TIMEOUT;				\
 if(_ret<=0) return POWER_SUPPLY_COMMAND_ERROR;			\
@@ -65,9 +65,9 @@ CMD_WRITE(cmdw,_timeo)
 #define GET_VALUE(value,_timeo,cmdw) \
 {									\
 int _ret;								\
-DPRINT("apply command \"%s\" timeout %d",cmdw,_timeo);		\
+DPRINT("[%d] apply command \"%s\" timeout %d",slave_id,cmdw,_timeo);		\
 if((_ret=update_status((common::debug::basic_timed*)&value,(char*)cmdw,_timeo))<=0){ \
-  DERR("cmd \"%s\" data is not in sync, ret %d",cmdw,_ret);		\
+  DERR("[%d] cmd \"%s\" for slaveid %d data is not in sync, ret %d",slave_id,cmdw,_ret);		\
 return _ret;							\
 }									\
 }
@@ -103,12 +103,17 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int 
 int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t timeout){
     
     char buf[2048];
-    uint64_t stamp=common::debug::getUsTime();
+    //uint64_t stamp=common::debug::getUsTime();
     int tim=0;
     uint64_t ret_time;
 
     CMD_WRITE(cmd,timeout);
-    DPRINT("data type \"%s\" last update at %10llu, command issued at %10llu",data->get_name(),ret_time,stamp);
+    update_status(1000,200);
+    DPRINT("[%d] data type \"%s\" last update at %10llu us ago",slave_id,data->get_name(),common::debug::getUsTime()- data->mod_time());
+    if(data->hasModified()>0){
+        return 1;
+    }
+#if 0
     while(((ret_time=data->mod_time())<stamp)){
        int ret;
        
@@ -128,16 +133,17 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
     }
     
     if(data->mod_time()>stamp){
-        DPRINT("data type \"%s\" has been updated at %10llu",data->get_name(),data->mod_time());
+        DPRINT("[%d] data type \"%s\" has been updated at %10llu",slave_id,data->get_name(),data->mod_time());
         return 1;
     } else {
         if(tim>0){
-	  DERR("Timeout retriving data \"%s\"",data->get_name());
+	  DERR("[%d] Timeout retrieving data \"%s\"",slave_id,data->get_name());
             return POWER_SUPPLY_TIMEOUT;
         } 
     }
     DERR("Data is not updated yet");
     return POWER_SUPPLY_READOUT_OUTDATED;
+#endif 
 }
 
 
@@ -490,13 +496,13 @@ int OcemE642X::init(){
 	  ret = ocem_prot->init();
 	  DPRINT("ocem protocol created and initialized ret=%d",ret)
         } else {
-	  ERR("cannot allocate ocem protocol");
+	  ERR("CANNOT ALLOCATE OCEM PROTOCOL");
 	  return -12;
 	}
 	
     }
     if(ret!=0){
-      ERR("cannot initialize serial ocem port");
+      ERR("CANNOT INITIALIZE SERIAL PORT");
       return ret;
     }
     
@@ -504,13 +510,15 @@ int OcemE642X::init(){
           int tim;
     do {
         char trialbuf[1024];
-        send_command("RMT",10000,&tim);
-            usleep(500000);
-
-        ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
-    } while((ret<=0) && retry-->0);
         
-    do {
+        ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
+        if(ret<=0){
+            send_command("RMT",10000,&tim);
+            usleep(500000);
+        }
+    } while((ret<=0) && (retry--)>0);
+        
+    /*do {
 	  // update status
 	  if((ret=force_update(60000))<0){
             DERR("Nothing has been refreshed  %d\n",ret);
@@ -521,6 +529,7 @@ int OcemE642X::init(){
 	  }
 	  sleep(1);
 	} while((ret<0) && retry-->0);
+     * */
     // poll trial
      
     
@@ -554,6 +563,8 @@ int OcemE642X::init(){
       ERR("No max current set");
       return -2;
     }
+    CMD_WRITE("PRG C",5000);
+
     setThreashold(0,(1<<current_adc)-1,10000);
         usleep(500000);
 
@@ -563,7 +574,8 @@ int OcemE642X::init(){
     DPRINT("Initialisation returned %d",ret);
     /** setting channels to maximum sensibility*/
     /**setting */
-    setChannel(0,0,0,(1<<current_adc)-1,10000); // current
+   /*
+      setChannel(0,0,0,(1<<current_adc)-1,10000); // current
     usleep(500000);
     setChannel(0,1,0,(1<<voltage_adc)-1,10000); // voltage
     usleep(500000);
@@ -573,11 +585,12 @@ int OcemE642X::init(){
     usleep(500000);
     setChannel(1,2,0,(1<<current_ramp_adc)-1,10000); // ramp down
     usleep(500000);
+    */
     do {
         char trialbuf[1024];
         // do polls and update variables
         ret=receive_data(trialbuf,sizeof(trialbuf), 10000,&tim);
-    } while((ret<=0) && retry-->0);
+    } while((ret>0) && (retry--)>0);
     
     /*
     // check parameters
@@ -871,6 +884,11 @@ int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
     if(regulator_state == REGULATOR_ERROR){
         *state|=POWER_SUPPLY_STATE_ERROR;
         desc += "error ";
+    }
+  
+  if(selector_state == SELECTOR_LOC){
+        *state|=POWER_SUPPLY_STATE_LOCAL;
+        desc += "local ";
     }
     if(alarms!=0){
         *state |= POWER_SUPPLY_STATE_ALARM;
