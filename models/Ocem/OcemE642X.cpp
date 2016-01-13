@@ -85,24 +85,21 @@ return _ret;							\
 void* OcemE642X::updateSchedule(){
     int ret;
     uint64_t doneat0,doneat1;
+    char buf[2048];
     DPRINT("THREAD STARTED 0x%x",pthread_self());
     run=1;
     while(run){
-        ret=update_status(1000,100);
-        if(ret<=0){
-            uint64_t t=common::debug::getUsTime();
-            if((regulator_state.mod_time()>OCEM_REFRESH_TIME) &&((t-doneat0)>OCEM_REFRESH_TIME)){
-                DPRINT("[%d] REFRESH LOGIC STATE ",slave_id);
-                send_command((const char*)"SL",1000,0);
-                doneat0=common::debug::getUsTime();
-            } else if((current.mod_time()>OCEM_REFRESH_TIME)&&((t-doneat1)>OCEM_REFRESH_TIME)){
-                DPRINT("[%d] REFRESH ANALOGIC STATE",slave_id);
-                send_command((const char*)"SA",1000,0);
-                doneat1=common::debug::getUsTime();
+        ret = receive_data( buf, sizeof(buf),OCEM_REFRESH_TIME/1000,0);
+        uint64_t t=common::debug::getUsTime();
+        if((regulator_state.mod_time()>OCEM_REFRESH_TIME) &&((t-doneat0)>OCEM_REFRESH_TIME)){
+            DPRINT("[%d] REFRESH LOGIC STATE ",slave_id);
+            send_command((const char*)"SL",1000,0);
+            doneat0=common::debug::getUsTime();
+        } else if((current.mod_time()>OCEM_REFRESH_TIME)&&((t-doneat1)>OCEM_REFRESH_TIME)){
+            DPRINT("[%d] REFRESH ANALOGIC STATE",slave_id);
+            send_command((const char*)"SA",1000,0);
+            doneat1=common::debug::getUsTime();
 
-            }
-            
-            usleep(100000);
         }
     }
       
