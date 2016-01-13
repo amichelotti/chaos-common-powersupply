@@ -52,6 +52,7 @@ namespace common {
             POWER_SUPPLY_RECEIVE_ERROR,/// an error occur during read of data
             POWER_SUPPLY_COMMAND_IN_BAD_STATE,
             POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY
+            
         };
         
         /**
@@ -112,7 +113,7 @@ namespace common {
             
         public:
             
-            
+            AbstractPowerSupply(){}
             static std::string decodeEvent(PowerSupplyEvents ev);
             virtual ~AbstractPowerSupply(){};
             /**
@@ -277,6 +278,22 @@ namespace common {
              @return 0 if success or an error code
              */
             virtual int getVoltageSensibility(float *sens)=0;
+            
+            
+             /**
+             @brief set the current sensibility of the power supply
+             @param sens sensibility in ampere
+             @return 0 if success or an error code
+             
+             */
+            virtual int setCurrentSensibility(float sens);
+            
+            /**
+             @brief set the voltage sensibility of the power supply
+             @param sens sensibility in volt
+             @return 0 if success or an error code
+             */
+            virtual int setVoltageSensibility(float sens);
             /**
              @brief returns the max min current of the power suppy
              @param max returns the max current that the power supply can output

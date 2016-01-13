@@ -53,10 +53,12 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-fPIC -fPIC -O3"/>
-        <element flagsID="1" commonFlags="-fPIC -fPIC -O3 -fPIC -O2 -O2"/>
-        <element flagsID="2" commonFlags="-fPIC -fPIC -fPIC -O3 -O2 -O2"/>
-        <element flagsID="3" commonFlags="-fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
+        <element flagsID="0" commonFlags="-fPIC -fPIC -fPIC -O3 -O2 -O2"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
+        <element flagsID="2" commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -O2"/>
+        <element flagsID="3" commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -O2 -O2"/>
+        <element flagsID="4"
+                 commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -75,13 +77,16 @@
         </makeTool>
       </makefileType>
       <item path="core/AbstractPowerSupply.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <folder path="0/core">
         <ccTool>
           <incDir>
             <pElem>.</pElem>
+            <pElem>../..</pElem>
+            <pElem>..</pElem>
+            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
           </incDir>
         </ccTool>
       </folder>
@@ -91,13 +96,13 @@
             <pElem>../..</pElem>
             <pElem>..</pElem>
             <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </folder>
       <folder path="0/models/Hazemeyer">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
             <pElem>models/Hazemeyer</pElem>
             <pElem>models</pElem>
           </incDir>
@@ -115,19 +120,9 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <folder path="0/models/Ocem/test">
-        <ccTool>
-          <incDir>
-            <pElem>.</pElem>
-            <pElem>models/Ocem</pElem>
-            <pElem>models</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
       <folder path="0/models/Simulator">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
             <pElem>models/Simulator</pElem>
             <pElem>models</pElem>
           </incDir>
@@ -142,18 +137,18 @@
             ex="false"
             tool="1"
             flavor2="4">
-        <ccTool flags="3">
+        <ccTool flags="1">
           <preprocessorList>
             <Elem>hazemeyer_powersupply_EXPORTS</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="models/Hazemeyer/test.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="2">
+        <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="models/Ocem/OcemE642X.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool flags="1">
+      <item path="models/Ocem/OcemE642X.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="4">
           <incDir>
             <pElem>.</pElem>
             <pElem>../..</pElem>
@@ -168,15 +163,31 @@
         </ccTool>
       </item>
       <item path="models/Ocem/test/ocem_array.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="2">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../..</pElem>
+            <pElem>..</pElem>
+            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>.</pElem>
+            <pElem>models/Ocem</pElem>
+            <pElem>models</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Ocem/test/ocem_test.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="2">
+        <ccTool flags="3">
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>../..</pElem>
+            <pElem>..</pElem>
+            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>models/Ocem</pElem>
+            <pElem>models</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Simulator/SimPSupply.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="3">
+        <ccTool flags="1">
         </ccTool>
       </item>
     </conf>

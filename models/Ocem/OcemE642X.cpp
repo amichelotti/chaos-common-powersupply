@@ -84,11 +84,24 @@ return _ret;							\
 }
 void* OcemE642X::updateSchedule(){
     int ret;
+    uint64_t doneat0,doneat1;
     DPRINT("THREAD STARTED 0x%x",pthread_self());
     run=1;
     while(run){
         ret=update_status(1000,100);
         if(ret<=0){
+            uint64_t t=common::debug::getUsTime();
+            if((regulator_state.mod_time()>OCEM_REFRESH_TIME) &&((t-doneat0)>OCEM_REFRESH_TIME)){
+                DPRINT("[%d] REFRESH LOGIC STATE ",slave_id);
+                send_command((const char*)"SL",1000,0);
+                doneat0=common::debug::getUsTime();
+            } else if((current.mod_time()>OCEM_REFRESH_TIME)&&((t-doneat1)>OCEM_REFRESH_TIME)){
+                DPRINT("[%d] REFRESH ANALOGIC STATE",slave_id);
+                send_command((const char*)"SA",1000,0);
+                doneat1=common::debug::getUsTime();
+
+            }
+            
             usleep(100000);
         }
     }
@@ -188,8 +201,8 @@ void OcemE642X::init_internal(){
       max_voltage=OCEM_MAX_VOLTAGE;
       min_voltage=OCEM_MIN_VOLTAGE;
       
-    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
-    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    adc_voltage_conversion=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    adc_current_conversion = ((max_current-min_current)*1.0)/(1<<current_adc);
     */
     available_alarms =0;
     for(cnt=0;cnt<OCEM_INPUT_CHANNELS;cnt++){
@@ -501,6 +514,32 @@ void OcemE642X::updateParamsByModel(OcemModels model){
   forceMaxVoltage(max_voltage);
   available_alarms =0;
 }
+///////
+void OcemE642X::ocemInitialization(){
+    int timeo;
+    int ret;
+    char buf[2048];
+    DPRINT("ocem initialization");
+    ocem_prot->OcemProtocol::poll(slave_id, buf, sizeof(buf),500,&timeo);
+    usleep(200000);
+    ocem_prot->OcemProtocol::poll(slave_id, buf, sizeof(buf),500,&timeo);
+    usleep(200000);
+    ocem_prot->OcemProtocol::select(slave_id, "RMT",1000,&timeo);
+    sleep(1);
+    
+    do{
+        ret=ocem_prot->OcemProtocol::poll(slave_id, buf, sizeof(buf),1000,&timeo);
+        DPRINT("polling %d",ret);
+
+        usleep(500000);
+
+    } while (ret>0);
+    
+    
+    
+}
+
+/////////
 int OcemE642X::init(){
     int ret=-1;
     char buf[2048];
@@ -515,14 +554,14 @@ int OcemE642X::init(){
     DPRINT("initialising");
     if(ocem_prot){
       ocem_prot->registerSlave(slave_id);
-      ret = ocem_prot->init();
+      ret = ocem_prot->OcemProtocol::init();
 
 	DPRINT("ocem protocol initialized ret=%d",ret)
     } else {
         ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
         if(ocem_prot){
 	  ocem_prot->registerSlave(slave_id);
-	  ret = ocem_prot->init();
+	  ret = ocem_prot->OcemProtocol::init();
 
 	  DPRINT("ocem protocol created and initialized ret=%d",ret)
         } else {
@@ -536,6 +575,8 @@ int OcemE642X::init(){
       return ret;
     }
     
+    ocemInitialization();
+    ocem_prot->init();
     if(initialized){
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -551,10 +592,6 @@ int OcemE642X::init(){
     int tim;
     
     
-
-    if(ret<=0)
-      send_command("RMT",1000,&tim);
-
      
     
     retry = INIT_RETRY;
@@ -570,18 +607,19 @@ int OcemE642X::init(){
       updateParamsByModel(OCEM_UKNOWN);
     }
     
-    if(current_sensibility==0 || max_current==0){
+    if(adc_current_conversion==0 || max_current==0){
       ERR("No max current set");
       return -2;
     }
-    CMD_WRITE("PRG C",5000);
 
-    //setThreashold(0,(1<<current_adc)-1,10000);
-    setThreashold(0,(int)(1.0/current_sensibility),10000);
-       usleep(500000);
-    setThreashold(1,(int)(1.0/voltage_sensibility),10000);
 
-    //setThreashold(1,(1<<voltage_adc)-1,10000);
+    send_command("PRG C",5000,0);
+   
+
+   
+    setCurrentSensibility(1.0);
+    setThreashold(1,255,1000);
+    //setVoltageSensibility(1.0);
     usleep(500000);
 
     DPRINT("Initialisation returned %d",ret);
@@ -657,18 +695,19 @@ int OcemE642X::deinit(){
 int OcemE642X::send_command(char*cmd,uint32_t timeout,int*tim){
     char command[1024];
     int ret;
-    if(cmd==NULL || tim==NULL)
+    if(cmd==NULL)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    *tim=0;
+    if(tim)
+        *tim=0;
     DPRINT("sending command \"%s\" to slave %d, timeout %d",cmd,slave_id,timeout);
     snprintf(command,sizeof(command),"%s" OCEM_TERMINATOR,cmd);
     ret =ocem_prot->select(slave_id, command,timeout,tim);
     if(ret>0){
-      DPRINT("command sent %d bytes to slave %d (timeout %d, occured %d) sucessfully",ret,slave_id,timeout,*tim);
+      DPRINT("command sent %d bytes to slave %d sucessfully",ret,slave_id);
     } else if(ret == 0){
-        DPRINT("nothing has been sent, (timeout %d, occured %d)",timeout,*tim);
+        DPRINT("nothing has been sent");
     } else {
-      ERR("error %d occurred slave id %d (timeout %d, occured %d)",ret,slave_id,timeout,*tim);
+      ERR("error %d occurred slave id %d",ret,slave_id);
         
     }
     
@@ -774,10 +813,10 @@ int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
     if(current<min_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     
-    val =(int)round(current/current_sensibility);
+    val =(int)round(current/adc_current_conversion);
     snprintf(stringa,sizeof(stringa),"SP %.7d",val);
     printf("-> %.7d (0x%x)",val,val); 
-    sp_current = current/current_sensibility;
+    sp_current = current/adc_current_conversion;
     
     CMD_WRITE(stringa,timeo_ms);
     return 0;
@@ -785,15 +824,15 @@ int OcemE642X::setCurrentSP(float current,uint32_t timeo_ms){
 
 
 int OcemE642X::getCurrentSP(float* current,uint32_t timeo_ms){
-    *current = sp_current*current_sensibility;
+    *current = sp_current*adc_current_conversion;
     return 0;
 }
 
 int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
 #if 0
-    *curr = current*current_sensibility;
+    *curr = current*adc_current_conversion;
     GET_VALUE(current,timeo_ms,COR);
-    *curr = current*current_sensibility;
+    *curr = current*adc_current_conversion;
 #else
    /* if((common::debug::getUsTime()-current.mod_time())>OCEM_REFRESH_TIME){
         CMD_WRITE("COR",timeo_ms);
@@ -801,16 +840,16 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
     
   //  GET_VALUE(current,timeo_ms,SA);
     
-    *curr = current*current_sensibility;
+    *curr = current*adc_current_conversion;
 #endif
     return 0;
 }
 int  OcemE642X::getVoltageOutput(float* volt,uint32_t timeo_ms){
-    //*volt = voltage*current_sensibility;
+    //*volt = voltage*adc_current_conversion;
     //GET_VALUE(voltage,timeo_ms,SA);
     
 
-    *volt = voltage*current_sensibility;
+    *volt = voltage*adc_current_conversion;
     return 0;
 }
 
@@ -1006,9 +1045,9 @@ int OcemE642X::setThreashold(int channel,float value,uint32_t timeout){
     }
     if(channel==0){
       // current;
-      val = value/current_sensibility;
+      val = value/adc_current_conversion;
     } else if(channel==1){
-      val = value/voltage_sensibility;
+      val = value/adc_voltage_conversion;
     } else {
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
@@ -1040,13 +1079,14 @@ int OcemE642X::getMaxMinVoltage(float*max,float*min){
 
 int OcemE642X::forceMaxCurrent(float max){
     max_current = max;
-    current_sensibility = ((max_current-min_current)*1.0)/(1<<current_adc);
+    adc_current_conversion=((max_current-min_current)*1.0)/(1<<current_adc);
     return 0;
 }
 
 int OcemE642X::forceMaxVoltage(float max){
     max_voltage = max;
-    voltage_sensibility=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    adc_voltage_conversion=((max_voltage -min_voltage)*1.0)/(1<<voltage_adc);
+    
     return 0;
 }
 
@@ -1054,4 +1094,19 @@ int OcemE642X::forceMaxVoltage(float max){
 int OcemE642X::getAlarmDesc(uint64_t*desc){
     *desc = POWER_SUPPLY_EVENT_DOOR_OPEN;
     return 0;
+}
+
+int OcemE642X::setCurrentSensibility(float sens){
+    DPRINT("set current sensibility to %f A",sens);
+    current_sensibility=sens;
+    setThreashold(0,sens,1000);
+    return 0;
+}        
+int OcemE642X::setVoltageSensibility(float sens){
+    voltage_sensibility=sens;
+     DPRINT("set voltage sensibility to %f A",sens);
+
+    setThreashold(1,sens,1000);
+    return 0;
+    
 }

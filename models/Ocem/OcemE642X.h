@@ -71,7 +71,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#define OCEM_REFRESH_TIME 1000000
+#define OCEM_REFRESH_TIME 5000000
 
 namespace common{
     namespace powersupply {
@@ -233,11 +233,12 @@ namespace common{
             static const int voltage_adc=OCEM_VOLTAGE_ADC;
             static const int current_adc=OCEM_CURRENT_ADC;
             static const int current_ramp_adc=OCEM_CURRENT_RAMP_ADC;
-            float voltage_sensibility;
-            float current_sensibility;
+            float voltage_sensibility,adc_voltage_conversion;
+            float current_sensibility,adc_current_conversion,ramp_conversion;
 	    uint64_t available_alarms;
 	    OcemModels model;
 	    void updateParamsByModel(OcemModels model);
+            void ocemInitialization();
         public:
 
 	    OcemE642X(const char *dev,int slave_id,float maxcurr,float maxvoltage);
@@ -363,7 +364,10 @@ namespace common{
              @return 0 if success or an error code
              */
             int forceMaxVoltage(float max);
-
+            
+            int setCurrentSensibility(float sens);        
+            int setVoltageSensibility(float sens);
+            
             void* updateSchedule();
              int run;
 

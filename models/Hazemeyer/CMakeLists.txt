@@ -31,5 +31,5 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} HZLib  ${libs})
 
 ###
 ADD_EXECUTABLE(A250Test test.cpp)
-TARGET_LINK_LIBRARIES(A250Test ${MODBUSLIB} ${PROJECT_NAME} HZLib common_modbus modbus ${libs} )
+TARGET_LINK_LIBRARIES(A250Test ${MODBUSLIB} ${PROJECT_NAME} HZLib common_powersupply common_modbus modbus ${libs} )
 INSTALL_TARGETS(/lib ${PROJECT_NAME})

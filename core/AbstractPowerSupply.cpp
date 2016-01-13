@@ -1,10 +1,11 @@
 #include "AbstractPowerSupply.h"
-
+#include <common/debug/core/debug.h>
  #define DESC_EVENT(x) \
 case x: return std::string (# x);
 
-using namespace ::common::powersupply;
+using namespace common::powersupply;
 std::string decodeEvent(PowerSupplyEvents ev){
+    uint64_t al=ev;
     
     switch(ev){
         DESC_EVENT(POWER_SUPPLY_EVENT_DOOR_OPEN)
@@ -38,4 +39,17 @@ std::string decodeEvent(PowerSupplyEvents ev){
             return std::string("undefined");
     }
 
+}
+
+
+   
+ int AbstractPowerSupply::setCurrentSensibility(float sens){
+     DERR("not implemented");
+     return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
+ }
+            
+        
+int AbstractPowerSupply::setVoltageSensibility(float sens){
+     DERR("not implemented");
+     return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
 }

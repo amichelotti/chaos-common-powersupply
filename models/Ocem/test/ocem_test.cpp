@@ -260,8 +260,7 @@ std::string ver;
       }
       if((ret=ps->getAlarms(&ev,DEFAULT_TIMEOUT))<0){
 	printf("\n## error retrieving Alarms, ret %d\n",ret);
-      }
-
+      } 
       printf("A:%3.4f,V:%2.2f,SetPoint('1'):%3.4f,Polarity('2'):%c,State('3'):(0x%x)\"%s\", alarms(reset '4'):x%llX\r",curr,volt,sp,(pol>0)?'+':(pol<0)?'-':'0',stat,state.c_str(),ev);
       fflush(stdout);
       if(check_for_char() && (ch=getchar())){
