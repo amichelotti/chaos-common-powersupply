@@ -76,6 +76,26 @@ return _ret;							\
  }}								\
  }
 
+
+
+ void* OcemE642X::update_thread(void* p){
+    OcemE642X* pnt = (OcemE642X*)p;
+    return (void*)pnt->updateSchedule();
+}
+void* OcemE642X::updateSchedule(){
+    int ret;
+    DPRINT("THREAD STARTED 0x%x",pthread_self());
+    run=1;
+    while(run){
+        ret=update_status(1000,100);
+        if(ret<=0){
+            usleep(100000);
+        }
+    }
+      
+    DPRINT("EXITING SCHEDULE THREAD");
+}
+
 void OcemE642X::removeOcemProtocol(std::string& mydev){
   DPRINT("removing protocol on \"%s\"",mydev.c_str());
   pthread_mutex_lock(&unique_ocem_core_mutex);
@@ -427,14 +447,14 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
     int updated=0;
     int timeo=0;
 
-    DPRINT("fetching for %d ms",timeout);
     do{
         tstart= common::debug::getUsTime();
         ret = receive_data( buf, sizeof(buf),timeout,&timeo);
         totPollTime+= common::debug::getUsTime()-tstart;
-        DPRINT("Checking result %d, tot Poll time %.10llu us",ret,totPollTime);
         if(ret>0){
             updated+=ret;
+            DPRINT("Checking result %d, tot Poll time %.10llu us",ret,totPollTime);
+
         }
         if(msxpoll)
             usleep(msxpoll*1000);
@@ -485,10 +505,13 @@ int OcemE642X::init(){
     int ret=-1;
     char buf[2048];
     int cnt,max,min;
+      pthread_attr_t attr;
+
     *buf = 0;
     regulator_state = REGULATOR_UKN;
     selector_state = SELECTOR_UKN;
     polarity = POL_UKN;
+    
     DPRINT("initialising");
     if(ocem_prot){
       ocem_prot->registerSlave(slave_id);
@@ -512,21 +535,26 @@ int OcemE642X::init(){
       ERR("CANNOT INITIALIZE SERIAL PORT");
       return ret;
     }
+    
+    if(initialized){
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
+        if(pthread_create(&rpid,&attr,update_thread,this)<0){
+          DERR("cannot create schedule_thread thread");
+          return -1;
+        }
+    }
+    initialized=1;
 
     int retry=INIT_RETRY;
     int tim;
     
-    update_status(5000,100);
+    
 
     if(ret<=0)
       send_command("RMT",1000,&tim);
 
-    do {
-      ret=update_status(1000,100);
-        
-        
-    } while((ret>0));
      
     
     retry = INIT_RETRY;
@@ -548,10 +576,12 @@ int OcemE642X::init(){
     }
     CMD_WRITE("PRG C",5000);
 
-    setThreashold(0,(1<<current_adc)-1,10000);
-        usleep(500000);
+    //setThreashold(0,(1<<current_adc)-1,10000);
+    setThreashold(0,(int)(1.0/current_sensibility),10000);
+       usleep(500000);
+    setThreashold(1,(int)(1.0/voltage_sensibility),10000);
 
-    setThreashold(1,(1<<voltage_adc)-1,10000);
+    //setThreashold(1,(1<<voltage_adc)-1,10000);
     usleep(500000);
 
     DPRINT("Initialisation returned %d",ret);
@@ -569,11 +599,6 @@ int OcemE642X::init(){
     setChannel(1,2,0,(1<<current_ramp_adc)-1,10000); // ramp down
     usleep(500000);
     */
-    do {
-      ret=update_status(1000,100);
-        
-        
-    } while((ret>0));
         
     /*
     // check parameters
@@ -616,9 +641,13 @@ int OcemE642X::force_update(uint32_t timeout){
     return 0;
 }
 int OcemE642X::deinit(){
+    int* ret;
+    run=0;
+    pthread_join(rpid,(void**)&ret);
+
     ocem_prot.reset();
     removeOcemProtocol(dev);
-    
+    initialized=0;
     return 0;
 }
 
@@ -692,14 +721,14 @@ int OcemE642X::getSWVersion(std::string &ver,uint32_t timeo_ms){
         ver ="Driver:OcemE642x";
         return 0;
     }
-    
+#if 0 
     if(version.mod_time()<=0){
       if((ret=update_status(&version,(char*)"VER",timeo_ms))<=0){
         ERR("data is not in sync");
         return ret;
       }
     }
-    
+#endif
     sprintf(stringa,"Driver:OcemE642x, HW Release '%c' %2.2d/%2.2d/%2.2d type:%.8s",version.get().rilascio,version.get().giorno,version.get().mese,version.get().anno, version.get().type);
     
     ver = stringa;
@@ -731,8 +760,8 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
 #else
   //CMD_WRITE("POL",timeo_ms);
-  //update_status(1000,10);
-   GET_VALUE(polarity,timeo_ms,SL);
+   
+  // GET_VALUE(polarity,timeo_ms,SL);
 
   *pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
 #endif
@@ -770,14 +799,17 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
         CMD_WRITE("COR",timeo_ms);
     }*/
     
-    GET_VALUE(current,timeo_ms,SA);
+  //  GET_VALUE(current,timeo_ms,SA);
+    
     *curr = current*current_sensibility;
 #endif
     return 0;
 }
 int  OcemE642X::getVoltageOutput(float* volt,uint32_t timeo_ms){
-    *volt = voltage*current_sensibility;
-    GET_VALUE(voltage,timeo_ms,SA);
+    //*volt = voltage*current_sensibility;
+    //GET_VALUE(voltage,timeo_ms,SA);
+    
+
     *volt = voltage*current_sensibility;
     return 0;
 }
@@ -821,8 +853,10 @@ int OcemE642X::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 }
 
 int OcemE642X::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
-    *alrm = alarms;
-    GET_VALUE(alarms,timeo_ms,SL);
+   // *alrm = alarms;
+   // GET_VALUE(alarms,timeo_ms,SL);
+     
+
     *alrm = alarms;
     return 0;
 }
@@ -849,7 +883,9 @@ int OcemE642X::standby(uint32_t timeo_ms){
 int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
   *state = 0;
   
-  GET_VALUE(regulator_state,timeo_ms,SL);
+//  GET_VALUE(regulator_state,timeo_ms,SL);
+      
+
 
     if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
         *state |=POWER_SUPPLY_STATE_OFF;
@@ -921,7 +957,7 @@ int OcemE642X::getChannel(int inout,int number, int* min,int* max,uint32_t timeo
     //  send_receive((char*)"PRG S",buf,sizeof(buf));
     //
     CMD_WRITE("PRG S",timeout);
-    update_status(timeout,10);
+    
     if((inout==0) && (number < OCEM_INPUT_CHANNELS )) {
         DPRINT("get channel INPUT number %d, timeo %d",number,timeout);
 

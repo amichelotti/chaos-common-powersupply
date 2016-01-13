@@ -71,7 +71,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#define OCEM_REFRESH_TIME 3000000
+#define OCEM_REFRESH_TIME 1000000
 
 namespace common{
     namespace powersupply {
@@ -112,9 +112,10 @@ namespace common{
           
             static pthread_mutex_t unique_ocem_core_mutex;
             
-
 	private:
 	    void init_internal();
+             pthread_t rpid;
+             int initialized;
         protected:
             OcemProtocol_psh ocem_prot;
             
@@ -363,8 +364,11 @@ namespace common{
              */
             int forceMaxVoltage(float max);
 
-            
-            
+            void* updateSchedule();
+             int run;
+
+           static void* update_thread(void* p);
+
         };
     };
 };
