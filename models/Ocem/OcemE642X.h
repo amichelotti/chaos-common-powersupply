@@ -71,7 +71,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-
+#define OCEM_REFRESH_TIME 3000000
 
 namespace common{
     namespace powersupply {
@@ -194,6 +194,9 @@ namespace common{
             ::common::debug::timed_value<ocem_channel> ochannel[OCEM_OUTPUT_CHANNELS];
             ::common::debug::timed_value<unsigned> current;
             ::common::debug::timed_value<unsigned> voltage;
+            ::common::debug::timed_value<unsigned> SL;
+            ::common::debug::timed_value<unsigned> SA;
+            ::common::debug::timed_value<unsigned> RMT;
             ::common::debug::timed_value<Polarity> polarity;
             ::common::debug::timed_value<uint64_t> alarms;
             ::common::debug::timed_value<RegulatorState> regulator_state;
