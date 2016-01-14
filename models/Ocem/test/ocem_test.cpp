@@ -123,6 +123,8 @@ static void printCommandHelp(){
     std::cout<<"\tGETPOL             : get polarity"<<std::endl;
     std::cout<<"\t-------------------------------------------"<<std::endl;
     std::cout<<"\tPOLL               : get Ocem answer"<<std::endl;
+    std::cout<<"\tSELECT <command>   : select"<<std::endl;
+
     std::cout<<"\t-------------------------------------------"<<std::endl;
     std::cout<<"\tOPEN <ser> <slave> : open a new powersupply"<<std::endl;
     std::cout<<"\tCLOSE              : close powersupply"<<std::endl;
@@ -225,6 +227,8 @@ std::string ver;
   common::powersupply::OcemE642X *ps= new common::powersupply::OcemE642X(dev.c_str(),slave_id,maxcurrent,maxvoltage);
 
   if(ps){
+    std::cout<<"Initializing driver"<<std::endl;
+
     if(ps->init()!=0){
       printf("## cannot initialise power supply\n");
       return -1;
@@ -378,7 +382,15 @@ std::string ver;
       } else if(sscanf(stringa,"%s %s",cmd,val)==2){
 	int ival = atoi(val);
 	float fval = atof(val);
-	if(!strcmp(cmd,"POL")){
+        if(!strcmp(cmd,"SELECT")){
+            int ret;
+            ret=ps->send_command(val,1000,0);
+            if(ret<0){
+                printf("## error SELECT %s ret %d\n",val,ret);
+                continue;
+            } 
+            
+        } else if(!strcmp(cmd,"POL")){
 
 	  printf("setting polarity to %d\n",ival);
 	  if( (ret=ps->setPolarity(ival,DEFAULT_TIMEOUT))<0){
@@ -459,7 +471,8 @@ std::string ver;
 	    printf("## error getting alarms ret %d\n",ret);
 	    continue;
 	  } else {
-	    printf("* %.16llx\n",curr);
+	    std::string ret=common::powersupply::AbstractPowerSupply::decodeEvent((common::powersupply::PowerSupplyEvents)curr);
+	    printf("* %.16llx \"%s\"\n",curr,ret.c_str());
 	  }
 	} else if(!strcmp(cmd,"GETSTATE")){
 	  int stat;

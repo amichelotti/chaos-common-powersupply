@@ -71,7 +71,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#define OCEM_REFRESH_TIME 5000000
+#define OCEM_REFRESH_TIME 10000000
 
 namespace common{
     namespace powersupply {
@@ -238,7 +238,7 @@ namespace common{
 	    uint64_t available_alarms;
 	    OcemModels model;
 	    void updateParamsByModel(OcemModels model);
-            void ocemInitialization();
+            int ocemInitialization();
         public:
 
 	    OcemE642X(const char *dev,int slave_id,float maxcurr,float maxvoltage);

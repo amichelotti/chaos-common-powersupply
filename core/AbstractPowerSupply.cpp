@@ -1,13 +1,14 @@
 #include "AbstractPowerSupply.h"
 #include <common/debug/core/debug.h>
+#include <sstream>
  #define DESC_EVENT(x) \
-case x: return std::string (# x);
+if(al & x ) {ret<<" " << # x;}
 
 using namespace common::powersupply;
-std::string decodeEvent(PowerSupplyEvents ev){
+std::string AbstractPowerSupply::decodeEvent(PowerSupplyEvents ev){
     uint64_t al=ev;
-    
-    switch(ev){
+    std::stringstream ret;
+
         DESC_EVENT(POWER_SUPPLY_EVENT_DOOR_OPEN)
         DESC_EVENT(POWER_SUPPLY_EVENT_OVER_TEMP)
         DESC_EVENT(POWER_SUPPLY_FUSE_FAULT)
@@ -24,7 +25,7 @@ std::string decodeEvent(PowerSupplyEvents ev){
         DESC_EVENT(POWER_SUPPLY_ACTIVE_FILTER_FUSE)
         DESC_EVENT(POWER_SUPPLY_ACTIVE_FILTER_OVT)
         DESC_EVENT(    POWER_SUPPLY_DIODE_OVT)
-        DESC_EVENT(    POWER_SUPPLY_DIODE_FAULT)
+	  DESC_EVENT(    POWER_SUPPLY_DIODE_FAULT)
         DESC_EVENT(    POWER_SUPPLY_AC_UNBALANCE)
          DESC_EVENT(   POWER_SUPPLY_PHASE_LOSS)
          DESC_EVENT(   POWER_SUPPLY_AIR_FLOW)
@@ -35,9 +36,8 @@ std::string decodeEvent(PowerSupplyEvents ev){
         DESC_EVENT(    POWER_SUPPLY_CHOKE_OVT)
         DESC_EVENT(    POWER_SUPPLY_PASS_FILTER)
         DESC_EVENT(    POWER_SUPPLY_ALARM_UNDEF)
-        default:
-            return std::string("undefined");
-    }
+
+	return ret.str();
 
 }
 
