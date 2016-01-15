@@ -18,7 +18,7 @@ using namespace common::powersupply;
 
 
 pthread_mutex_t OcemE642X::unique_ocem_core_mutex=PTHREAD_MUTEX_INITIALIZER;
-std::map<std::string,OcemProtocol_psh > OcemE642X::unique_protocol;
+std::map<std::string,OcemE642X::OcemProtocol_psh > OcemE642X::unique_protocol;
 
 #define INIT_RETRY 10
 
@@ -133,7 +133,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
   }
   pthread_mutex_unlock(&unique_ocem_core_mutex);
 }
-OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
+OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
   DPRINT("getting protocol for \"%s\" baudrate %d , parity %d bits %d stop %d",mydev.c_str(),baudrate,parity,bits,stop);
     pthread_mutex_lock(&unique_ocem_core_mutex);
     std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
@@ -143,7 +143,7 @@ OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int 
         return i->second;
     }
     //    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
-    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolScheduleCFQ(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
     DPRINT("creating NEW serial ocem protocol on \"%s\" @x%Lx",mydev.c_str(),(unsigned long long)unique_protocol[mydev].get());
     
     pthread_mutex_unlock(&unique_ocem_core_mutex);
@@ -585,6 +585,8 @@ int OcemE642X::ocemInitialization(){
        DERR("[%d] no activity",slave_id);
        return -3;
    }
+   ocem_prot->OcemProtocol::select(slave_id, "SL",1000,&timeo);
+
    return 0;
     
 }

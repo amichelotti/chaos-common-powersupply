@@ -14,6 +14,8 @@
 #include "common/powersupply/core/AbstractPowerSupply.h"
 #include <common/serial/models/Ocem/OcemProtocol.h>
 #include <common/serial/models/Ocem/OcemProtocolBuffered.h>
+#include <common/serial/models/Ocem/OcemProtocolScheduleCFQ.h>
+
 #include <string.h>
 
 #ifndef OCEM_SELECT_TIMEOUT
@@ -79,11 +81,11 @@ namespace common{
 
         
       //	  typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocol > OcemProtocol_psh;
-      typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolBuffered > OcemProtocol_psh;        
+        
         
         class OcemE642X: public AbstractPowerSupply {
 	  
-
+        public:
             enum OcemAlarms{
                 AC_UNBALANCE=1,
                 PHASE_LOSS,
@@ -107,8 +109,9 @@ namespace common{
                 EXTERNAL_INTERLOCK,
                 ALARM_UNDEFINED
             };
-            
-            static std::map<std::string,OcemProtocol_psh > unique_protocol;
+            //typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolBuffered > OcemProtocol_psh;        
+            typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolScheduleCFQ > OcemProtocol_psh;        
+            static std::map<std::string,OcemE642X::OcemProtocol_psh > unique_protocol;
           
             static pthread_mutex_t unique_ocem_core_mutex;
             
