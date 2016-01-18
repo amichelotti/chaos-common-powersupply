@@ -63,7 +63,7 @@ void SimPSupply::update_state(){
 
 }
 void SimPSupply::run(){
-    DPRINT("Starting SimSupply service\n");
+    DPRINT("Starting SimSupply service force errors:%d\n",force_errors);
     uint64_t last_error_time=0;
     uint64_t error=0;
     
@@ -71,7 +71,6 @@ void SimPSupply::run(){
         if(force_errors){
                 if(((common::debug::getUsTime()-last_error_time)/1000000)>force_errors){
                     uint64_t rr=(1LL<<error);
-                    DPRINT("issuing a SW error");
                     
                     alarms=rr;
                     std::string ret=common::powersupply::AbstractPowerSupply::decodeEvent((PowerSupplyEvents)(1LL<<error));
@@ -83,9 +82,12 @@ void SimPSupply::run(){
                         regulator_state= REGULATOR_STANDBY;
                     }
                     error++;
+                    last_error_time=common::debug::getUsTime();
                 }
             }
-        if(start_ramp&& (regulator_state == REGULATOR_ON)){
+        if(start_ramp){
+            DPRINT("start ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",regulator_state,force_errors,alarms);
+            if (regulator_state == REGULATOR_ON){
             if(currSP>current){
 	      DPRINT("Ramp up adccurr %d (%f) set point %f increments %f, ramp speed up %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000,ramp_speed_up);
 
@@ -99,6 +101,7 @@ void SimPSupply::run(){
                 start_ramp=false;
             }
             
+        }
         }
 	update_state();
         usleep(update_delay);
@@ -232,6 +235,7 @@ int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
 int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
+    DPRINT("starting ramp");
     uint32_t simdel=wait_write();
     
     if((simdel>(timeo_ms*1000))&&(timeo_ms>0)){
