@@ -31,7 +31,7 @@ ELSE()
   ADD_LIBRARY(${PROJECT_NAME} SHARED ${PowerSupply_src} ${power_src})
 ENDIF()
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} common_debug ${libs})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} common_powersupply common_debug ${libs})
 
 
 SET(DRIVERS_LIB ${DRIVERS_LIB} ${PROJECT_NAME} PARENT_SCOPE)
