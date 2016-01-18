@@ -73,7 +73,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#define OCEM_REFRESH_TIME 10000000
+#define OCEM_REFRESH_TIME 15000000
 
 namespace common{
     namespace powersupply {

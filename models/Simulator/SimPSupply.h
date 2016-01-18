@@ -131,6 +131,8 @@ namespace common{
             int current;
             int currSP;
             int regulator_state;
+            int selector_state;
+
             int start_ramp;
             unsigned force_errors;
             uint64_t alarms;

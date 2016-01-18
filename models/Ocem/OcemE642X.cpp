@@ -94,14 +94,14 @@ void* OcemE642X::updateSchedule(){
       ret = receive_data( buf, sizeof(buf),OCEM_REFRESH_TIME/1000,0);
       uint64_t t=common::debug::getUsTime();
       if(current.mod_time()>OCEM_REFRESH_TIME){
-          if(ocem_prot->getWriteSize(slave_id)==0){
-            DPRINT("[%d] REFRESH ANALOGIC, because current has been modified %llu us ago",slave_id,current.mod_time());
+          if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
+            DPRINT("[%d] REFRESH ANALOGIC, because current has been modified %llu ms ago",slave_id,current.mod_time()/1000);
             send_command((const char*)"SA",1000,0);
           }
       }
       if(regulator_state.mod_time()>OCEM_REFRESH_TIME){
-          if(ocem_prot->getWriteSize(slave_id)==0){
-            DPRINT("[%d] REFRESH LOGIC  because state has been modified %llu us",slave_id,regulator_state.mod_time());
+          if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
+            DPRINT("[%d] REFRESH LOGIC  because state has been modified %llu ms",slave_id,regulator_state.mod_time()/1000);
             send_command((const char*)"SL",1000,0);
           }
       }
@@ -322,7 +322,7 @@ int OcemE642X::updateInternalData(char * stringa){
             }
         } else if(sscanf(pnt,"STA %3s",datac)==1){
             if(!strncmp(datac,"ATT",2)){
-                regulator_state = REGULATOR_ON;
+                regulator_state=REGULATOR_ON;
                 DPRINT("[%d] got Regulator ON",slave_id);
                 parsed++;
             } else if(!strncmp(datac,"STB",3)){
@@ -630,9 +630,10 @@ int OcemE642X::init(){
     if(ocemInitialization()<0){
         return -1000;
     }
-    ocem_prot->start();
-
+ocem_prot->start();
     if(initialized==0){
+        
+
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
