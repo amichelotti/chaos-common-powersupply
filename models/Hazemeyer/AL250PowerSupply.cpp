@@ -42,13 +42,15 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
         }
     }
     else
+    {
        ret=this->Hardware->ReadChannelCurrent(this->slave-1,&data);
+    }
     if (ret)
     {
         *pol = (data > 0)? 1:0;
         return 0;
     }
-        
+    DPRINT("error reading channel current (ret= %d)",ret);    
     return POWER_SUPPLY_RECEIVE_ERROR;
     
 }
