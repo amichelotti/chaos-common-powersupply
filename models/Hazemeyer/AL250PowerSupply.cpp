@@ -32,6 +32,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     double data;
     bool ret;
     this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
         ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
