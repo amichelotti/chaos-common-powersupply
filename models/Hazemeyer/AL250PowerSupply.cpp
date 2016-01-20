@@ -32,7 +32,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     double data;
     bool ret;
     this->Hardware->setModbusReadTimeout(timeo_ms*1000);
-    DPRINT("called getPolarity for slave %d\n",this->slave);
+    //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
         ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
@@ -102,6 +102,7 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     boost::mutex::scoped_lock lock(io_mux);
 
     this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    DPRINT("getVoltageOutput called for slave %d\n",this->slave);
     if (this->slave == 0)
     {
         ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_V,&iData);
