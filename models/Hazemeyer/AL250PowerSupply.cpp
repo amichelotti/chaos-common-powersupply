@@ -31,6 +31,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     short int  iData;
     double data;
     bool ret;
+    boost::mutex::scoped_lock lock(io_mux);
     this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
