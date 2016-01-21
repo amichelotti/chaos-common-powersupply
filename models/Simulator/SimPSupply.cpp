@@ -63,14 +63,14 @@ void SimPSupply::update_state(){
 
 }
 void SimPSupply::run(){
-    DPRINT("Starting SimSupply service force errors:%d\n",force_errors);
+    DPRINT("Starting SimSupply (%s,id:%d) service force errors:%d",dev.c_str(),slave_id,force_errors);
     uint64_t last_error_time=0;
     uint64_t error=0;
     
     while(running){
         if(force_errors){
                 if(((common::debug::getUsTime()-last_error_time)/1000000)>force_errors){
-                    uint64_t rr=(1LL<<error);
+                    uint64_t rr=alarms|(1LL<<error);
                     
                     alarms=rr;
                     std::string ret=common::powersupply::AbstractPowerSupply::decodeEvent((PowerSupplyEvents)(1LL<<error));
@@ -86,7 +86,7 @@ void SimPSupply::run(){
                 }
             }
         if(start_ramp){
-            DPRINT("start ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",regulator_state,force_errors,alarms);
+            DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
             if (regulator_state == REGULATOR_ON){
             if(currSP>current){
 	      DPRINT("Ramp up adccurr %d (%f) set point %f increments %f, ramp speed up %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000,ramp_speed_up);

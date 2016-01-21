@@ -76,7 +76,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
             return 0;
         }
         else  {
-            DERR("slave %d error reading current",slave);
+            DERR("slave %d error reading current ",slave);
             return POWER_SUPPLY_RECEIVE_ERROR;
         }   
     }
@@ -304,7 +304,7 @@ int AL250::init(){
          
         this->Hardware = new Hazemeyer::Corrector( App.c_str());
         pRet.first->second.driverPointer=this->Hardware;
-        DPRINT("connectin of a new Hazemeyer::Corrector:@ 0x%x",this->Hardware);
+        DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%x",this->Hardware);
         ret=this->Hardware->Connect();
         if (!ret){
             DERR("offline");
@@ -324,10 +324,14 @@ int AL250::init(){
     this->minCurrent=this->HwMinCurrent;
     this->maxCurrent=this->HwMaxCurrent;
    
-    if (this->slave == 0)
+    if (this->slave == 0){
+        DPRINT("Turning on MainUnit");
         ret=this->Hardware->TurnOnMainUnit();
-    else
+    } else{
+        DPRINT("Turning on sending channel on slave %d",slave);
+
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
+    }
     
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     
@@ -470,7 +474,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         
     ret = this->Hardware->ReadBitRegister(Reg,&data);
     if (!ret) {
-         DERR("slave %d reading state on reg 0x%x",slave,Reg);
+         DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
 
         return POWER_SUPPLY_RECEIVE_ERROR;
     }

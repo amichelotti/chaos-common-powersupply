@@ -91,7 +91,7 @@ void* OcemE642X::updateSchedule(){
     run=1;
     while(run){
       DPRINT("[%d] SLAVE SCHEDULE",slave_id);
-      ret = receive_data( buf, sizeof(buf),OCEM_REFRESH_TIME/1000,0);
+      ret = receive_data( buf, sizeof(buf),1000000,0);
       uint64_t t=common::debug::getUsTime();
       if(current.mod_time()>OCEM_REFRESH_TIME){
           if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
@@ -666,7 +666,7 @@ ocem_prot->start();
    
 
    
-    if((ret=setCurrentSensibility(1.0))<0)return ret;
+    if((ret=setCurrentSensibility(0.5))<0)return ret;
     if((ret=setThreashold(1,255,1000)<0))return ret;
     //setVoltageSensibility(1.0);
     usleep(500000);
