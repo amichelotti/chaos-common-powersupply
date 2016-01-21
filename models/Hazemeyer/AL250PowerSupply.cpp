@@ -23,6 +23,7 @@ powersupply::AL250::AL250(const std::string Parameters, int sl) {
     
 }
 AL250::~AL250() { 
+    boost::mutex::scoped_lock lock(io_mux);
     this->deinit();
     free(this->ConnectionParameters);
     this->ConnectionParameters=NULL;
@@ -203,6 +204,7 @@ int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
 }
 int AL250::shutdown(uint32_t timeo_ms ) {
     int ret;
+    boost::mutex::scoped_lock lock(io_mux);
     this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->TurnOffMainUnit();
@@ -215,6 +217,7 @@ int AL250::shutdown(uint32_t timeo_ms ) {
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
     DPRINT("")
+    boost::mutex::scoped_lock lock(io_mux);
      this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->TurnOnMainUnit();
@@ -225,6 +228,7 @@ int AL250::poweron(uint32_t timeo_ms){
     return ret;
 }
 int AL250::standby(uint32_t timeo_ms) {
+    boost::mutex::scoped_lock lock(io_mux);
       this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         return (!this->Hardware->TurnStandbyMainUnit());
@@ -261,6 +265,7 @@ int AL250::getMaxMinCurrent(float* max, float* min) {
 int AL250::startCurrentRamp(uint32_t timeo_ms) {
     bool ret;
     DPRINT( "slave %d starting ramp",slave);
+    boost::mutex::scoped_lock lock(io_mux);
 
     if (this->slave == 0)
         return DEFAULT_NOT_ALLOWED;
