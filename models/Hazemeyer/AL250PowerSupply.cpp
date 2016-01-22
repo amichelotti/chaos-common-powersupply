@@ -477,27 +477,36 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     ret = this->Hardware->ReadBitRegister(Reg,&data);
     if (!ret) {
          DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
-
+	 desc="Communication Failure";
         return POWER_SUPPLY_RECEIVE_ERROR;
     }
     if (this->slave == 0)
     {
-        if ((data & 1)==0) 
+        if ((data & 1)==0) { 
+	    desc="Unknown State";
             stCode|=POWER_SUPPLY_STATE_UKN;
+        }
         else
         {
-            if (data & 2) stCode|=POWER_SUPPLY_STATE_STANDBY;
-            if (data & 4) stCode|=POWER_SUPPLY_STATE_ON;
-            if ((data & 4)==0) stCode|=POWER_SUPPLY_STATE_OFF;
+            if (data & 2) {stCode|=POWER_SUPPLY_STATE_STANDBY;desc="standby";}
+            if (data & 4) {stCode|=POWER_SUPPLY_STATE_ON;desc="on";}
+            if ((data & 4)==0) {stCode|=POWER_SUPPLY_STATE_OFF;desc="off";}
         }
 
     }
     else
     {
        
-         if (data & (1 << (this->slave-1))) stCode|=POWER_SUPPLY_STATE_ON;
+         if (data & (1 << (this->slave-1))) 
+	 {
+	    stCode|=POWER_SUPPLY_STATE_ON;
+	    desc="on";
+	 }
          else
+	 {
              stCode|=POWER_SUPPLY_STATE_STANDBY;
+	     desc="standby";
+	 }
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
@@ -517,7 +526,10 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
             if (!ret) return POWER_SUPPLY_RECEIVE_ERROR;  
             
             if ((data & (1 << (this->slave-1)))==0) 
+            {
                 stCode|=POWER_SUPPLY_STATE_ALARM;
+	        desc="alarm";
+	    }
         }
     }
     *state = stCode;
