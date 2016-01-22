@@ -50,7 +50,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     }
     if (ret)
     {
-        *pol = (data > 0)? 1:0;
+        *pol = (data > 0)? 1:-1;
         return 0;
     }
     DPRINT("error reading channel current (ret= %d) for slave %d",ret,this->slave);    
@@ -216,14 +216,16 @@ int AL250::shutdown(uint32_t timeo_ms ) {
 }
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
+    DPRINT("ALEDEBUG sent comman ON channel %d",this->slave-1);
     DPRINT("")
     boost::mutex::scoped_lock lock(io_mux);
      this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->TurnOnMainUnit();
     else
+    {
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
-     
+    } 
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     return ret;
 }
@@ -271,7 +273,7 @@ int AL250::startCurrentRamp(uint32_t timeo_ms) {
         return DEFAULT_NOT_ALLOWED;
     
     this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    ret=this->Hardware->SetChannelCurrent(this->slave,this->CurrentSP);
+    ret=this->Hardware->SetChannelCurrent(this->slave-1,this->CurrentSP);
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     return ret;
 }
@@ -481,21 +483,21 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     if (this->slave == 0)
     {
         if ((data & 1)==0) 
-            stCode+=POWER_SUPPLY_STATE_UKN;
+            stCode|=POWER_SUPPLY_STATE_UKN;
         else
         {
-            if (data & 2) stCode+=POWER_SUPPLY_STATE_STANDBY;
-            if (data & 4) stCode+=POWER_SUPPLY_STATE_ON;
-            if ((data & 4)==0) stCode+=POWER_SUPPLY_STATE_OFF;
+            if (data & 2) stCode|=POWER_SUPPLY_STATE_STANDBY;
+            if (data & 4) stCode|=POWER_SUPPLY_STATE_ON;
+            if ((data & 4)==0) stCode|=POWER_SUPPLY_STATE_OFF;
         }
 
     }
     else
     {
        
-         if (data & (1 << (this->slave-1))) stCode+=POWER_SUPPLY_STATE_ON;
+         if (data & (1 << (this->slave-1))) stCode|=POWER_SUPPLY_STATE_ON;
          else
-             stCode+=POWER_SUPPLY_STATE_OFF;
+             stCode|=POWER_SUPPLY_STATE_STANDBY;
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
@@ -506,7 +508,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         return POWER_SUPPLY_RECEIVE_ERROR;   
     }
     if (data){
-             stCode+=POWER_SUPPLY_STATE_ALARM;
+             stCode|=POWER_SUPPLY_STATE_ALARM;
     } else {
         if (this->slave)
         {
@@ -515,7 +517,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
             if (!ret) return POWER_SUPPLY_RECEIVE_ERROR;  
             
             if ((data & (1 << (this->slave-1)))==0) 
-                stCode+=POWER_SUPPLY_STATE_ALARM;
+                stCode|=POWER_SUPPLY_STATE_ALARM;
         }
     }
     *state = stCode;
