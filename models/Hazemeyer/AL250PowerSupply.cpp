@@ -247,7 +247,6 @@ int AL250::getCurrentSP(float* current,uint32_t timeo_ms) {
     return 0;
 }
 int AL250::setCurrentSP(float current, uint32_t timeo_ms) {
-    	  boost::mutex::scoped_lock lock(io_mux);
 
     if (this->slave == 0)
         return DEFAULT_NOT_ALLOWED;

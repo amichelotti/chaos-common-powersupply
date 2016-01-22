@@ -86,7 +86,7 @@ public:
              * @param timeo_ms
              * @return 
              */
-            int setPolarity(int pol,uint32_t timeo_ms=0){   return DEFAULT_NOT_ALLOWED;}
+            int setPolarity(int pol,uint32_t timeo_ms=0){   return 0;}
             int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             /**
              * SET POINT is only Software Emulated. The Hardware doesn't have
