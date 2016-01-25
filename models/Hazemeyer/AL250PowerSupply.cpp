@@ -23,7 +23,9 @@ powersupply::AL250::AL250(const std::string Parameters, int sl) {
     
 }
 AL250::~AL250() { 
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
     this->deinit();
     free(this->ConnectionParameters);
     this->ConnectionParameters=NULL;
@@ -32,8 +34,10 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     short int  iData;
     double data;
     bool ret;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    DPRINT("ALEDEBUG after sem");
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
@@ -61,9 +65,11 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
     bool ret;
     short int iData;
     double data;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     DPRINT("slave %d reading current",slave);
 
     if (this->slave == 0)
@@ -101,9 +107,11 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     bool ret;
     short int iData;
     double data;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     DPRINT("getVoltageOutput called for slave %d\n",this->slave);
     if (this->slave == 0)
     {
@@ -136,9 +144,11 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
     Hazemeyer::Corrector::ReadReg  Reg;
     Hazemeyer::Corrector::ReadReg  MainFaults=Hazemeyer::Corrector::GENERAL_FAULTS;
     bool ret, centralUnitFault=false;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     switch (this->slave)
     {
         default: return POWER_SUPPLY_COMMAND_ERROR;
@@ -191,9 +201,11 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
 int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
     
     int ret;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->ResetMainUnit();
     else
@@ -204,8 +216,10 @@ int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
 }
 int AL250::shutdown(uint32_t timeo_ms ) {
     int ret;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    DPRINT("ALEDEBUG after sem");
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->TurnOffMainUnit();
     else
@@ -216,10 +230,10 @@ int AL250::shutdown(uint32_t timeo_ms ) {
 }
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
-    DPRINT("ALEDEBUG sent comman ON channel %d",this->slave-1);
-    DPRINT("")
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
-     this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    DPRINT("ALEDEBUG after sem");
+    // this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         ret=this->Hardware->TurnOnMainUnit();
     else
@@ -230,8 +244,10 @@ int AL250::poweron(uint32_t timeo_ms){
     return ret;
 }
 int AL250::standby(uint32_t timeo_ms) {
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
-      this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    DPRINT("ALEDEBUG after sem");
+    //  this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     if (this->slave == 0)
         return (!this->Hardware->TurnStandbyMainUnit());
     else
@@ -266,12 +282,14 @@ int AL250::getMaxMinCurrent(float* max, float* min) {
 int AL250::startCurrentRamp(uint32_t timeo_ms) {
     bool ret;
     DPRINT( "slave %d starting ramp",slave);
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
     if (this->slave == 0)
         return DEFAULT_NOT_ALLOWED;
     
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     ret=this->Hardware->SetChannelCurrent(this->slave-1,this->CurrentSP);
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     return ret;
@@ -280,7 +298,9 @@ int AL250::init(){
     AL250::ChannelPhysicalMap Elem;
     bool ret=false;
     size_t index=0;
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d initializing",slave);
 
@@ -344,7 +364,9 @@ int AL250::deinit() {
     std::string key;
     std::vector<bool> *instances;
     std::string App(this->ConnectionParameters);
+    DPRINT("ALEDEBUG before sem");
    boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d deinitializinh",slave);
 
@@ -385,7 +407,7 @@ int AL250::deinit() {
     }
     else
     {
-        cout << "non posso deallocare" <<endl;
+        DERR("non posso deallocare");
         this->Hardware=NULL;
     }
     this->initDone=false;
@@ -457,9 +479,11 @@ int AL250::getVoltageSensibility(float* sens) {
     return 0;
 }
 int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
+    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+    DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     Hazemeyer::Corrector::ReadReg Reg;
     bool ret;
     int stCode=0;
