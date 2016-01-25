@@ -53,3 +53,7 @@ int AbstractPowerSupply::setVoltageSensibility(float sens){
      DERR("not implemented");
      return POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY;
 }
+
+int fitData(calibdata_t *calibration_data,int size,double sp,double& readout_expected,double& error_expected){
+    return 0;
+}

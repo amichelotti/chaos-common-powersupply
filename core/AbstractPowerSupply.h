@@ -34,6 +34,24 @@
 namespace common {
     namespace powersupply {
         
+        
+        typedef struct _calibdata {
+            double sp;
+            double readout;
+            _calibdata(){sp=0;readout=0;}
+        } calibdata_t;
+        
+        /**
+         * 
+         * @param calibration_data calibra
+         * @param size
+         * @param sp
+         * @param readout_expected
+         * @param error_expected
+         * @return 
+         */
+        int fitData(calibdata_t *calibration_data,int size,double sp,double& readout_expected,double& error_expected);
+        
         /**
          \enum PowerSupplyError
          \brief Power supply function error return codes
