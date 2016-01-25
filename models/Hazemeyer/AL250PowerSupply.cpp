@@ -512,20 +512,20 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     ret = this->Hardware->ReadBitRegister(Reg,&data);
     if (!ret) {
          DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
-	 desc="Communication Failure";
+	 desc.assign("Communication Failure");
         return POWER_SUPPLY_RECEIVE_ERROR;
     }
     if (this->slave == 0)
     {
         if ((data & 1)==0) { 
-	    desc="Unknown State";
+	    desc.assign("Unknown State");
             stCode|=POWER_SUPPLY_STATE_UKN;
         }
         else
         {
-            if (data & 2) {stCode|=POWER_SUPPLY_STATE_STANDBY;desc="standby";}
-            if (data & 4) {stCode|=POWER_SUPPLY_STATE_ON;desc="on";}
-            if ((data & 4)==0) {stCode|=POWER_SUPPLY_STATE_OFF;desc="off";}
+            if (data & 2) {stCode|=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
+            if (data & 4) {stCode|=POWER_SUPPLY_STATE_ON;desc.assign("on");}
+            if ((data & 4)==0) {stCode|=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
         }
 
     }
@@ -535,12 +535,12 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
          if (data & (1 << (this->slave-1))) 
 	 {
 	    stCode|=POWER_SUPPLY_STATE_ON;
-	    desc="on";
+	    desc.assign("on");
 	 }
          else
 	 {
              stCode|=POWER_SUPPLY_STATE_STANDBY;
-	     desc="standby";
+	     desc.assign("standby");
 	 }
     }
     //adding ALARMS
@@ -563,7 +563,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
             if ((data & (1 << (this->slave-1)))==0) 
             {
                 stCode|=POWER_SUPPLY_STATE_ALARM;
-	        desc="alarm";
+	        desc.assign("alarm");
 	    }
         }
     }

@@ -99,7 +99,7 @@ void* OcemE642X::updateSchedule(){
             send_command((const char*)"SA",1000,0);
           }
       }
-      if(regulator_state.mod_time()>OCEM_REFRESH_TIME){
+      if(regulator_state.mod_time()>(2*OCEM_REFRESH_TIME)){
           if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
             DPRINT("[%d] REFRESH LOGIC  because state has been modified %llu ms",slave_id,regulator_state.mod_time()/1000);
             send_command((const char*)"SL",1000,0);
@@ -124,7 +124,7 @@ void* OcemE642X::updateSchedule(){
 }
 
 void OcemE642X::removeOcemProtocol(std::string& mydev){
-  DPRINT("removing protocol on \"%s\"",mydev.c_str());
+  DPRINT(" removing protocol on \"%s\"",mydev.c_str());
   pthread_mutex_lock(&unique_ocem_core_mutex);
   std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
   if(i!=unique_protocol.end()){
@@ -730,7 +730,7 @@ int OcemE642X::force_update(uint32_t timeout){
 int OcemE642X::deinit(){
     int* ret;
     run=0;
-    DPRINT("DEINITIALIZED");
+    DPRINT("[%d] DEINITIALIZING",slave_id);
     pthread_join(rpid,(void**)&ret);
     ocem_prot->unRegisterSlave(slave_id);
 
