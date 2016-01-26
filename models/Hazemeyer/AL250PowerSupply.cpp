@@ -3,6 +3,10 @@
 #include <boost/thread/mutex.hpp>
 #define IsInInterval(value,min,max)  ( ( value>=min ) && (value<=max) )  
 
+#define CHECK_IF_ALLOWED \
+ if (slave == 0){ \
+        DERR("command not allowed on master");\
+        return DEFAULT_NOT_ALLOWED;}
 
 static boost::mutex io_mux;
 
@@ -33,7 +37,7 @@ AL250::~AL250() {
     this->ConnectionParameters=NULL;
 }
 int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
-    short int  iData;
+    uint32_t  iData=0;
     double data;
     bool ret;
     DPRINT("ALEDEBUG before sem");
@@ -44,7 +48,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(uint16_t*)&iData);
         if (ret)
         {
             data=this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -66,7 +70,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
 }
 int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
     bool ret;
-    short int iData;
+    uint32_t iData;
     double data;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
@@ -78,7 +82,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
 
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(uint16_t*)&iData);
         if (ret)
         {
             *current=(float) this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -109,7 +113,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
 }
 int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     bool ret;
-    short int iData;
+    uint16_t iData;
     double data;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
@@ -143,8 +147,8 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
 
 }
 int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
-    short int  iData;
-    short int  iMainData=0;
+    uint32_t  iData;
+    uint32_t  iMainData=0;
     uint64_t alCode=0;
     Hazemeyer::Corrector::ReadReg  Reg;
     Hazemeyer::Corrector::ReadReg  MainFaults=Hazemeyer::Corrector::GENERAL_FAULTS;
@@ -156,7 +160,9 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
     //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     switch (this->slave)
     {
-        default: return POWER_SUPPLY_COMMAND_ERROR;
+        default: 
+            DERR("[%d] Power supply Command Error",slave);
+            return POWER_SUPPLY_COMMAND_ERROR;
         case 0: break;
         case 1: Reg=Hazemeyer::Corrector::CH0_FAULTS; break;
         case 2: Reg=Hazemeyer::Corrector::CH1_FAULTS; break;
@@ -168,33 +174,34 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
         case 8: Reg=Hazemeyer::Corrector::CH7_FAULTS; break;
      
     }
-    ret=this->Hardware->ReadBitRegister(MainFaults,&iMainData);
+    ret=this->Hardware->ReadBitRegister(MainFaults,(uint16_t*)&iMainData);
     if (!ret) 
             return POWER_SUPPLY_RECEIVE_ERROR;
     if  (this->slave != 0)
     {
         
-        if (iMainData != 0)  
-            alCode+=POWER_SUPPLY_MAINUNIT_FAIL;
-         ret=this->Hardware->ReadBitRegister(Reg,&iData);
-        if (!ret) 
+        if (iMainData != 0)  {
+            alCode|=POWER_SUPPLY_MAINUNIT_FAIL;
+        }
+         ret=this->Hardware->ReadBitRegister(Reg,(uint16_t*)&iData);
+        if (!ret) {
+             DERR("[%d] Power supply Receive Error",slave);
+
             return POWER_SUPPLY_RECEIVE_ERROR;
-        
-        if (iData &  0x1) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iData &  0x2) alCode+=POWER_SUPPLY_FUSE_FAULT;
-        if (iData &  0x4) alCode+=POWER_SUPPLY_OVER_VOLTAGE;
-        if (iData &  0x8) alCode+=POWER_SUPPLY_OVER_CURRENT;
-        if (iData &  0x10) alCode+=POWER_SUPPLY_COMMUNICATION_FAILURE;
-    }
-    else
-    {
-        if (iMainData & 0x400) alCode+=POWER_SUPPLY_EVENT_DOOR_OPEN;
-        if (iMainData & 0x800) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x1) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x2) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x4) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x8) alCode+=POWER_SUPPLY_FUSE_FAULT;
-        if (iMainData & 0x10) alCode+=POWER_SUPPLY_EARTH_FAULT;
+        }
+        if (iData &  0x1) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iData &  0x2) alCode|=POWER_SUPPLY_FUSE_FAULT;
+        if (iData &  0x4) alCode|=POWER_SUPPLY_OVER_VOLTAGE;
+        if (iData &  0x8) alCode|=POWER_SUPPLY_OVER_CURRENT;
+        if (iData &  0x10) alCode|=POWER_SUPPLY_COMMUNICATION_FAILURE;
+    } else {
+        if (iMainData & 0x400) alCode|=POWER_SUPPLY_EVENT_DOOR_OPEN;
+        if (iMainData & 0x800) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x1) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x2) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x4) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x8) alCode|=POWER_SUPPLY_FUSE_FAULT;
+        if (iMainData & 0x10) alCode|=POWER_SUPPLY_EARTH_FAULT;
         
     }
     //fornire l'errore secondo lo standard
@@ -212,13 +219,16 @@ int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
 
 
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+    if (this->slave == 0){
         ret=this->Hardware->ResetMainUnit();
-    else
+    } else{
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_RESET);
-    
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+    }
+    if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::shutdown(uint32_t timeo_ms ) {
     int ret;
@@ -227,13 +237,16 @@ int AL250::shutdown(uint32_t timeo_ms ) {
 
     DPRINT("ALEDEBUG after sem");
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+    if (this->slave == 0){
         ret=this->Hardware->TurnOffMainUnit();
-    else
+    } else{
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF);
-    
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+    }    
+     if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
@@ -243,26 +256,37 @@ int AL250::poweron(uint32_t timeo_ms){
     DPRINT("ALEDEBUG after sem");
 
     // this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+    if (this->slave == 0){
         ret=this->Hardware->TurnOnMainUnit();
-    else
-    {
+    } else {
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
     } 
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+     if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::standby(uint32_t timeo_ms) {
+    int ret;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
 
     DPRINT("ALEDEBUG after sem");
     //  this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
 
-    if (this->slave == 0)
-        return (!this->Hardware->TurnStandbyMainUnit());
-    else
-        return (!this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF));
+    if (this->slave == 0){
+        ret = Hardware->TurnStandbyMainUnit();
+    } else {
+        ret= Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF);
+        
+    }
+     if(ret!=true){
+        DERR("[%d] command error",slave);
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
+    
 }
 int AL250::getCurrentSP(float* current,uint32_t timeo_ms) {
     /*
@@ -275,17 +299,19 @@ int AL250::getCurrentSP(float* current,uint32_t timeo_ms) {
 }
 int AL250::setCurrentSP(float current, uint32_t timeo_ms) {
 
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
-    if (!IsInInterval(current,this->minCurrent,this->maxCurrent))
+    CHECK_IF_ALLOWED;
+    
+    if (!IsInInterval(current,this->minCurrent,this->maxCurrent)){
+         DERR("[%d] current out of ranges [%f:%f]",slave,minCurrent,maxCurrent);
+
         return POWER_SUPPLY_BAD_OUT_OF_RANGE_PARAMETERS;
+    }
     
     this->CurrentSP=current;
     return 0;
 }
 int AL250::getMaxMinCurrent(float* max, float* min) {
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
+    CHECK_IF_ALLOWED;
     *max=this->maxCurrent;
     *min=this->minCurrent;
     return 0;
@@ -293,12 +319,10 @@ int AL250::getMaxMinCurrent(float* max, float* min) {
 int AL250::startCurrentRamp(uint32_t timeo_ms) {
     bool ret;
     DPRINT( "slave %d starting ramp",slave);
+    CHECK_IF_ALLOWED;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
     DPRINT("ALEDEBUG after sem");
-
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
     
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
 
@@ -366,11 +390,16 @@ int AL250::init(){
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
     }
     
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
+     if(ret!=true){
+        DERR("[%d] command error",slave);
+        initDone=false;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
     
     
-    if (ret == 0) this->initDone=true;
-    return ret;
+    
+    initDone=true;
+    return 0;
 }
 int AL250::deinit() {
     std::string key;
@@ -500,7 +529,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     bool ret;
     int stCode=0;
     std::string Ret;
-    short int data;
+    uint16_t data;
     *state=POWER_SUPPLY_STATE_UKN;
     DPRINT("slave %d getting state",slave);
 

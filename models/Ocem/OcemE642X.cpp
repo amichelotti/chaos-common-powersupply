@@ -434,17 +434,18 @@ int OcemE642X::updateInternalData(char * stringa){
                             DPRINT("EARTH_FAULT");
                             break;
                             
-                            case CUBICLE_OVT:
+                          /*  case CUBICLE_OVT:
                             alarms=common::powersupply::POWER_SUPPLY_CUBICLE_OVT | alarms;
                             DPRINT("CUBICLE_OVT");
                             break;
-                            
+                            */
                             case SETPOINT_CARD_FAULT:
                             alarms=common::powersupply::POWER_SUPPLY_SETPOINT_CARD_FAULT | alarms;
                             DPRINT("SETPOINT_CARD_FAULT");
                             break;
                             
                             case EXTERNAL_INTERLOCK:
+                            case CUBICLE_OVT:
                                 alarms=common::powersupply::POWER_SUPPLY_EXTERNAL_INTERLOCK | alarms;
                                 DPRINT("EXTERNAL_INTERLOCK");
                             break;
