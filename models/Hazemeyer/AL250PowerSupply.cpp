@@ -37,7 +37,7 @@ AL250::~AL250() {
     this->ConnectionParameters=NULL;
 }
 int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
-    uint32_t  iData=0;
+   int32_t  iData=0;
     double data;
     bool ret;
     DPRINT("ALEDEBUG before sem");
@@ -48,7 +48,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(uint16_t*)&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(int16_t*)&iData);
         if (ret)
         {
             data=this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -70,7 +70,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
 }
 int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
     bool ret;
-    uint32_t iData;
+    int32_t iData=0;
     double data;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
@@ -82,7 +82,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
 
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(uint16_t*)&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(int16_t*)&iData);
         if (ret)
         {
             *current=(float) this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -113,7 +113,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
 }
 int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     bool ret;
-    uint16_t iData;
+    int32_t iData=0;
     double data;
     DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
@@ -124,7 +124,7 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     DPRINT("getVoltageOutput called for slave %d\n",this->slave);
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_V,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_V,(int16_t*)&iData);
         if (ret)
         {
             *volt=(float) this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_VOLT,iData);
@@ -147,8 +147,8 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
 
 }
 int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
-    uint32_t  iData;
-    uint32_t  iMainData=0;
+    int32_t  iData=0;
+    int32_t  iMainData=0;
     uint64_t alCode=0;
     Hazemeyer::Corrector::ReadReg  Reg;
     Hazemeyer::Corrector::ReadReg  MainFaults=Hazemeyer::Corrector::GENERAL_FAULTS;
@@ -174,7 +174,7 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
         case 8: Reg=Hazemeyer::Corrector::CH7_FAULTS; break;
      
     }
-    ret=this->Hardware->ReadBitRegister(MainFaults,(uint16_t*)&iMainData);
+    ret=this->Hardware->ReadBitRegister(MainFaults,(int16_t*)&iMainData);
     if (!ret) 
             return POWER_SUPPLY_RECEIVE_ERROR;
     if  (this->slave != 0)
@@ -183,7 +183,7 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
         if (iMainData != 0)  {
             alCode|=POWER_SUPPLY_MAINUNIT_FAIL;
         }
-         ret=this->Hardware->ReadBitRegister(Reg,(uint16_t*)&iData);
+         ret=this->Hardware->ReadBitRegister(Reg,(int16_t*)&iData);
         if (!ret) {
              DERR("[%d] Power supply Receive Error",slave);
 
@@ -487,6 +487,7 @@ int AL250::getCurrentSensibilityOnSet(float* sens) {
 int AL250::getAlarmDesc(uint64_t* alarm){
     return 0;
 }
+
 std::string AL250::getAlarmDescr(uint64_t alarm) {
     std::string Ret="";
     for (int i=0; i < 64; i++)
@@ -519,17 +520,18 @@ int AL250::getVoltageSensibility(float* sens) {
         *sens=0.00183;
     return 0;
 }
+
 int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     DPRINT("ALEDEBUG before sem");
+   
     boost::mutex::scoped_lock lock(io_mux);
     DPRINT("ALEDEBUG after sem");
-
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     Hazemeyer::Corrector::ReadReg Reg;
     bool ret;
     int stCode=0;
     std::string Ret;
-    uint16_t data;
+    int32_t data=0;
     *state=POWER_SUPPLY_STATE_UKN;
     DPRINT("slave %d getting state",slave);
 
@@ -538,7 +540,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     else
         Reg=Hazemeyer::Corrector::GENERAL_STATUS;
         
-    ret = this->Hardware->ReadBitRegister(Reg,&data);
+    ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
     if (!ret) {
          DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
 	 desc.assign("Communication Failure");
@@ -574,7 +576,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
-    ret = this->Hardware->ReadBitRegister(Reg,&data);
+    ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
     if (!ret) {
         DERR("slave %d reading faults on reg 0x%x",slave,Reg);
 
@@ -586,7 +588,7 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         if (this->slave)
         {
             Reg=Hazemeyer::Corrector::CHS_READY;
-            ret = this->Hardware->ReadBitRegister(Reg,&data);
+            ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
             if (!ret) return POWER_SUPPLY_RECEIVE_ERROR;  
             
             if ((data & (1 << (this->slave-1)))==0) 

@@ -103,6 +103,10 @@ void SimPSupply::run(){
             
         }
         }
+        if( regulator_state& REGULATOR_STANDBY){
+            current = 0;
+            
+        }
 	update_state();
         usleep(update_delay);
     }
@@ -193,7 +197,7 @@ int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
 int SimPSupply::setCurrentSP(float current,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
-    if(current<min_current || current>max_current)
+    if(current< -max_current || current>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     
@@ -213,9 +217,11 @@ int SimPSupply::getCurrentSP(float* current,uint32_t timeo_ms){
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
-
+    if(regulator_state& REGULATOR_STANDBY){
+        *curr = 0;
+        return 0;
+    }
     if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
-  
     if(polarity==0){
         *curr = 0;
     } else {
