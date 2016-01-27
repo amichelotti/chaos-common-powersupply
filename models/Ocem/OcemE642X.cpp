@@ -254,6 +254,7 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvolta
 }
 
 OcemE642X::~OcemE642X(){
+    DPRINT("[%d] deinitializing",slave_id)
     deinit();
 }
 
