@@ -552,9 +552,9 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         }
         else
         {
-            if (data & 2) {stCode|=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
-            if (data & 4) {stCode|=POWER_SUPPLY_STATE_ON;desc.assign("on");}
-            if ((data & 6)==0) {stCode|=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
+            if (data & 2) {stCode=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
+            if (data & 4) {stCode=POWER_SUPPLY_STATE_ON;desc.assign("on");}
+            if ((data & 6)==0) {stCode=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
             if ((data & 8)) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
         }
 
