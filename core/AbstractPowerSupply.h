@@ -119,6 +119,7 @@ namespace common {
             POWER_SUPPLY_STATE_OPEN=0x10, /// the power supply is on but is not supplying current
             POWER_SUPPLY_STATE_ALARM=0x20, /// an event occurred
             POWER_SUPPLY_STATE_LOCAL=0x40, /// the powersupply in in local mode
+            POWER_SUPPLY_STATE_MAINUNIT_NOT_ON=0x80, /// powersupply main unit not on
 
             POWER_SUPPLY_STATE_UKN /// it's not possible to know the state (no answer)
         };
