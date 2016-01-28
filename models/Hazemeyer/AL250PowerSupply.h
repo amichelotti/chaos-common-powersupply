@@ -154,7 +154,8 @@ public:
             int forceMaxVoltage(float max) {return DEFAULT_NOT_ALLOWED;}
             char* getConnectionParameters() { return this->ConnectionParameters;}
             
-            
+            uint64_t getFeatures()  {return POWER_SUPPLY_FEAT_BIPOLAR;}
+
             
             
         private:

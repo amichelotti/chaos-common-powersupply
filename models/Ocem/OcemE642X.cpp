@@ -257,6 +257,9 @@ OcemE642X::~OcemE642X(){
     DPRINT("[%d] deinitializing",slave_id)
     deinit();
 }
+uint64_t OcemE642X::getFeatures() {
+    return POWER_SUPPLY_FEAT_MONOPOLAR;
+}
 
 int OcemE642X::updateInternalData(char * stringa){
     unsigned channelnum=0, channelmin=0,channelmax=0,datau=0;

@@ -375,6 +375,8 @@ namespace common{
              int run;
 
            static void* update_thread(void* p);
+           uint64_t getFeatures() ;
+
 
         };
     };

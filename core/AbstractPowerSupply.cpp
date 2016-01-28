@@ -57,3 +57,6 @@ int AbstractPowerSupply::setVoltageSensibility(float sens){
 int fitData(calibdata_t *calibration_data,int size,double sp,double& readout_expected,double& error_expected){
     return 0;
 }
+uint64_t AbstractPowerSupply::getFeatures(){
+    return POWER_SUPPLY_FEAT_UKN;
+}

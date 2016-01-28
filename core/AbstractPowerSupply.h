@@ -123,6 +123,12 @@ namespace common {
             POWER_SUPPLY_STATE_UKN /// it's not possible to know the state (no answer)
         };
         
+         enum PowerSupplyFeature{
+            POWER_SUPPLY_FEAT_MONOPOLAR=0x1, /// monopolar
+            POWER_SUPPLY_FEAT_BIPOLAR=0x2, /// bipolar
+            POWER_SUPPLY_FEAT_PULSED=0x4, /// pulsed
+            POWER_SUPPLY_FEAT_UKN /// it's not possible to know the type
+        };
         /**
          base class for all powersupplys
          */
@@ -350,6 +356,7 @@ namespace common {
              @return 0 if success or an error code
              */
             virtual int forceMaxVoltage(float max)=0;
+            virtual uint64_t getFeatures() ;
             
         };
         
