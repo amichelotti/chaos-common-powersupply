@@ -552,9 +552,10 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         }
         else
         {
-            if (data & 2) {stCode|=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
-            if (data & 4) {stCode|=POWER_SUPPLY_STATE_ON;desc.assign("on");}
-            if ((data & 4)==0) {stCode|=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
+            if (data & 2) {stCode=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
+            if (data & 4) {stCode=POWER_SUPPLY_STATE_ON;desc.assign("on");}
+            if ((data & 6)==0) {stCode=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
+            if ((data & 8)) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
         }
 
     }
@@ -571,6 +572,17 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
              stCode|=POWER_SUPPLY_STATE_STANDBY;
 	     desc.assign("standby");
 	 }
+         //checking the status of the main unit for propagation status
+         ret = this->Hardware->ReadBitRegister(Hazemeyer::Corrector::GENERAL_STATUS,(int16_t*)&data);
+         if (!ret) 
+         {
+             DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
+	     desc.assign("Communication Failure");
+             return POWER_SUPPLY_RECEIVE_ERROR;
+         }
+	 //if (!(data & 4)) {stCode|=POWER_SUPPLY_STATE_MAINUNIT_NOT_ON;desc.assign("main unit not on");}
+	 if (data & 8) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
+	 
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
