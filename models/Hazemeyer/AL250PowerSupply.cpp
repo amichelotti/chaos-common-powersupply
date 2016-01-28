@@ -580,8 +580,9 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
 	     desc.assign("Communication Failure");
              return POWER_SUPPLY_RECEIVE_ERROR;
          }
-	 if (!(data & 4)) {stCode|=POWER_SUPPLY_MAINUNIT_NOT_ON;desc.assign("main unit not on");}
-
+	 //if (!(data & 4)) {stCode|=POWER_SUPPLY_STATE_MAINUNIT_NOT_ON;desc.assign("main unit not on");}
+	 if (data & 8) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
+	 
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
