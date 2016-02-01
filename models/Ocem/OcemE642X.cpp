@@ -635,7 +635,7 @@ int OcemE642X::init(){
     if(ocemInitialization()<0){
         return -1000;
     }
-ocem_prot->start();
+    ocem_prot->start();
     if(initialized==0){
         
 
@@ -734,9 +734,13 @@ int OcemE642X::force_update(uint32_t timeout){
 }
 int OcemE642X::deinit(){
     int* ret;
-    run=0;
+    
     DPRINT("[%d] DEINITIALIZING",slave_id);
-    pthread_join(rpid,(void**)&ret);
+    if(run){
+        run=0;
+        DPRINT("[%d] STOPPING THREAD",slave_id);
+        pthread_join(rpid,(void**)&ret);
+    }
     ocem_prot->unRegisterSlave(slave_id);
 
     ocem_prot.reset();
