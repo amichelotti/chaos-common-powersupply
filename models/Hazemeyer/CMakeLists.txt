@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(hazemeyer_powersupply)
-ADD_DEFINITIONS(-DDEBUG)
+ADD_DEFINITIONS(-DDEBUG -fPIC)
 
 IF(FrameworkLib)
 SET(libs chaos_common ${FrameworkLib})
@@ -8,11 +8,8 @@ ELSE()
 SET(libs pthread boost_system boost_regex )
 ENDIF()
 
-IF(BUILD_FORCE_STATIC)
-  ADD_LIBRARY(${PROJECT_NAME} STATIC ./AL250PowerSupply.cpp)
-ELSE()
-  ADD_LIBRARY(${PROJECT_NAME} SHARED ./AL250PowerSupply.cpp)
-ENDIF()
+
+ADD_LIBRARY(${PROJECT_NAME} STATIC ./AL250PowerSupply.cpp)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} HZLib  common_powersupply common_debug ${libs})
 
