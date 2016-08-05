@@ -25,10 +25,9 @@
 //#define ALEDEBUG
 namespace common
 {
-    class CompareStdStr
-{
+    class CompareStdStr{
 public:
-    bool operator() (const std::string A,const std::string B)     {
+    bool operator() (const std::string A,const std::string B) const    {
         bool ret;
        //cout << "comparing " << A.c_str() << " with " << B.c_str();
      ret= strcmp(A.c_str(),B.c_str());
@@ -167,7 +166,7 @@ public:
             float maxCurrent,minCurrent;
             float HwMaxCurrent,HwMinCurrent;
            
-            static std::map<const std::string,ChannelPhysicalMap,CompareStdStr> mainUnitTable;
+            static std::map<std::string,ChannelPhysicalMap,CompareStdStr> mainUnitTable;
             
             void printStaticTableContent();
     
