@@ -10,14 +10,14 @@
 
 static boost::mutex io_mux;
 
-using namespace common;
+
 using namespace common::powersupply;
 
 //definizione della mappa statica
-std::map<const std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> common::powersupply::AL250::mainUnitTable;
+//std::map<const std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> common::powersupply::AL250::mainUnitTable;
+std::map<std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> AL250::mainUnitTable;
 
-
-powersupply::AL250::AL250(const std::string Parameters, int sl) {
+AL250::AL250(const std::string Parameters, int sl) {
     this->ConnectionParameters=strdup(Parameters.c_str());
     this->Hardware=NULL; // new Hazemeyer::Corrector((char*)Parameters.c_str());
     this->slave=sl;
@@ -352,8 +352,8 @@ int AL250::init(){
    
       
     Elem.driverPointer=this->Hardware;
-    std::pair<std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
-    pRet=this->mainUnitTable.insert(Pair);
+    //    std::pair<const std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
+    pRet=AL250::mainUnitTable.insert(std::make_pair<std::string,AL250::ChannelPhysicalMap>(SerialDev,Elem));
     if (pRet.second) //new element
     {
          
@@ -415,9 +415,9 @@ int AL250::deinit() {
     size_t index=App.find_first_of(',');
     if (index==std::string::npos) return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     key.insert(0,App,0,index);
-    std::map<std::string,AL250::ChannelPhysicalMap>::iterator it;
-    it=this->mainUnitTable.find(key); 
-    if (it == this->mainUnitTable.end())
+    std::map<std::string,ChannelPhysicalMap,common::CompareStdStr>::iterator it;;
+    it=AL250::mainUnitTable.find(key); 
+    if (it == AL250::mainUnitTable.end())
     {
         
         throw  "bad disallocation";
@@ -441,7 +441,7 @@ int AL250::deinit() {
 #endif
         this->Hardware->~Corrector();
         this->Hardware=NULL;
-        this->mainUnitTable.erase(it);
+        AL250::mainUnitTable.erase(it);
         this->printStaticTableContent();
     }
     else
@@ -481,6 +481,7 @@ int AL250::getCurrentSensibilityOnSet(float* sens) {
         return DEFAULT_NOT_ALLOWED;
     else
         *sens=0.00488;
+    return 0;
 }
 int AL250::getAlarmDesc(uint64_t* alarm){
     return 0;
@@ -612,8 +613,8 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     return 0;
 }
 void AL250::printStaticTableContent() {
-   std::map<const std::string,AL250::ChannelPhysicalMap>::iterator it;
-   for (it=this->mainUnitTable.begin(); it!=this->mainUnitTable.end(); ++it)
+   std::map<std::string,AL250::ChannelPhysicalMap>::iterator it;
+   for (it=AL250::mainUnitTable.begin(); it!=AL250::mainUnitTable.end(); ++it)
   {
     std::cout << it->first << " => " << it->second.driverPointer;
     for (int c=0; c < it->second.ConnectedChannels.size();c++)

@@ -96,13 +96,13 @@ void* OcemE642X::updateSchedule(){
       if(current.mod_time()>OCEM_REFRESH_TIME){
           if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
             DPRINT("[%d] REFRESH ANALOGIC, because current has been modified %llu ms ago",slave_id,current.mod_time()/1000);
-            send_command((const char*)"SA",1000,0);
+            send_command((char*)"SA",1000,0);
           }
       }
       if(regulator_state.mod_time()>(2*OCEM_REFRESH_TIME)){
           if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
             DPRINT("[%d] REFRESH LOGIC  because state has been modified %llu ms",slave_id,regulator_state.mod_time()/1000);
-            send_command((const char*)"SL",1000,0);
+            send_command((char*)"SL",1000,0);
           }
       }
       /*
