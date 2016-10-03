@@ -12,7 +12,10 @@
 
 #include <iostream>
 #include "common/powersupply/core/AbstractPowerSupply.h"
-#include "common/serial/Ocem/OcemProtocol.h"
+#include <common/serial/models/Ocem/OcemProtocol.h>
+#include <common/serial/models/Ocem/OcemProtocolBuffered.h>
+#include <common/serial/models/Ocem/OcemProtocolScheduleCFQ.h>
+
 #include <string.h>
 
 #ifndef OCEM_SELECT_TIMEOUT
@@ -70,24 +73,52 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-
+#define OCEM_REFRESH_TIME 5000000
 
 namespace common{
     namespace powersupply {
         
-      typedef boost::shared_ptr< ::common::serial::OcemProtocol > OcemProtocol_psh;
+
         
+      //	  typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocol > OcemProtocol_psh;
         
         
         class OcemE642X: public AbstractPowerSupply {
 	  
-            static std::map<std::string,OcemProtocol_psh > unique_protocol;
+        public:
+            enum OcemAlarms{
+                AC_UNBALANCE=1,
+                PHASE_LOSS,
+                AIR_FLOW,
+                DOORS,
+                TRASFORMER_OVT,
+                SNUBBER_FUSE,
+                SCR_FUSE,
+                SCR_OVT,
+                CHOKE_OVT,
+                PASS_FILTER,
+                DIODE_FAULT,
+                DIODE_OVT,
+                ACTIVE_FILTER_OVT,
+                ACTIVE_FILTER_FUSE,
+                DCCT_FAULT,
+                DCCT_OVT,
+                EARTH_FAULT,
+                CUBICLE_OVT,
+                SETPOINT_CARD_FAULT,
+                EXTERNAL_INTERLOCK,
+                ALARM_UNDEFINED
+            };
+            //typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolBuffered > OcemProtocol_psh;        
+            typedef boost::shared_ptr< ::common::serial::ocem::OcemProtocolScheduleCFQ > OcemProtocol_psh;        
+            static std::map<std::string,OcemE642X::OcemProtocol_psh > unique_protocol;
           
             static pthread_mutex_t unique_ocem_core_mutex;
             
-
 	private:
 	    void init_internal();
+             pthread_t rpid;
+             int initialized;
         protected:
             OcemProtocol_psh ocem_prot;
             
@@ -167,6 +198,9 @@ namespace common{
             ::common::debug::timed_value<ocem_channel> ochannel[OCEM_OUTPUT_CHANNELS];
             ::common::debug::timed_value<unsigned> current;
             ::common::debug::timed_value<unsigned> voltage;
+            ::common::debug::timed_value<unsigned> SL;
+            ::common::debug::timed_value<unsigned> SA;
+            ::common::debug::timed_value<unsigned> RMT;
             ::common::debug::timed_value<Polarity> polarity;
             ::common::debug::timed_value<uint64_t> alarms;
             ::common::debug::timed_value<RegulatorState> regulator_state;
@@ -202,11 +236,12 @@ namespace common{
             static const int voltage_adc=OCEM_VOLTAGE_ADC;
             static const int current_adc=OCEM_CURRENT_ADC;
             static const int current_ramp_adc=OCEM_CURRENT_RAMP_ADC;
-            float voltage_sensibility;
-            float current_sensibility;
+            float voltage_sensibility,adc_voltage_conversion;
+            float current_sensibility,adc_current_conversion,ramp_conversion;
 	    uint64_t available_alarms;
 	    OcemModels model;
 	    void updateParamsByModel(OcemModels model);
+            int ocemInitialization();
         public:
 
 	    OcemE642X(const char *dev,int slave_id,float maxcurr,float maxvoltage);
@@ -332,9 +367,17 @@ namespace common{
              @return 0 if success or an error code
              */
             int forceMaxVoltage(float max);
+            
+            int setCurrentSensibility(float sens);        
+            int setVoltageSensibility(float sens);
+            
+            void* updateSchedule();
+             int run;
 
-            
-            
+           static void* update_thread(void* p);
+           uint64_t getFeatures() ;
+
+
         };
     };
 };

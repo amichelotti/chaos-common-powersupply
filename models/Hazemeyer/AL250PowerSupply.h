@@ -25,10 +25,9 @@
 //#define ALEDEBUG
 namespace common
 {
-    class CompareStdStr
-{
+    class CompareStdStr{
 public:
-    bool operator() (const std::string A,const std::string B)     {
+    bool operator() (const std::string A,const std::string B) const    {
         bool ret;
        //cout << "comparing " << A.c_str() << " with " << B.c_str();
      ret= strcmp(A.c_str(),B.c_str());
@@ -86,7 +85,7 @@ public:
              * @param timeo_ms
              * @return 
              */
-            int setPolarity(int pol,uint32_t timeo_ms=0){   return DEFAULT_NOT_ALLOWED;}
+            int setPolarity(int pol,uint32_t timeo_ms=0){   return 0;}
             int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             /**
              * SET POINT is only Software Emulated. The Hardware doesn't have
@@ -154,7 +153,8 @@ public:
             int forceMaxVoltage(float max) {return DEFAULT_NOT_ALLOWED;}
             char* getConnectionParameters() { return this->ConnectionParameters;}
             
-            
+            uint64_t getFeatures()  {return POWER_SUPPLY_FEAT_BIPOLAR;}
+
             
             
         private:
@@ -166,7 +166,7 @@ public:
             float maxCurrent,minCurrent;
             float HwMaxCurrent,HwMinCurrent;
            
-            static std::map<const std::string,ChannelPhysicalMap,CompareStdStr> mainUnitTable;
+            static std::map<std::string,ChannelPhysicalMap,CompareStdStr> mainUnitTable;
             
             void printStaticTableContent();
     

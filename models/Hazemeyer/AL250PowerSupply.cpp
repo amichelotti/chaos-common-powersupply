@@ -3,17 +3,21 @@
 #include <boost/thread/mutex.hpp>
 #define IsInInterval(value,min,max)  ( ( value>=min ) && (value<=max) )  
 
+#define CHECK_IF_ALLOWED \
+ if (slave == 0){ \
+        DERR("command not allowed on master");\
+        return DEFAULT_NOT_ALLOWED;}
 
 static boost::mutex io_mux;
 
-using namespace common;
+
 using namespace common::powersupply;
 
 //definizione della mappa statica
-std::map<const std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> common::powersupply::AL250::mainUnitTable;
+//std::map<const std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> common::powersupply::AL250::mainUnitTable;
+std::map<std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> AL250::mainUnitTable;
 
-
-powersupply::AL250::AL250(const std::string Parameters, int sl) {
+AL250::AL250(const std::string Parameters, int sl) {
     this->ConnectionParameters=strdup(Parameters.c_str());
     this->Hardware=NULL; // new Hazemeyer::Corrector((char*)Parameters.c_str());
     this->slave=sl;
@@ -23,18 +27,28 @@ powersupply::AL250::AL250(const std::string Parameters, int sl) {
     
 }
 AL250::~AL250() { 
+ //   DPRINT("ALEDEBUG before sem");
+    boost::mutex::scoped_lock lock(io_mux);
+ //   DPRINT("ALEDEBUG after sem");
     this->deinit();
-    free(this->ConnectionParameters);
+    if(this->ConnectionParameters){
+        free(this->ConnectionParameters);
+    }
     this->ConnectionParameters=NULL;
 }
 int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
-    short int  iData;
+   int32_t  iData=0;
     double data;
     bool ret;
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+//    DPRINT("ALEDEBUG before sem");
+    boost::mutex::scoped_lock lock(io_mux);
+//    DPRINT("ALEDEBUG after sem");
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+
+    //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(int16_t*)&iData);
         if (ret)
         {
             data=this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -42,28 +56,33 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
         }
     }
     else
+    {
        ret=this->Hardware->ReadChannelCurrent(this->slave-1,&data);
+    }
     if (ret)
     {
-        *pol = (data > 0)? 1:0;
+        *pol = (data > 0)? 1:-1;
         return 0;
     }
-        
+    DPRINT("error reading channel current (ret= %d) for slave %d",ret,this->slave);    
     return POWER_SUPPLY_RECEIVE_ERROR;
     
 }
 int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
     bool ret;
-    short int iData;
+    int32_t iData=0;
     double data;
+ //   DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+  //  DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     DPRINT("slave %d reading current",slave);
 
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_I,(int16_t*)&iData);
         if (ret)
         {
             *current=(float) this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_AMP,iData);
@@ -71,7 +90,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
             return 0;
         }
         else  {
-            DERR("slave %d error reading current",slave);
+            DERR("slave %d error reading current ",slave);
             return POWER_SUPPLY_RECEIVE_ERROR;
         }   
     }
@@ -94,14 +113,18 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
 }
 int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     bool ret;
-    short int iData;
+    int32_t iData=0;
     double data;
+//    DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+ //   DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+
+    DPRINT("getVoltageOutput called for slave %d\n",this->slave);
     if (this->slave == 0)
     {
-        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_V,&iData);
+        ret=this->Hardware->ReadBitRegister(Hazemeyer::Corrector::MAIN_AVERAGE_V,(int16_t*)&iData);
         if (ret)
         {
             *volt=(float) this->Hardware->ConvertFromDigit(Hazemeyer::Corrector::CONV_MAIN_VOLT,iData);
@@ -124,18 +147,22 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
 
 }
 int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
-    short int  iData;
-    short int  iMainData=0;
+    int32_t  iData=0;
+    int32_t  iMainData=0;
     uint64_t alCode=0;
     Hazemeyer::Corrector::ReadReg  Reg;
     Hazemeyer::Corrector::ReadReg  MainFaults=Hazemeyer::Corrector::GENERAL_FAULTS;
     bool ret, centralUnitFault=false;
+ //   DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+ //   DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusReadTimeout(timeo_ms*1000);
+    //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     switch (this->slave)
     {
-        default: return POWER_SUPPLY_COMMAND_ERROR;
+        default: 
+            DERR("[%d] Power supply Command Error",slave);
+            return POWER_SUPPLY_COMMAND_ERROR;
         case 0: break;
         case 1: Reg=Hazemeyer::Corrector::CH0_FAULTS; break;
         case 2: Reg=Hazemeyer::Corrector::CH1_FAULTS; break;
@@ -147,33 +174,34 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
         case 8: Reg=Hazemeyer::Corrector::CH7_FAULTS; break;
      
     }
-    ret=this->Hardware->ReadBitRegister(MainFaults,&iMainData);
+    ret=this->Hardware->ReadBitRegister(MainFaults,(int16_t*)&iMainData);
     if (!ret) 
             return POWER_SUPPLY_RECEIVE_ERROR;
     if  (this->slave != 0)
     {
         
-        if (iMainData != 0)  
-            alCode+=POWER_SUPPLY_MAINUNIT_FAIL;
-         ret=this->Hardware->ReadBitRegister(Reg,&iData);
-        if (!ret) 
+        if (iMainData != 0)  {
+            alCode|=POWER_SUPPLY_MAINUNIT_FAIL;
+        }
+         ret=this->Hardware->ReadBitRegister(Reg,(int16_t*)&iData);
+        if (!ret) {
+             DERR("[%d] Power supply Receive Error",slave);
+
             return POWER_SUPPLY_RECEIVE_ERROR;
-        
-        if (iData &  0x1) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iData &  0x2) alCode+=POWER_SUPPLY_FUSE_FAULT;
-        if (iData &  0x4) alCode+=POWER_SUPPLY_OVER_VOLTAGE;
-        if (iData &  0x8) alCode+=POWER_SUPPLY_OVER_CURRENT;
-        if (iData &  0x10) alCode+=POWER_SUPPLY_COMMUNICATION_FAILURE;
-    }
-    else
-    {
-        if (iMainData & 0x400) alCode+=POWER_SUPPLY_EVENT_DOOR_OPEN;
-        if (iMainData & 0x800) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x1) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x2) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x4) alCode+=POWER_SUPPLY_EVENT_OVER_TEMP;
-        if (iMainData & 0x8) alCode+=POWER_SUPPLY_FUSE_FAULT;
-        if (iMainData & 0x10) alCode+=POWER_SUPPLY_EARTH_FAULT;
+        }
+        if (iData &  0x1) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iData &  0x2) alCode|=POWER_SUPPLY_FUSE_FAULT;
+        if (iData &  0x4) alCode|=POWER_SUPPLY_OVER_VOLTAGE;
+        if (iData &  0x8) alCode|=POWER_SUPPLY_OVER_CURRENT;
+        if (iData &  0x10) alCode|=POWER_SUPPLY_COMMUNICATION_FAILURE;
+    } else {
+        if (iMainData & 0x400) alCode|=POWER_SUPPLY_EVENT_DOOR_OPEN;
+        if (iMainData & 0x800) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x1) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x2) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x4) alCode|=POWER_SUPPLY_EVENT_OVER_TEMP;
+        if (iMainData & 0x8) alCode|=POWER_SUPPLY_FUSE_FAULT;
+        if (iMainData & 0x10) alCode|=POWER_SUPPLY_EARTH_FAULT;
         
     }
     //fornire l'errore secondo lo standard
@@ -185,46 +213,80 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
 int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
     
     int ret;
+ //   DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+ //   DPRINT("ALEDEBUG after sem");
 
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    if (this->slave == 0){
         ret=this->Hardware->ResetMainUnit();
-    else
+    } else{
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_RESET);
-    
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+    }
+    if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::shutdown(uint32_t timeo_ms ) {
     int ret;
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+ //   DPRINT("ALEDEBUG before sem");
+    boost::mutex::scoped_lock lock(io_mux);
+
+//    DPRINT("ALEDEBUG after sem");
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    if (this->slave == 0){
         ret=this->Hardware->TurnOffMainUnit();
-    else
+    } else{
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF);
-    
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+    }    
+     if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
-    DPRINT("")
-     this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
+ //   DPRINT("ALEDEBUG before sem");
+    boost::mutex::scoped_lock lock(io_mux);
+
+  //  DPRINT("ALEDEBUG after sem");
+
+    // this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+    if (this->slave == 0){
         ret=this->Hardware->TurnOnMainUnit();
-    else
+    } else {
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
-     
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
-    return ret;
+    } 
+     if(ret!=true){
+        DERR("[%d] command error",slave);;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
 }
 int AL250::standby(uint32_t timeo_ms) {
-      this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    if (this->slave == 0)
-        return (!this->Hardware->TurnStandbyMainUnit());
-    else
-        return (!this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF));
+    int ret;
+ //   DPRINT("ALEDEBUG before sem");
+    boost::mutex::scoped_lock lock(io_mux);
+
+ //   DPRINT("ALEDEBUG after sem");
+    //  this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+
+    if (this->slave == 0){
+        ret = Hardware->TurnStandbyMainUnit();
+    } else {
+        ret= Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_OFF);
+        
+    }
+     if(ret!=true){
+        DERR("[%d] command error",slave);
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
+    return 0;
+    
 }
 int AL250::getCurrentSP(float* current,uint32_t timeo_ms) {
     /*
@@ -236,19 +298,20 @@ int AL250::getCurrentSP(float* current,uint32_t timeo_ms) {
     return 0;
 }
 int AL250::setCurrentSP(float current, uint32_t timeo_ms) {
-    	  boost::mutex::scoped_lock lock(io_mux);
 
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
-    if (!IsInInterval(current,this->minCurrent,this->maxCurrent))
+    CHECK_IF_ALLOWED;
+    
+    if (!IsInInterval(current,this->minCurrent,this->maxCurrent)){
+         DERR("[%d] current out of ranges [%f:%f]",slave,minCurrent,maxCurrent);
+
         return POWER_SUPPLY_BAD_OUT_OF_RANGE_PARAMETERS;
+    }
     
     this->CurrentSP=current;
     return 0;
 }
 int AL250::getMaxMinCurrent(float* max, float* min) {
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
+    CHECK_IF_ALLOWED;
     *max=this->maxCurrent;
     *min=this->minCurrent;
     return 0;
@@ -256,12 +319,12 @@ int AL250::getMaxMinCurrent(float* max, float* min) {
 int AL250::startCurrentRamp(uint32_t timeo_ms) {
     bool ret;
     DPRINT( "slave %d starting ramp",slave);
-
-    if (this->slave == 0)
-        return DEFAULT_NOT_ALLOWED;
+    CHECK_IF_ALLOWED;
+    boost::mutex::scoped_lock lock(io_mux);
     
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
-    ret=this->Hardware->SetChannelCurrent(this->slave,this->CurrentSP);
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+
+    ret=this->Hardware->SetChannelCurrent(this->slave-1,this->CurrentSP);
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     return ret;
 }
@@ -269,7 +332,9 @@ int AL250::init(){
     AL250::ChannelPhysicalMap Elem;
     bool ret=false;
     size_t index=0;
+    //DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
+   // DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d initializing",slave);
 
@@ -287,14 +352,14 @@ int AL250::init(){
    
       
     Elem.driverPointer=this->Hardware;
-    std::pair<std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
-    pRet=this->mainUnitTable.insert(Pair);
+    //    std::pair<const std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
+    pRet=AL250::mainUnitTable.insert(std::make_pair<std::string,AL250::ChannelPhysicalMap>(SerialDev,Elem));
     if (pRet.second) //new element
     {
          
         this->Hardware = new Hazemeyer::Corrector( App.c_str());
         pRet.first->second.driverPointer=this->Hardware;
-        DPRINT("connectin of a new Hazemeyer::Corrector:@ 0x%x",this->Hardware);
+        DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%x",this->Hardware);
         ret=this->Hardware->Connect();
         if (!ret){
             DERR("offline");
@@ -314,22 +379,33 @@ int AL250::init(){
     this->minCurrent=this->HwMinCurrent;
     this->maxCurrent=this->HwMaxCurrent;
    
-    if (this->slave == 0)
+    if (this->slave == 0){
+        DPRINT("Turning on MainUnit");
         ret=this->Hardware->TurnOnMainUnit();
-    else
+    } else{
+        DPRINT("Turning on sending channel on slave %d",slave);
+
         ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
+    }
     
-    ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
+     if(ret!=true){
+        DERR("[%d] command error",slave);
+        initDone=false;
+        return POWER_SUPPLY_COMMAND_ERROR;
+    }
     
     
-    if (ret == 0) this->initDone=true;
-    return ret;
+    
+    initDone=true;
+    return 0;
 }
 int AL250::deinit() {
     std::string key;
     std::vector<bool> *instances;
     std::string App(this->ConnectionParameters);
+    //DPRINT("ALEDEBUG before sem");
    boost::mutex::scoped_lock lock(io_mux);
+   // DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d deinitializinh",slave);
 
@@ -339,9 +415,9 @@ int AL250::deinit() {
     size_t index=App.find_first_of(',');
     if (index==std::string::npos) return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     key.insert(0,App,0,index);
-    std::map<std::string,AL250::ChannelPhysicalMap>::iterator it;
-    it=this->mainUnitTable.find(key); 
-    if (it == this->mainUnitTable.end())
+    std::map<std::string,ChannelPhysicalMap,common::CompareStdStr>::iterator it;;
+    it=AL250::mainUnitTable.find(key); 
+    if (it == AL250::mainUnitTable.end())
     {
         
         throw  "bad disallocation";
@@ -365,12 +441,12 @@ int AL250::deinit() {
 #endif
         this->Hardware->~Corrector();
         this->Hardware=NULL;
-        this->mainUnitTable.erase(it);
+        AL250::mainUnitTable.erase(it);
         this->printStaticTableContent();
     }
     else
     {
-        cout << "non posso deallocare" <<endl;
+        DERR("non posso deallocare");
         this->Hardware=NULL;
     }
     this->initDone=false;
@@ -405,10 +481,12 @@ int AL250::getCurrentSensibilityOnSet(float* sens) {
         return DEFAULT_NOT_ALLOWED;
     else
         *sens=0.00488;
+    return 0;
 }
 int AL250::getAlarmDesc(uint64_t* alarm){
     return 0;
 }
+
 std::string AL250::getAlarmDescr(uint64_t alarm) {
     std::string Ret="";
     for (int i=0; i < 64; i++)
@@ -441,15 +519,18 @@ int AL250::getVoltageSensibility(float* sens) {
         *sens=0.00183;
     return 0;
 }
-int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
-    boost::mutex::scoped_lock lock(io_mux);
 
-    this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
+int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
+  //  DPRINT("ALEDEBUG before sem");
+   
+    boost::mutex::scoped_lock lock(io_mux);
+  //  DPRINT("ALEDEBUG after sem");
+    //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     Hazemeyer::Corrector::ReadReg Reg;
     bool ret;
     int stCode=0;
     std::string Ret;
-    short int data;
+    int32_t data=0;
     *state=POWER_SUPPLY_STATE_UKN;
     DPRINT("slave %d getting state",slave);
 
@@ -458,58 +539,82 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
     else
         Reg=Hazemeyer::Corrector::GENERAL_STATUS;
         
-    ret = this->Hardware->ReadBitRegister(Reg,&data);
+    ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
     if (!ret) {
-         DERR("slave %d reading state on reg 0x%x",slave,Reg);
-
+         DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
+	 desc.assign("Communication Failure");
         return POWER_SUPPLY_RECEIVE_ERROR;
     }
     if (this->slave == 0)
     {
-        if ((data & 1)==0) 
-            stCode+=POWER_SUPPLY_STATE_UKN;
+        if ((data & 1)==0) { 
+	    desc.assign("Unknown State");
+            stCode|=POWER_SUPPLY_STATE_UKN;
+        }
         else
         {
-            if (data & 2) stCode+=POWER_SUPPLY_STATE_STANDBY;
-            if (data & 4) stCode+=POWER_SUPPLY_STATE_ON;
-            if ((data & 4)==0) stCode+=POWER_SUPPLY_STATE_OFF;
+            if (data & 2) {stCode=POWER_SUPPLY_STATE_STANDBY;desc.assign("standby");}
+            if (data & 4) {stCode=POWER_SUPPLY_STATE_ON;desc.assign("on");}
+            if ((data & 6)==0) {stCode=POWER_SUPPLY_STATE_OFF;desc.assign("off");}
+            if ((data & 8)) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
         }
 
     }
     else
     {
        
-         if (data & (1 << (this->slave-1))) stCode+=POWER_SUPPLY_STATE_ON;
+         if (data & (1 << (this->slave-1))) 
+	 {
+	    stCode|=POWER_SUPPLY_STATE_ON;
+	    desc.assign("on");
+	 }
          else
-             stCode+=POWER_SUPPLY_STATE_OFF;
+	 {
+             stCode|=POWER_SUPPLY_STATE_STANDBY;
+	     desc.assign("standby");
+	 }
+         //checking the status of the main unit for propagation status
+         ret = this->Hardware->ReadBitRegister(Hazemeyer::Corrector::GENERAL_STATUS,(int16_t*)&data);
+         if (!ret) 
+         {
+             DERR("slave %d reading state on reg 0x%x, ret=%d",slave,Reg,ret);
+	     desc.assign("Communication Failure");
+             return POWER_SUPPLY_RECEIVE_ERROR;
+         }
+	 if (!(data & 4)) {stCode|=POWER_SUPPLY_STATE_MAINUNIT_NOT_ON;desc.assign("main unit not on");}
+	 if (data & 8) {stCode|=POWER_SUPPLY_STATE_LOCAL;desc+=" local";}
+	 
     }
     //adding ALARMS
     Reg=Hazemeyer::Corrector::GENERAL_FAULTS;
-    ret = this->Hardware->ReadBitRegister(Reg,&data);
+    ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
     if (!ret) {
         DERR("slave %d reading faults on reg 0x%x",slave,Reg);
 
         return POWER_SUPPLY_RECEIVE_ERROR;   
     }
     if (data){
-             stCode+=POWER_SUPPLY_STATE_ALARM;
+             stCode|=POWER_SUPPLY_STATE_ALARM;
     } else {
         if (this->slave)
         {
             Reg=Hazemeyer::Corrector::CHS_READY;
-            ret = this->Hardware->ReadBitRegister(Reg,&data);
+            ret = this->Hardware->ReadBitRegister(Reg,(int16_t*)&data);
             if (!ret) return POWER_SUPPLY_RECEIVE_ERROR;  
             
             if ((data & (1 << (this->slave-1)))==0) 
-                stCode+=POWER_SUPPLY_STATE_ALARM;
+            {
+                stCode|=POWER_SUPPLY_STATE_ALARM;
+	        desc.assign("alarm");
+	    }
         }
     }
     *state = stCode;
     return 0;
 }
 void AL250::printStaticTableContent() {
-   std::map<const std::string,AL250::ChannelPhysicalMap>::iterator it;
-   for (it=this->mainUnitTable.begin(); it!=this->mainUnitTable.end(); ++it)
+   std::map<std::string,AL250::ChannelPhysicalMap>::iterator it;
+   for (it=AL250::mainUnitTable.begin(); it!=AL250::mainUnitTable.end(); ++it)
   {
     std::cout << it->first << " => " << it->second.driverPointer;
     for (int c=0; c < it->second.ConnectedChannels.size();c++)

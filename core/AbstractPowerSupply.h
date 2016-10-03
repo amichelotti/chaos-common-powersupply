@@ -34,6 +34,24 @@
 namespace common {
     namespace powersupply {
         
+        
+        typedef struct _calibdata {
+            double sp;
+            double readout;
+            _calibdata(){sp=0;readout=0;}
+        } calibdata_t;
+        
+        /**
+         * 
+         * @param calibration_data calibra
+         * @param size
+         * @param sp
+         * @param readout_expected
+         * @param error_expected
+         * @return 
+         */
+        int fitData(calibdata_t *calibration_data,int size,double sp,double& readout_expected,double& error_expected);
+        
         /**
          \enum PowerSupplyError
          \brief Power supply function error return codes
@@ -50,7 +68,9 @@ namespace common {
             POWER_SUPPLY_READBACK_FAILED, /// read and written value don't match
             POWER_SUPPLY_COMMAND_ERROR, /// an error occur during a command
             POWER_SUPPLY_RECEIVE_ERROR,/// an error occur during read of data
-            POWER_SUPPLY_COMMAND_IN_BAD_STATE
+            POWER_SUPPLY_COMMAND_IN_BAD_STATE,
+            POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY
+            
         };
         
         /**
@@ -64,9 +84,27 @@ namespace common {
             POWER_SUPPLY_OVER_VOLTAGE=0x10,
             POWER_SUPPLY_OVER_CURRENT=0x20,
             POWER_SUPPLY_COMMUNICATION_FAILURE=0x40,
-            POWER_SUPPLY_MAINUNIT_FAIL=0x80   // only for multichannels powersupply
-                    
-              
+            POWER_SUPPLY_MAINUNIT_FAIL=0x80,   // only for multichannels powersupply
+            POWER_SUPPLY_EXTERNAL_INTERLOCK=0x100,
+            POWER_SUPPLY_SETPOINT_CARD_FAULT=0x200,
+            POWER_SUPPLY_CUBICLE_OVT=0x400,
+            POWER_SUPPLY_DCCT_OVT=0x800,
+            POWER_SUPPLY_DCCT_FAULT=0x1000,
+            POWER_SUPPLY_ACTIVE_FILTER_FUSE=0x2000,
+            POWER_SUPPLY_ACTIVE_FILTER_OVT=0x4000,
+            POWER_SUPPLY_DIODE_OVT=0x8000,
+            POWER_SUPPLY_DIODE_FAULT=0x10000,
+            POWER_SUPPLY_AC_UNBALANCE=0x20000,
+            POWER_SUPPLY_PHASE_LOSS=0x40000,
+            POWER_SUPPLY_AIR_FLOW=0x80000,
+            POWER_SUPPLY_TRANSFORMER_OVT=0x100000,
+            POWER_SUPPLY_SNUBBER_FUSE=0x200000,
+            POWER_SUPPLY_SCR_FUSE=0x400000,
+            POWER_SUPPLY_SCR_OVT=0x800000,
+            POWER_SUPPLY_CHOKE_OVT=0x1000000,
+            POWER_SUPPLY_PASS_FILTER=0x2000000,
+            POWER_SUPPLY_ALARM_UNDEF=0x4000000
+                                  
         };
         
         
@@ -80,9 +118,19 @@ namespace common {
             POWER_SUPPLY_STATE_STANDBY=0x8, /// the power supply is not supplying current but the it answer to the protocol
             POWER_SUPPLY_STATE_OPEN=0x10, /// the power supply is on but is not supplying current
             POWER_SUPPLY_STATE_ALARM=0x20, /// an event occurred
+            POWER_SUPPLY_STATE_LOCAL=0x40, /// the powersupply in in local mode
+            POWER_SUPPLY_STATE_MAINUNIT_NOT_ON=0x80, /// powersupply main unit not on
+
             POWER_SUPPLY_STATE_UKN /// it's not possible to know the state (no answer)
         };
-        
+        /**
+         * */
+         enum PowerSupplyFeature{
+            POWER_SUPPLY_FEAT_MONOPOLAR=0x1, /// monopolar
+            POWER_SUPPLY_FEAT_BIPOLAR=0x2, /// bipolar
+            POWER_SUPPLY_FEAT_PULSED=0x4, /// pulsed
+            POWER_SUPPLY_FEAT_UKN /// it's not possible to know the type
+        };
         /**
          base class for all powersupplys
          */
@@ -91,6 +139,8 @@ namespace common {
             
         public:
             
+            AbstractPowerSupply(){}
+            static std::string decodeEvent(PowerSupplyEvents ev);
             virtual ~AbstractPowerSupply(){};
             /**
              @brief sets the current polarity
@@ -254,6 +304,22 @@ namespace common {
              @return 0 if success or an error code
              */
             virtual int getVoltageSensibility(float *sens)=0;
+            
+            
+             /**
+             @brief set the current sensibility of the power supply
+             @param sens sensibility in ampere
+             @return 0 if success or an error code
+             
+             */
+            virtual int setCurrentSensibility(float sens);
+            
+            /**
+             @brief set the voltage sensibility of the power supply
+             @param sens sensibility in volt
+             @return 0 if success or an error code
+             */
+            virtual int setVoltageSensibility(float sens);
             /**
              @brief returns the max min current of the power suppy
              @param max returns the max current that the power supply can output
@@ -292,6 +358,7 @@ namespace common {
              @return 0 if success or an error code
              */
             virtual int forceMaxVoltage(float max)=0;
+            virtual uint64_t getFeatures() ;
             
         };
         
