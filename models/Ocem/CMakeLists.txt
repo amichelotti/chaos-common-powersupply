@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(common_powersupply_ocem)
 
 #     -DOCEM_CORE_DEBUG
-ADD_DEFINITIONS(-DSIMPSUPPLY_DEBUG      -DOCEM_CORE_DEBUG -DPOWER_SUPPLY_DEFAULT_TIMEOUT=10000)
+ADD_DEFINITIONS(-DPOWER_SUPPLY_DEFAULT_TIMEOUT=10000)
 
 set(power_src OcemE642X.cpp)
 IF(FrameworkLib)
@@ -11,12 +11,7 @@ ELSE()
 SET(libs boost_program_options boost_thread boost_system boost_regex boost_atomic pthread)
 ENDIF()
 
-IF(BUILD_FORCE_STATIC)
-  ADD_LIBRARY(${PROJECT_NAME} STATIC ${PowerSupply_src} ${power_src})
-ELSE()
-  ADD_LIBRARY(${PROJECT_NAME} SHARED ${PowerSupply_src} ${power_src})
-ENDIF()
-
+ADD_LIBRARY(${PROJECT_NAME} STATIC ${PowerSupply_src} ${power_src})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} common_serial_ocem  common_powersupply common_serial common_debug ${libs})
 
 SET(PowerSupplyOcem_test_src test/ocem_test.cpp )
