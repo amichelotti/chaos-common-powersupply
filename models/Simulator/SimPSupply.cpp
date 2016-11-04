@@ -64,7 +64,7 @@ void SimPSupply::update_state(){
 
 }
 void SimPSupply::run(){
-    DPRINT("Starting SimSupply (%s,id:%d) service force errors:%d",dev.c_str(),slave_id,force_errors);
+    DPRINT("Starting SimSupply (%s,id:%d) service force errors:%d, current @0x%llx",dev.c_str(),slave_id,force_errors,&current);
     uint64_t last_error_time=0;
     uint64_t error=0;
     
@@ -83,19 +83,19 @@ void SimPSupply::run(){
                         regulator_state= REGULATOR_STANDBY;
                     }
                     error++;
-                    last_error_time=common::debug::getUsTime();
+                    last_error_time=common::debug::ttUsTime();
                 }
             }
         if(start_ramp){
             DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
             if (regulator_state == REGULATOR_ON){
             if(currSP>current){
-	      DPRINT("Ramp up adccurr %d (%f) set point %f increments %f, ramp speed up %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000,ramp_speed_up);
+	      DPRINT("[%s,%d] Ramp up adccurr %d (%f) set point %f increments %f, ramp speed up %f\n",dev.c_str(),slave_id,current,current*current_sensibility,currSP*current_sensibility,ramp_speed_up*current_sensibility*update_delay/1000000,ramp_speed_up);
 
                 current+=MIN(currSP-current,ramp_speed_up*((float)update_delay/1000000.0));
                 
             } else if(currSP<current){
-	      DPRINT("Ramp down adccurr %d (%f) set point %f increments %f,ramp speed down %f\n",current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility*update_delay/1000000,ramp_speed_down);
+	      DPRINT("[%s,%d] Ramp down adccurr %d (%f) set point %f increments %f,ramp speed down %f\n",dev.c_str(),slave_id,current,current*current_sensibility,currSP*current_sensibility,ramp_speed_down*current_sensibility*update_delay/1000000,ramp_speed_down);
 
                 current-=MIN(current-currSP,ramp_speed_down*((float)update_delay/1000000.0));
             } else {
@@ -105,7 +105,10 @@ void SimPSupply::run(){
         }
         }
         if( regulator_state& REGULATOR_STANDBY){
+            DPRINT("[%s,%d] setting current %f to 0 because standby\n",dev.c_str(),slave_id,current);
+
             current = 0;
+
             
         }
 	update_state();
@@ -229,6 +232,8 @@ int SimPSupply::getCurrentSP(float* current,uint32_t timeo_ms){
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
+        DPRINT("[%s,%d]get current state 0x%x current=%f @0x%llx.",dev.c_str(),slave_id,regulator_state,current,&current);
+
     if(regulator_state& REGULATOR_STANDBY){
         *curr = 0;
         return 0;
