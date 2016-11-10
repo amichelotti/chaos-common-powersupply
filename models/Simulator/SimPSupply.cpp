@@ -83,7 +83,7 @@ void SimPSupply::run(){
                         regulator_state= REGULATOR_STANDBY;
                     }
                     error++;
-                    last_error_time=common::debug::ttUsTime();
+                    last_error_time=common::debug::getUsTime();
                 }
             }
         if(start_ramp){
@@ -102,12 +102,13 @@ void SimPSupply::run(){
                 start_ramp=false;
             }
             
+            }
         }
-        }
-        if( regulator_state& REGULATOR_STANDBY){
-            DPRINT("[%s,%d] setting current %f to 0 because standby\n",dev.c_str(),slave_id,current);
+        if((current!=0) &&( regulator_state==REGULATOR_STANDBY)){
+            DPRINT("[%s,%d] setting current %f to 0 because standby\n",dev.c_str(),slave_id,current*current_sensibility);
 
-            current = 0;
+            //current = 0;
+            start_ramp=0;
 
             
         }
@@ -122,6 +123,7 @@ int SimPSupply::init(){
     FILE *f;
     *buf = 0;
     f= fopen(state_name.c_str(),"r");
+
     regulator_state = REGULATOR_STANDBY;
 
     if(f){
@@ -133,6 +135,8 @@ int SimPSupply::init(){
     running = true;
     start_ramp=0;
     m_thread = boost::thread(&SimPSupply::run,this);
+    DPRINT("[%s,%d] INIT ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+
     return 0;
 }
 
@@ -180,6 +184,8 @@ int SimPSupply::getHWVersion(std::string&version,uint32_t timeo_ms){
 
 
 int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
+     DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current);
+
     boost::mutex::scoped_lock lock;
     if(feats&POWER_SUPPLY_FEAT_BIPOLAR)
         return 0;
@@ -209,32 +215,35 @@ int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
   return 0;
 }
 
-int SimPSupply::setCurrentSP(float current,uint32_t timeo_ms){
+int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
-    if(current< min_current || current>max_current)
+      DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,curr);
+
+    if(curr< min_current || curr>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) 
+        return POWER_SUPPLY_TIMEOUT;
     
-    currSP = current/current_sensibility;
+    currSP = curr/current_sensibility;
     
     return 0;
 }
 
 
-int SimPSupply::getCurrentSP(float* current,uint32_t timeo_ms){
+int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
     if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
-    *current = currSP*current_sensibility;
+    *curr = currSP*current_sensibility;
     return 0;
 }
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
-        DPRINT("[%s,%d]get current state 0x%x current=%f @0x%llx.",dev.c_str(),slave_id,regulator_state,current,&current);
+        DPRINT("[%s,%d]get current ( @0x%llx.) state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,&current,regulator_state,polarity,current*current_sensibility);
 
-    if(regulator_state& REGULATOR_STANDBY){
+    if(regulator_state== REGULATOR_STANDBY){
         *curr = 0;
         return 0;
     }
@@ -257,8 +266,10 @@ int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
 
 int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
+    DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+
     CHECK_STATUS;
-    DPRINT("starting ramp");
+    
     uint32_t simdel=wait_write();
     
     if((simdel>(timeo_ms*1000))&&(timeo_ms>0)){
@@ -332,6 +343,8 @@ int SimPSupply::shutdown(uint32_t timeo_ms){
     return 0;
 }
 int SimPSupply::poweron(uint32_t timeo_ms){
+        DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,regulator_state,current*current_sensibility);
+
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
@@ -346,6 +359,7 @@ uint64_t SimPSupply::getFeatures() {
 
 int SimPSupply::standby(uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
+    DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility);
 
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
     regulator_state= REGULATOR_STANDBY;

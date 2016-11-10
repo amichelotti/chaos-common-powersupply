@@ -13,6 +13,7 @@
 #include <iostream>
 #include <common/powersupply/core/AbstractPowerSupply.h>
 #include <string.h>
+#include <stdint.h>
 
 #ifndef SIMPSUPPLY_SELECT_TIMEOUT
 #define SIMPSUPPLY_SELECT_TIMEOUT 1000
@@ -127,8 +128,8 @@ namespace common{
             void run();
             /// actual values
             int polarity;
-            int voltage;
-            int current;
+            uint32_t voltage;
+            uint32_t current;
             int currSP;
             int regulator_state;
             int selector_state;
