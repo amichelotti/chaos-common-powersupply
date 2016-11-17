@@ -16,10 +16,12 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <sstream>
+#include <stdlib.h>
+
 using namespace common::powersupply;
 #define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%llx or selector %x",alarms,selector_state);return 0;};
 #define MIN(x,y) ((x<y)?x:y)
-SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min_current,float _max_current,float _min_voltage,float _max_voltage,int _write_latency_min,int _write_latency_max,int _read_latency_min,int _read_latency_max,int _current_adc,int _voltage_adc,unsigned _update_delay,unsigned _force_errors):dev(_dev),slave_id(_slave_id),write_latency_min(_write_latency_min),write_latency_max(_write_latency_max),read_latency_min(_read_latency_min),read_latency_max(_read_latency_max),max_current(_max_current),max_voltage(_max_voltage),current_adc(_current_adc),voltage_adc(_voltage_adc),update_delay(_update_delay),force_errors(_force_errors)
+SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min_current,float _max_current,float _min_voltage,float _max_voltage,int _write_latency_min,int _write_latency_max,int _read_latency_min,int _read_latency_max,int _current_adc,int _voltage_adc,unsigned _update_delay,unsigned _force_errors,float _readout_err):dev(_dev),slave_id(_slave_id),write_latency_min(_write_latency_min),write_latency_max(_write_latency_max),read_latency_min(_read_latency_min),read_latency_max(_read_latency_max),max_current(_max_current),max_voltage(_max_voltage),current_adc(_current_adc),voltage_adc(_voltage_adc),update_delay(_update_delay),force_errors(_force_errors)
 {
     feats=_feats;
     min_voltage=_min_voltage;
@@ -45,6 +47,7 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min
     ramp_speed_up=5.0/voltage_sensibility;
     ramp_speed_down=5.0/current_sensibility;
     DPRINT("FORCE ERRORS=%d",force_errors);
+    readout_err = ((1<<current_adc)*1.0/100.0)*_readout_err;
 
 }
 
@@ -247,7 +250,9 @@ int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
         *curr = 0;
         return 0;
     }
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) 
+        return POWER_SUPPLY_TIMEOUT;
+    current=current + readout_err*(rand()/RAND_MAX);
     if((polarity==0)&&(feats&POWER_SUPPLY_FEAT_MONOPOLAR)){
         *curr = 0;
     } else {

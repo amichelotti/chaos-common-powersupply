@@ -143,9 +143,10 @@ namespace common{
             int wait_read();
             unsigned update_delay;
             uint64_t feats;
+            float readout_err;
         public:
 
-            SimPSupply(const char *dev,int slave_id,uint64_t _feats,float min_current=0,float max_current=SIMPSUPPLY_MAX_CURRENT,float min_voltage=0,float max_voltage=SIMPSUPPLY_MAX_VOLTAGE, int write_latency_min=SIMPSUPPLY_WLAT,int write_latency_max=SIMPSUPPLY_WLAT,int read_latency_min=SIMPSUPPLY_RLAT,int read_latency_max=SIMPSUPPLY_RLAT,int current_adc=SIMPSUPPLY_CURRENT_ADC,int voltage_adc=SIMPSUPPLY_VOLTAGE_ADC,unsigned update_delay=SIMPSUPPLY_UPDATE_DELAY,unsigned force_errors=0);
+            SimPSupply(const char *dev,int slave_id,uint64_t _feats,float min_current=0,float max_current=SIMPSUPPLY_MAX_CURRENT,float min_voltage=0,float max_voltage=SIMPSUPPLY_MAX_VOLTAGE, int write_latency_min=SIMPSUPPLY_WLAT,int write_latency_max=SIMPSUPPLY_WLAT,int read_latency_min=SIMPSUPPLY_RLAT,int read_latency_max=SIMPSUPPLY_RLAT,int current_adc=SIMPSUPPLY_CURRENT_ADC,int voltage_adc=SIMPSUPPLY_VOLTAGE_ADC,unsigned update_delay=SIMPSUPPLY_UPDATE_DELAY,unsigned force_errors=0,float readout_err=0);
             ~SimPSupply();
             
             
