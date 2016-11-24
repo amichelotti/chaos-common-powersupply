@@ -179,8 +179,11 @@ int SimPSupply::getSWVersion(std::string &ver,uint32_t timeo_ms){
     sprintf(stringa,"Driver:SimPSupply Feature:0x%llx current:[%f:%f] voltage:[%f:%f] curr_adc:%d volt_adc:%d current sensibility:%f\n",feats,min_current,max_current,min_voltage,max_voltage,current_adc,voltage_adc,current_sensibility);
     
     ver = stringa;
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
-    
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
+        DERR("timeout reading expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     return 0;
 }
 
@@ -208,6 +211,8 @@ int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
 int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
   boost::mutex::scoped_lock lock;
   if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
+         DERR("timeout reading expired > %d ms",timeo_ms);
+
         return POWER_SUPPLY_TIMEOUT;
   }
     *pol=0;
@@ -228,9 +233,11 @@ int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
 
     if(curr< min_current || curr>max_current)
         return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) 
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
+          DERR("timeout writing expired > %d ms",timeo_ms);
+
         return POWER_SUPPLY_TIMEOUT;
-    
+    }
     currSP = curr/current_sensibility;
     
     return 0;
@@ -240,7 +247,11 @@ int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
 int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
+        DERR("timeout reading expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     *curr = currSP*current_sensibility;
     return 0;
 }
@@ -253,8 +264,11 @@ int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
         *curr = 0;
         return 0;
     }
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) 
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
+        DERR("timeout reading expired > %d ms",timeo_ms);
+
         return POWER_SUPPLY_TIMEOUT;
+    }
     current=current + readout_err*(rand()/RAND_MAX);
     if((polarity==0)&&(feats&POWER_SUPPLY_FEAT_MONOPOLAR)){
         *curr = 0;
@@ -266,7 +280,11 @@ int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
 int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)){
+         DERR("timeout reading expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     voltage = voltage  + readout_err*(rand()/RAND_MAX);
     *volt = voltage*current_sensibility;
     return 0;
@@ -303,7 +321,11 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
       DERR("bad input parameters asdown %f\n",asdown);
       return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
     }
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
+       DERR("timeout writing expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     if(asup==0){
       DERR("invalid setting ramp speed %f, not changing",asup);
     } else {
@@ -325,7 +347,11 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
 int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
+                DERR("timeout writing expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     alarms = 0;
     selector_state=0;
     DPRINT("reset alarms x%llx",alrm);
@@ -335,7 +361,11 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 int SimPSupply::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
+                DERR("timeout reading expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     
     *alrm = alarms;
     return 0;
@@ -355,7 +385,11 @@ int SimPSupply::poweron(uint32_t timeo_ms){
 
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
+                DERR("timeout writing expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     regulator_state= REGULATOR_ON;
     DPRINT("set poweron");
     return 0;
@@ -369,7 +403,10 @@ int SimPSupply::standby(uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
     DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility);
 
-    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
+        DERR("timeout writing expired > %d ms",timeo_ms);
+        return POWER_SUPPLY_TIMEOUT;
+    }
     regulator_state= REGULATOR_STANDBY;
     DPRINT("set standby");
     return 0;
@@ -379,7 +416,11 @@ int SimPSupply::standby(uint32_t timeo_ms){
 int  SimPSupply::getState(int* state,std::string &desc,uint32_t timeo_ms){
      boost::mutex::scoped_lock lock;
 
-    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
+    if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)){
+        DERR("timeout reading expired > %d ms",timeo_ms);
+
+        return POWER_SUPPLY_TIMEOUT;
+    }
     *state = 0;
     if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
         *state |=POWER_SUPPLY_STATE_OFF;
