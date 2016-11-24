@@ -102,13 +102,13 @@ void SimPSupply::run(){
 
                 current-=MIN(current-currSP,ramp_speed_down*((float)update_delay/1000000.0));
             } else {
-                start_ramp=false;
+                start_ramp=0;
             }
             
             }
         }
-        if((current!=0) &&( regulator_state==REGULATOR_STANDBY)){
-            DPRINT("[%s,%d] setting current %f to 0 because standby\n",dev.c_str(),slave_id,current*current_sensibility);
+        if(start_ramp && (current!=0) &&( regulator_state==REGULATOR_STANDBY)){
+            DPRINT("[%s,%d] setting current %f to 0 because standby",dev.c_str(),slave_id,current*current_sensibility);
 
             //current = 0;
             start_ramp=0;
@@ -156,6 +156,7 @@ int SimPSupply::wait_write(){
         usleep(write_latency_max);
     }
     int wait = (rand()*1.0/RAND_MAX)*write_latency_max + write_latency_min;
+    DPRINT("wait write %d us",wait);
     usleep(wait);
     return wait;
 }
@@ -166,6 +167,8 @@ int SimPSupply::wait_read(){
         usleep(read_latency_max);
     }
     int wait = (rand()*1.0/RAND_MAX)*read_latency_max + read_latency_min;
+    DPRINT("wait read %d us",wait);
+
     usleep(wait);
     return wait;
 
@@ -264,7 +267,7 @@ int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
     if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) return POWER_SUPPLY_TIMEOUT;
-    
+    voltage = voltage  + readout_err*(rand()/RAND_MAX);
     *volt = voltage*current_sensibility;
     return 0;
 }
