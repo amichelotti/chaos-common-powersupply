@@ -135,6 +135,10 @@ int SimPSupply::init(){
         fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
         fclose(f);
     }
+    if((regulator_state == REGULATOR_ON) && (polarity==0)){
+        DPRINT("forcing inconsistent state poweron and open with polarity +");
+        polarity=1;
+    }
     running = true;
     start_ramp=0;
     m_thread = boost::thread(&SimPSupply::run,this);
@@ -385,6 +389,10 @@ int SimPSupply::poweron(uint32_t timeo_ms){
 
     boost::mutex::scoped_lock lock;
     CHECK_STATUS;
+    if(polarity == 0){
+        DERR("cannot go in poweron with open state");
+        return -2;
+    }
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
                 DERR("timeout writing expired > %d ms",timeo_ms);
 
