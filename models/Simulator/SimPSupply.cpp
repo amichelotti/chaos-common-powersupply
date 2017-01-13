@@ -351,27 +351,28 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
 int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
 
+    alarms = 0;
+       selector_state=0;
+       DPRINT("reset alarms x%llx",alrm);
+
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
                 DERR("timeout writing expired > %d ms",timeo_ms);
 
         return POWER_SUPPLY_TIMEOUT;
     }
-    alarms = 0;
-    selector_state=0;
-    DPRINT("reset alarms x%llx",alrm);
     return 0;
 }
 
 int SimPSupply::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
     boost::mutex::scoped_lock lock;
-
+    *alrm = alarms;
     if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
                 DERR("timeout reading expired > %d ms",timeo_ms);
 
         return POWER_SUPPLY_TIMEOUT;
     }
     
-    *alrm = alarms;
+
     return 0;
 }
 
