@@ -118,7 +118,7 @@ void SimPSupply::run(){
 	update_state();
         usleep(update_delay);
     }
-    DPRINT("Closing SimSupply service\n");
+    DPRINT("Closing SimSupply service");
 
 }
 int SimPSupply::init(){
@@ -130,7 +130,7 @@ int SimPSupply::init(){
     regulator_state = REGULATOR_STANDBY;
 
     if(f){
-        DPRINT("writing state\n");
+        DPRINT("reading state from file");
         // get last state from file
         fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
         fclose(f);
@@ -139,11 +139,12 @@ int SimPSupply::init(){
         DPRINT("forcing inconsistent state poweron and open with polarity +");
         polarity=1;
     }
-    running = true;
-    start_ramp=0;
-    m_thread = boost::thread(&SimPSupply::run,this);
-    DPRINT("[%s,%d] INIT ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
-
+	start_ramp=0;
+    if(running==false){
+		running = true;
+		m_thread = boost::thread(&SimPSupply::run,this);
+		DPRINT("[%s,%d] INIT ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+    }
     return 0;
 }
 
