@@ -47,6 +47,7 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min
     ramp_speed_up=5.0/voltage_sensibility;
     ramp_speed_down=5.0/current_sensibility;
     DPRINT("FORCE ERRORS=%d",force_errors);
+    running=false;
     readout_err = ((1<<current_adc)*1.0/100.0)*_readout_err;
 
 }
