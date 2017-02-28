@@ -197,14 +197,14 @@ std::string ver;
     for(;id<32;id++){
       common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(dev.c_str(),id,maxcurrent,maxvoltage);
       if(ps==NULL){
-	std::cout<<"## cannot initiasize resources"<<std::endl;
+	std::cout<<"## cannot initialize resources"<<std::endl;
 	return -2;
 	
       }
       std::cout<<"Trying address:"<<id<<std::endl;
       if(ps->init()==0){
-	std::cout<<"found:"<<id<<std::endl;
-	found ++;
+    	  std::cout<<"found:"<<id<<std::endl;
+    	  found ++;
       }
       delete ps;
     }
