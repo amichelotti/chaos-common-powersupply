@@ -19,7 +19,12 @@
 #ifdef CHAOS
 #include <chaos/ui_toolkit/ChaosUIToolkit.h>
 #endif
-#define DEFAULT_TIMEOUT 10000
+ namespace po=boost::program_options;
+
+#define DEFAULT_TIMEOUT OCEM_DEFAULT_TIMEOUT_MS
+
+
+static int default_timeout = DEFAULT_TIMEOUT;
 using boost::regex;
 
 static char* convToUpper(char*str){
@@ -102,6 +107,53 @@ static int check_for_char(){
   return FD_ISSET(0,&fds);
   
 }
+static int test_stbyon( common::powersupply::AbstractPowerSupply  *ps, int times){
+	int ret=0;
+	int cnt=0;
+	int stat;
+	std::string state;
+	ps->setCurrentSP(0,default_timeout);
+	ps->startCurrentRamp(default_timeout);
+	if((ret=ps->standby(default_timeout))<0){
+		printf("## initializing test_stbyon cannot go in stanby ret %d\n",ret);
+		return ret;
+	}
+
+	uint64_t tm=common::debug::getUsTime();
+
+	while(cnt< times){
+		 printf("%d] setting power on at +%f ms\n",cnt,(common::debug::getUsTime()-tm)*1.0/1000.0);
+		if((ret=ps->poweron(default_timeout))<0){
+			printf("%d] cannot go to ON ret %d\n",cnt,ret);
+			return ret;
+		}
+		do{
+		  if((ret=ps->getState(&stat,state,default_timeout*5))<0){
+			  printf("\n## error retrieving State, ret %d\n",ret);
+			return ret;
+		   }
+		} while(stat&common::powersupply::POWER_SUPPLY_STATE_STANDBY);
+		printf("%d] state reached  at +%f ms\n",cnt,(common::debug::getUsTime()-tm)*1.0/1000.0);
+
+		printf("%d] setting standby on +%f ms\n",cnt,(common::debug::getUsTime()-tm)*1.0/1000.0);
+		if((ret=ps->standby(default_timeout))<0){
+					printf("cycle %d] cannot go to STBY ret %d\n",cnt,ret);
+					return ret;
+		}
+		do{
+				  if((ret=ps->getState(&stat,state,default_timeout))<0){
+					  printf("\n## error retrieving State, ret %d\n",ret);
+					return ret;
+				   }
+		} while(stat&common::powersupply::POWER_SUPPLY_STATE_ON);
+		printf("%d] state reached  at +%f ms\n",cnt,(common::debug::getUsTime()-tm)*1.0/1000.0);
+
+		cnt++;
+	}
+
+	return 0;
+}
+
 static void printCommandHelp(){
     std::cout<<" Available commands  :"<<std::endl;
     std::cout<<"\tPOL <1/0/-1>       : set polarity"<<std::endl;
@@ -115,6 +167,7 @@ static void printCommandHelp(){
     std::cout<<"\tOFF                : force powerof"<<std::endl;
     std::cout<<"\t------------------------------------------"<<std::endl;
     std::cout<<"\tGETCURRENT         : get current"<<std::endl;
+
     std::cout<<"\tGETVOLTAGE         : get voltage"<<std::endl;
     std::cout<<"\tGETALARMS          : get alarms"<<std::endl;
     std::cout<<"\tGETSTATE           : get state"<<std::endl;
@@ -126,10 +179,13 @@ static void printCommandHelp(){
     std::cout<<"\tSELECT <command>   : select"<<std::endl;
 
     std::cout<<"\t-------------------------------------------"<<std::endl;
-    std::cout<<"\tOPEN <ser> <slave> : open a new powersupply"<<std::endl;
-    std::cout<<"\tCLOSE              : close powersupply"<<std::endl;
-    std::cout<<"\tHELP               : this help"<<std::endl;
-    std::cout<<"\tQUIT               : quit program"<<std::endl;
+    std::cout<<"\tTEST_ONSTBY  <#times>          : switch on and stby for a number of times"<<std::endl;
+    //std::cout<<"\tTEST_POL  <#times>     		 : cycle polarity pos neg open for a number of times"<<std::endl;
+    //std::cout<<"\tTEST_CURR  <#times> <#maxcurr> : cycle stby on pos maxcurr and stby on neg maxcurr for a number of times"<<std::endl;
+    std::cout<<"\tOPEN <ser> <slave>     		 : open a new powersupply"<<std::endl;
+    std::cout<<"\tCLOSE                  		 : close powersupply"<<std::endl;
+    std::cout<<"\tHELP                   		 : this help"<<std::endl;
+    std::cout<<"\tQUIT                   : quit program"<<std::endl;
 
 }
 int main(int argc, char *argv[])
@@ -142,6 +198,7 @@ std::string ver;
     bool interactive=false;
     int slave_id;
     std::string dev;
+
  
 #ifdef CHAOS
     
@@ -151,7 +208,9 @@ std::string ver;
       chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
       chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
       chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
-     chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
+      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("timeout,t", po::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
+
       chaos::ui::ChaosUIToolkit::getInstance()->init(argc, argv);
 
       
@@ -168,10 +227,14 @@ std::string ver;
   desc.add_options()("maxcurr", boost::program_options::value<float>(), "max current ");
   desc.add_options()("maxvolt", boost::program_options::value<float>(), "max voltage ");
 
+  desc.add_options()("timeout,t", boost::program_options::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
 
   desc.add_options()("interactive", "interactive test");
   desc.add_options()("span,s", "span devices find devices on the bus");
   desc.add_options()("raw,r", "raw access to ocem bus"); 
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc,argv,desc),vm);
+  po::notify(vm);
   if(vm.count("id")==0){
         std::cout<<"## you must specify an existing slave id [0:31]"<<desc<<std::endl;
      return -1;
@@ -236,7 +299,7 @@ std::string ver;
   }
   printf("OK\n");
   if(interactive){
-    if(  ps->getSWVersion(ver,DEFAULT_TIMEOUT)!=0){
+    if(  ps->getSWVersion(ver,default_timeout)!=0){
       printf("## cannot get SW version \n");
       return -3;
     }
@@ -247,22 +310,22 @@ std::string ver;
       std::string state;
       int ch,ret;
       uint64_t ev;
-      if((ret= ps->getCurrentOutput(&curr,DEFAULT_TIMEOUT))<0){
+      if((ret= ps->getCurrentOutput(&curr,default_timeout))<0){
 	printf("\n## error retrieving current, ret %d\n",ret);
       }
-      if((ret=ps->getVoltageOutput(&volt,DEFAULT_TIMEOUT))<0){
+      if((ret=ps->getVoltageOutput(&volt,default_timeout))<0){
 	printf("\n## error retrieving voltage, ret %d\n",ret);
       }
-      if((ret=ps->getCurrentSP(&sp,DEFAULT_TIMEOUT))<0){
+      if((ret=ps->getCurrentSP(&sp,default_timeout))<0){
 	printf("\n## error retrieving current set point, ret %d\n",ret);
       }
-      if((ret=ps->getPolarity(&pol,DEFAULT_TIMEOUT))<0){
+      if((ret=ps->getPolarity(&pol,default_timeout))<0){
 	printf("\n## error retrieving polarity, ret %d\n",ret);
       }
-      if((ret=ps->getState(&stat,state,DEFAULT_TIMEOUT))<0){
+      if((ret=ps->getState(&stat,state,default_timeout))<0){
 	printf("\n## error retrieving State, ret %d\n",ret);
       }
-      if((ret=ps->getAlarms(&ev,DEFAULT_TIMEOUT))<0){
+      if((ret=ps->getAlarms(&ev,default_timeout))<0){
 	printf("\n## error retrieving Alarms, ret %d\n",ret);
       } 
       printf("A:%3.4f,V:%2.2f,SetPoint('1'):%3.4f,Polarity('2'):%c,State('3'):(0x%x)\"%s\", alarms(reset '4'):x%llX\r",curr,volt,sp,(pol>0)?'+':(pol<0)?'-':'0',stat,state.c_str(),ev);
@@ -279,10 +342,10 @@ std::string ver;
 	  printf("\nSet current point [%3.4f:%3.4f]:",min,max);
 	  scanf("%f",&cur);
 	  printf("\n");
-	  if( (ret=ps->setCurrentSP(cur,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->setCurrentSP(cur,default_timeout))<0){
 	    printf("\n## error setting current ret %d\n",ret);
 	  } else {
-	    if( (ret=ps->startCurrentRamp(DEFAULT_TIMEOUT))<0){
+	    if( (ret=ps->startCurrentRamp(default_timeout))<0){
 	      printf("\n## error starting ramp%d\n",ret);
 	    }
 	  }
@@ -293,7 +356,7 @@ std::string ver;
 	  printf("\nSet Polarity [<0 negative,>0 positive, 0 open]:");
 	  scanf("%d",&polarity);
 	  printf("\n");
-	  if( (ret=ps->setPolarity(polarity,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->setPolarity(polarity,default_timeout))<0){
 	    printf("\n## error setting polarity ret %d\n",ret);
 	  } 
 	}
@@ -302,7 +365,7 @@ std::string ver;
 	  uint64_t alm=0;
 	  printf("\nResetting events\n");
 
-	  if( (ret=ps->resetAlarms(alm,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->resetAlarms(alm,default_timeout))<0){
 	    printf("\n## error resetting alarms ret %d\n",ret);
 	  } 
 	}
@@ -313,19 +376,19 @@ std::string ver;
 	  scanf("%d",&polarity);
 	  printf("\n");
 	  if(polarity==1){
-	    if( (ret=ps->poweron(DEFAULT_TIMEOUT))<0){
+	    if( (ret=ps->poweron(default_timeout))<0){
 	      printf("\n## error setting power on ret %d\n",ret);
 	    }
 	  }
 	
 	  if(polarity==2){
-	    if( (ret=ps->standby(DEFAULT_TIMEOUT))<0){
+	    if( (ret=ps->standby(default_timeout))<0){
 	      printf("\n## error setting standby ret %d\n",ret);
 	    }
 	  }
 	
 	  if(polarity==3){
-	    if( (ret=ps->shutdown(DEFAULT_TIMEOUT))<0){
+	    if( (ret=ps->shutdown(default_timeout))<0){
 	      printf("\n## error setting OFF ret %d\n",ret);
 	      
 	    }
@@ -370,7 +433,7 @@ std::string ver;
 	  float up = atof(val);
 	  float down=atof(val1);
 	  printf("setting current SLOPE UP %4.4f DOWN %4.4f\n",up,down);
-	  if( (ret=ps->setCurrentRampSpeed(up,down,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->setCurrentRampSpeed(up,down,default_timeout))<0){
 	    printf("## error setting SLOPE ret %d\n",ret);
 	    continue;
 	  } 
@@ -393,13 +456,19 @@ std::string ver;
         } else if(!strcmp(cmd,"POL")){
 
 	  printf("setting polarity to %d\n",ival);
-	  if( (ret=ps->setPolarity(ival,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->setPolarity(ival,default_timeout))<0){
 	    printf("## error setting polarity ret %d\n",ret);
 	    continue;
 	  } 
+	} else if(!strcmp(cmd,"TEST_ONSTBY")){
+		if((ret=test_stbyon(ps,ival))!=0){
+			  printf("## error performing test ret %d\n",ret);
+				    continue;
+		}
+
 	} else if(!strcmp(cmd,"SP")){
 	  printf("setting current SP to %4.4f\n",fval);
-	  if( (ret=ps->setCurrentSP(fval,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->setCurrentSP(fval,default_timeout))<0){
 	    printf("## error setting SP ret %d\n",ret);
 	    continue;
 	  } 
@@ -410,13 +479,13 @@ std::string ver;
       }  else if(sscanf(stringa,"%s",cmd)==1){
 	if(!strcmp(cmd,"RAMP")){
 	  printf("start ramp..\n");
-	  if( (ret=ps->startCurrentRamp(DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->startCurrentRamp(default_timeout))<0){
 	    printf("## error starting ramp ret %d\n",ret);
 	    continue;
 	  } 
 	} else if(!strcmp(cmd,"STANDBY")){
 	  printf("setting standby\n");
-	  if( (ret=ps->standby(DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->standby(default_timeout))<0){
 	    printf("## error STANDBY ret %d\n",ret);
 	    continue;
 	  } 
@@ -432,25 +501,25 @@ std::string ver;
           }
 	} else if(!strcmp(cmd,"ON")){
 	  printf("setting poweron\n");
-	  if( (ret=ps->poweron(DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->poweron(default_timeout))<0){
 	    printf("## error POWERON ret %d\n",ret);
 	    continue;
 	  } 
 	} else if(!strcmp(cmd,"OFF")){
 	  printf("setting shutdown\n");
-	  if( (ret=ps->shutdown(DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->shutdown(default_timeout))<0){
 	    printf("## error shutdown ret %d\n",ret);
 	    continue;
 	  } 
 	} else if(!strcmp(cmd,"RSTALARMS")){
 	  printf("resetting alarms\n");
-	  if( (ret=ps->resetAlarms(0,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->resetAlarms(0,default_timeout))<0){
 	    printf("## error resetting allarms ret %d\n",ret);
 	    continue;
 	  } 
 	} else if(!strcmp(cmd,"GETCURRENT")){
 	  float curr;
-	  if( (ret=ps->getCurrentOutput(&curr,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getCurrentOutput(&curr,default_timeout))<0){
 	    printf("## error getting current ret %d\n",ret);
 	    continue;
 	  } else {
@@ -458,7 +527,7 @@ std::string ver;
 	  }
 	} else if(!strcmp(cmd,"GETVOLTAGE")){
 	  float curr;
-	  if( (ret=ps->getVoltageOutput(&curr,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getVoltageOutput(&curr,default_timeout))<0){
 	    printf("## error getting voltage ret %d\n",ret);
 	    continue;
 	  } else {
@@ -467,7 +536,7 @@ std::string ver;
 	} else if(!strcmp(cmd,"GETALARMS")){
 	  uint64_t curr;
 
-	  if( (ret=ps->getAlarms(&curr,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getAlarms(&curr,default_timeout))<0){
 	    printf("## error getting alarms ret %d\n",ret);
 	    continue;
 	  } else {
@@ -477,7 +546,7 @@ std::string ver;
 	} else if(!strcmp(cmd,"GETSTATE")){
 	  int stat;
 	  std::string desc;
-	  if( (ret=ps->getState(&stat,desc,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getState(&stat,desc,default_timeout))<0){
 	    printf("## error getting state ret %d\n",ret);
 	    continue;
 	  } else {
@@ -486,7 +555,7 @@ std::string ver;
 	} else if(!strcmp(cmd,"GETPOL")){
 	  int stat;
 
-	  if( (ret=ps->getPolarity(&stat,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getPolarity(&stat,default_timeout))<0){
 	    printf("## error getting polarity ret %d\n",ret);
 	    continue;
 	  } else {
@@ -494,10 +563,10 @@ std::string ver;
 	  }
 	} else if(!strcmp(cmd,"GETVER")){
 	  std::string desc;
-	  if( (ret=ps->getHWVersion(desc,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getHWVersion(desc,default_timeout))<0){
 	    printf("## error getting state ret %d\n",ret);
 	    continue;
-	  } else {
+	} else {
 	    float cmax,cmin,vmax,vmin;
 	    ps->getMaxMinCurrent(&cmax,&cmin);
 	    ps->getMaxMinVoltage(&vmax,&vmin);
@@ -505,7 +574,7 @@ std::string ver;
 	  }
 	} else if(!strcmp(cmd,"GETSP")){
 	  float curr;
-	  if( (ret=ps->getCurrentSP(&curr,DEFAULT_TIMEOUT))<0){
+	  if( (ret=ps->getCurrentSP(&curr,default_timeout))<0){
 	    printf("## error getting SP ret %d\n",ret);
 	    continue;
 	  } 

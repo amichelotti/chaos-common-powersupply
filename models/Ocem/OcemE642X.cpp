@@ -99,7 +99,7 @@ void* OcemE642X::updateSchedule(){
 				send_command((char*)"SA",1000,0);
 			}
 		}
-		if(regulator_state.mod_time()>(2*OCEM_REFRESH_TIME)){
+		if(regulator_state.mod_time()>(OCEM_REFRESH_TIME)){
 			if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
 				DPRINT("[%d] REFRESH LOGIC  because state has been modified %llu ms",slave_id,regulator_state.mod_time()/1000);
 				send_command((char*)"SL",1000,0);
@@ -985,42 +985,49 @@ int OcemE642X::standby(uint32_t timeo_ms){
 
 int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
 	*state = 0;
-
+	std::stringstream ss;
 	//  GET_VALUE(regulator_state,timeo_ms,SL);
-
-
 
 	if(regulator_state == REGULATOR_SHOULD_BE_OFF) {
 		*state |=POWER_SUPPLY_STATE_OFF;
-		desc += "off ";
+		ss<< "off ";
 	}
 
 	if(regulator_state == REGULATOR_STANDBY){
 		*state |= POWER_SUPPLY_STATE_STANDBY;
-		desc += "standby ";
+		ss<< "standby ";
 	}
 
 	if(regulator_state == REGULATOR_ON){
 		*state |= POWER_SUPPLY_STATE_ON;
-		desc += "on ";
+		ss<< "on ";
 	}
 	if(regulator_state == REGULATOR_UKN){
 		*state|=POWER_SUPPLY_STATE_UKN;
-		desc += "ukwnown ";
+		ss<< "ukwnown ";
 	}
 
 	if(regulator_state == REGULATOR_ERROR){
 		*state|=POWER_SUPPLY_STATE_ERROR;
-		desc += "error ";
+		ss<< "error ";
 	}
 
 	if(selector_state == SELECTOR_LOC){
 		*state|=POWER_SUPPLY_STATE_LOCAL;
-		desc += "local ";
+		ss<< "local ";
 	}
 	if(alarms!=0){
 		*state |= POWER_SUPPLY_STATE_ALARM;
-		desc += "Alarm ";
+		ss<< "Alarm ";
+	}
+
+	desc=ss.str();
+
+	if(timeo_ms && (regulator_state.mod_time()> (timeo_ms * 1000))){
+		ERR("Timeout getting state mod time:%lld",regulator_state.mod_time());
+		regulator_state = REGULATOR_UKN;
+
+		return OCEM_TIMEOUT_ERROR;
 	}
 	return 0;
 }
