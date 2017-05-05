@@ -128,8 +128,8 @@ namespace common{
             void run();
             /// actual values
             int polarity;
-            uint32_t voltage;
-            uint32_t current;
+            int32_t voltage;
+            int32_t current;
             int currSP;
             int regulator_state;
             int selector_state;
