@@ -353,7 +353,7 @@ int AL250::init(){
       
     Elem.driverPointer=this->Hardware;
     //    std::pair<const std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
-    pRet=AL250::mainUnitTable.insert(std::make_pair<std::string,AL250::ChannelPhysicalMap>(SerialDev,Elem));
+    pRet=AL250::mainUnitTable.insert(std::pair<std::string,AL250::ChannelPhysicalMap>(SerialDev,Elem));
     if (pRet.second) //new element
     {
          
