@@ -270,7 +270,7 @@ int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
-	DPRINT("[%s,%d]get current ( @0x%llx.) state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,&current,regulator_state,polarity,current*current_sensibility);
+	DPRINT("[%s,%d]get current ( @0x%llx.) state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,&current,regulator_state,polarity,(float)current*current_sensibility);
 
 	if(regulator_state== REGULATOR_STANDBY){
 		*curr = 0;
