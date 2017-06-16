@@ -303,7 +303,7 @@ namespace common{
              @return the number of characters successfully transmitted, negative if error
              */
             
-            int send_command(char*cmd,uint32_t timeout,int *timeo);
+            int send_command(const char*cmd,uint32_t timeout,int *timeo);
             // return the number of sucessfully data read or an error
             /**
              @brief send a command (perform a select) and waits for an answer (performs a poll)

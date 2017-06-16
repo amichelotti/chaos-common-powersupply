@@ -752,7 +752,7 @@ int OcemE642X::deinit(){
 
 
 // return the number of characters sucessfully written or an error
-int OcemE642X::send_command(char*cmd,uint32_t timeout,int*tim){
+int OcemE642X::send_command(const char*cmd,uint32_t timeout,int*tim){
 	char command[1024];
 	int ret;
 	if(cmd==NULL)
