@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 using namespace common::powersupply;
-#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%llx or selector %x",alarms,selector_state);return 0;};
+#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%lx or selector 0x%x",alarms,selector_state);return 0;};
 #define MIN(x,y) ((x<y)?x:y)
 SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min_current,float _max_current,float _min_voltage,float _max_voltage,int _write_latency_min,int _write_latency_max,int _read_latency_min,int _read_latency_max,int _current_adc,int _voltage_adc,unsigned _update_delay,unsigned _force_errors,float _readout_err):dev(_dev),slave_id(_slave_id),write_latency_min(_write_latency_min),write_latency_max(_write_latency_max),read_latency_min(_read_latency_min),read_latency_max(_read_latency_max),max_current(_max_current),max_voltage(_max_voltage),current_adc(_current_adc),voltage_adc(_voltage_adc),update_delay(_update_delay),force_errors(_force_errors)
 {
@@ -72,7 +72,7 @@ void SimPSupply::update_state(){
 
 }
 void SimPSupply::run(){
-	DPRINT("Starting SimSupply (%s,id:%d) service force errors:%d, current @0x%llx",dev.c_str(),slave_id,force_errors,&current);
+	DPRINT("Starting SimSupply (%s,id:%d) service force errors:%d",dev.c_str(),slave_id,force_errors);
 	uint64_t last_error_time=0;
 	uint64_t error=0;
 
@@ -95,7 +95,7 @@ void SimPSupply::run(){
 			}
 		}
 		if(start_ramp){
-			DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
+			DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%lx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
 			if ((regulator_state == REGULATOR_ON)&&(std::abs(currSP-current)>0)){
 
 				if(currSP>current){
@@ -138,7 +138,7 @@ int SimPSupply::init(){
 	if(f){
 		DPRINT("reading state from file");
 		// get last state from file
-		fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
+		fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%lu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
 		fclose(f);
 	}
 
@@ -150,7 +150,7 @@ int SimPSupply::init(){
 	if(running==false){
 		running = true;
 		m_thread = boost::thread(&SimPSupply::run,this);
-		DPRINT("[%s,%d] INIT ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+		DPRINT("[%s,%d] INIT ( @0x%px) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
 	}
 	return 0;
 }
@@ -188,7 +188,7 @@ int SimPSupply::wait_read(){
 
 int SimPSupply::getSWVersion(std::string &ver,uint32_t timeo_ms){
 	char stringa[1024];
-	sprintf(stringa,"Driver:SimPSupply Feature:0x%llx current:[%f:%f] voltage:[%f:%f] curr_adc:%d volt_adc:%d current sensibility:%f\n",feats,min_current,max_current,min_voltage,max_voltage,current_adc,voltage_adc,current_sensibility);
+	sprintf(stringa,"Driver:SimPSupply Feature:0x%lx current:[%f:%f] voltage:[%f:%f] curr_adc:%d volt_adc:%d current sensibility:%f\n",feats,min_current,max_current,min_voltage,max_voltage,current_adc,voltage_adc,current_sensibility);
 
 	ver = stringa;
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
@@ -205,7 +205,7 @@ int SimPSupply::getHWVersion(std::string&version,uint32_t timeo_ms){
 
 
 int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
-	DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current);
+	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,(float)current*current_sensibility);
 
 	boost::mutex::scoped_lock lock;
 	if(feats&POWER_SUPPLY_FEAT_BIPOLAR)
@@ -241,7 +241,7 @@ int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
 int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
 	CHECK_STATUS;
-	DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,curr);
+	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,(float)curr);
 
 	if(curr< min_current || curr>max_current)
 		return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
@@ -270,7 +270,7 @@ int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
-	DPRINT("[%s,%d]get current ( @0x%llx.) state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,&current,regulator_state,polarity,(float)current*current_sensibility);
+	DPRINT("[%s,%d]get current state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,regulator_state,polarity,(float)current*current_sensibility);
 
 	if(regulator_state== REGULATOR_STANDBY){
 		*curr = 0;
@@ -304,7 +304,7 @@ int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
 
 int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
-	DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility);
 
 	CHECK_STATUS;
 
@@ -361,7 +361,7 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 
 	alarms = 0;
 	selector_state=0;
-	DPRINT("reset alarms x%llx",alrm);
+	DPRINT("reset alarms 0x%lx",alrm);
 
 	if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
 		DERR("timeout writing expired > %d ms",timeo_ms);
@@ -394,7 +394,7 @@ int SimPSupply::shutdown(uint32_t timeo_ms){
 	return 0;
 }
 int SimPSupply::poweron(uint32_t timeo_ms){
-	DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,regulator_state,current*current_sensibility);
+	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility*1.0);
 
 	boost::mutex::scoped_lock lock;
 	CHECK_STATUS;
@@ -418,7 +418,7 @@ uint64_t SimPSupply::getFeatures() {
 
 int SimPSupply::standby(uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
-	DPRINT("[%s,%d] ( @0x%llx.) state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility);
+	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility*1.0);
 
 	if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
 		DERR("timeout writing expired > %d ms",timeo_ms);

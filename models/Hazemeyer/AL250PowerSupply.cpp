@@ -359,7 +359,7 @@ int AL250::init(){
          
         this->Hardware = new Hazemeyer::Corrector( App.c_str());
         pRet.first->second.driverPointer=this->Hardware;
-        DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%x",this->Hardware);
+        DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%p",this->Hardware);
         ret=this->Hardware->Connect();
         if (!ret){
             DERR("offline");
@@ -368,7 +368,7 @@ int AL250::init(){
     }
     else
     {
-        DPRINT( "already existing, using: @0x%x",pRet.first->second.driverPointer);
+        DPRINT( "already existing, using: @0x%p",pRet.first->second.driverPointer);
         this->Hardware=pRet.first->second.driverPointer;
     }
     
