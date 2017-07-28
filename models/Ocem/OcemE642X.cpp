@@ -28,9 +28,9 @@ std::map<std::string,OcemE642X::OcemProtocol_psh > OcemE642X::unique_protocol;
 #define CMD_WRITE(_cmdw,_timeo) \
 		{									\
 	int _ret,_timeout=0;							\
-	DPRINT("[%d] CMD_WRITE apply command \"%s\" timeout %d",slave_id,_cmdw,_timeo);			\
+	DPRINT("[%s,%d] CMD_WRITE apply command \"%s\" timeout %d",dev.c_str(),slave_id,_cmdw,_timeo);			\
 	_ret =send_command((char*)_cmdw,_timeo,&_timeout);	\
-	if(_timeout==1) {DERR("timeout sending command %s",_cmdw);return POWER_SUPPLY_TIMEOUT;};				\
+	if(_timeout==1) {DERR("[%s,%d] timeout sending command %s",dev.c_str(),slave_id,_cmdw);return POWER_SUPPLY_TIMEOUT;};				\
 	if(_ret<0) return POWER_SUPPLY_COMMAND_ERROR;			\
 		}
 
