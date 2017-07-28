@@ -77,6 +77,12 @@
 #define OCEM_REFRESH_TIME OCEM_REFRESH_MS*1000
 #define OCEM_DEFAULT_TIMEOUT_MS OCEM_REFRESH_MS*2
 #define OCEM_TIMEOUT_ERROR -100
+#define OCEM_COMMAND_STATE_ERROR -1000
+#define OCEM_COMMAND_POL_ERROR -1001
+#define OCEM_COMMAND_CURRENT_ERROR -1002
+
+#define OCEM_TRY_CHECK_COMMAND 3
+#define OCEM_MAX_COMMAND_RETRY 3
 
 namespace common{
     namespace powersupply {
@@ -210,7 +216,7 @@ namespace common{
             ::common::debug::timed_value<SelectorState> selector_state;
             ::common::debug::timed_value<ocem_version> version;
             
-            ::common::debug::timed_value<unsigned> sp_current;
+            ::common::debug::timed_value<unsigned> sp_current,start_ramp,start_pol,start_state;
             
             // performs polls for a given time
             // returns numbero of items updated
@@ -221,7 +227,10 @@ namespace common{
             
             int force_update(uint32_t timeout);
             
-            
+            double current_sp,ramps_sp,delta_current_sp;
+            int pol_sp,state_sp;
+            int try_check_current,try_check_pol,try_check_state;
+            int retry_current,retry_pol,retry_state;
             /**
              update the status of the template
              @return the number of data updated, 0 or negative if nothing has been updated
@@ -235,7 +244,7 @@ namespace common{
             
             float max_voltage;
             float min_voltage;
-            
+            static const int retry_command=3;
             static const int voltage_adc=OCEM_VOLTAGE_ADC;
             static const int current_adc=OCEM_CURRENT_ADC;
             static const int current_ramp_adc=OCEM_CURRENT_RAMP_ADC;
