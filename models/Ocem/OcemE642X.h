@@ -263,22 +263,22 @@ namespace common{
             
             
             virtual int setPolarity(int pol,uint32_t timeo_ms=0);
-            virtual int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getPolarity(int* pol,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             
             virtual int setCurrentSP(float current,uint32_t timeo_ms=0);
-            virtual int getCurrentSP(float* current,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getCurrentSP(float* current,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             
             virtual int startCurrentRamp(uint32_t timeo_ms=0);
             
-            virtual int getCurrentOutput(float* curr,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
-            virtual int getVoltageOutput(float* volt,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getCurrentOutput(float* curr,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
+            virtual int getVoltageOutput(float* volt,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             
             
             
             virtual int setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms=0);
             
             virtual int resetAlarms(uint64_t alrm,uint32_t timeo_ms=0);
-            virtual int getAlarms(uint64_t*alrm,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getAlarms(uint64_t*alrm,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             virtual int getAlarmDesc(uint64_t*desc);
 
             virtual int getCurrentSensibility(float*sens);
@@ -286,8 +286,8 @@ namespace common{
             
             virtual int getMaxMinCurrent(float*max,float*min);
             virtual int getMaxMinVoltage(float*max,float*min);
-            virtual int getSWVersion(std::string&version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
-            virtual int getHWVersion(std::string&version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getSWVersion(std::string&version,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
+            virtual int getHWVersion(std::string&version,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             
             
             /**
@@ -297,7 +297,7 @@ namespace common{
             virtual int shutdown(uint32_t timeo_ms=0);
             virtual int poweron(uint32_t timeo_ms=0);
             virtual int standby(uint32_t timeo_ms=0);
-            virtual int getState(int* state,std::string&,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getState(int* state,std::string&,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
             
             virtual int init();
             virtual int deinit();
