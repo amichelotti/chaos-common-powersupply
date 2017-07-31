@@ -336,7 +336,7 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvolta
 
 OcemE642X::~OcemE642X(){
 	DPRINT("[%d] deinitializing",slave_id)
-    								deinit();
+    										deinit();
 }
 uint64_t OcemE642X::getFeatures() {
 	return POWER_SUPPLY_FEAT_MONOPOLAR;
@@ -959,10 +959,15 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
 	*pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
 #endif
 	if(retry_pol>=OCEM_MAX_COMMAND_RETRY){
-			ERR("[%s,%d] max number of retries performing polarity change to %d",dev.c_str(),slave_id,pol_sp);
-			retry_pol=0;
-			return OCEM_COMMAND_POL_ERROR;
-		}
+		ERR("[%s,%d] max number of retries performing polarity change to %d",dev.c_str(),slave_id,pol_sp);
+		retry_pol=0;
+		return OCEM_COMMAND_POL_ERROR;
+	}
+	if(timeo_ms && (polarity.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
+		ERR("[%s,%d] Timeout getting polarity mod time:%ld",dev.c_str(),slave_id,polarity.mod_time());
+
+		return OCEM_TIMEOUT_ERROR;
+	}
 	return 0;
 }
 
@@ -1008,6 +1013,11 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
 		ERR("[%s,%d] max number of retries performing set point current to %f",dev.c_str(),slave_id,current_sp);
 		retry_current=0;
 		return OCEM_COMMAND_CURRENT_ERROR;
+	}
+	if(timeo_ms && (current.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
+		ERR("[%s,%d] Timeout getting current mod time:%ld",dev.c_str(),slave_id,current.mod_time());
+
+		return OCEM_TIMEOUT_ERROR;
 	}
 	return 0;
 }
@@ -1067,6 +1077,11 @@ int OcemE642X::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
 
 
 	*alrm = alarms;
+	if(timeo_ms && (alarms.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
+		ERR("[%s,%d] Timeout getting alarms mod time:%ld",dev.c_str(),slave_id,alarms.mod_time());
+
+		return OCEM_TIMEOUT_ERROR;
+	}
 	return 0;
 }
 
@@ -1137,7 +1152,7 @@ int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
 
 	desc=ss.str();
 
-	if(timeo_ms && (regulator_state.mod_time()> (timeo_ms * 1000))){
+	if(timeo_ms && (regulator_state.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
 		ERR("[%s,%d] Timeout getting state mod time:%ld",dev.c_str(),slave_id,regulator_state.mod_time());
 		regulator_state = REGULATOR_UKN;
 
