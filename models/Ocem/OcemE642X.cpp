@@ -97,7 +97,7 @@ void* OcemE642X::updateSchedule(){
 			send_command((char*)"COR",1000,0);
 			if(inst_delta < delta_current_sp){
 				start_ramp =0;
-				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f COMMAND STARTED ",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp);
+				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f COMMAND STARTED OK ",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp);
 				delta_current_sp=0;
 			} else {
 				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f ",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp);
@@ -979,14 +979,14 @@ int OcemE642X::setCurrentSP(float set_current_sp,uint32_t timeo_ms){
 
 	CMD_WRITE(stringa,timeo_ms);
 	current_sp=set_current_sp;
-	delta_current_sp=fabs(current-current_sp);
+	delta_current_sp=fabs(current*adc_current_conversion-current_sp);
 
 	return 0;
 }
 
 
-int OcemE642X::getCurrentSP(float* current,uint32_t timeo_ms){
-	*current = sp_current*adc_current_conversion;
+int OcemE642X::getCurrentSP(float* curr,uint32_t timeo_ms){
+	*curr = sp_current*adc_current_conversion;
 	return 0;
 }
 
