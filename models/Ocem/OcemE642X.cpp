@@ -808,11 +808,11 @@ int OcemE642X::deinit(){
 		DPRINT("[%s,%d] STOPPING THREAD 0x%p",dev.c_str(),slave_id,(void*)rpid);
 		pthread_join(rpid,(void**)&ret);
 	}
-	DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
+	if(ocem_prot.get()){
+		DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
 
-	ocem_prot->unRegisterSlave(slave_id);
-
-	//ocem_prot.reset();
+		ocem_prot->unRegisterSlave(slave_id);
+	}
 	removeOcemProtocol(dev);
 	initialized=0;
 	return 0;
