@@ -92,24 +92,28 @@ void* OcemE642X::updateSchedule(){
 	while(run){
 		//	DPRINT("[%s,%d] SLAVE SCHEDULE",dev.c_str(),slave_id);
 		ret = receive_data( buf, sizeof(buf),1000,0);
-		if(start_ramp && (start_ramp.mod_time()>1000*1000)){
+		if(start_ramp && (start_ramp.mod_time()>OCEM_REFRESH_TIME)){
 			float inst_delta=fabs(current_sp-inst_curr);
 			send_command((char*)"COR",1000,0);
 			if(inst_delta < delta_current_sp){
+				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f COMMAND STARTED OK, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
 				start_ramp =0;
-				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f COMMAND STARTED OK, retry command %d, retry check %d",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
+
 				delta_current_sp=0;
 			} else {
-				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f, retry command %d, retry check %d",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
+				start_ramp=1;
+				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f, retry command %d, retry check %d.",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
 				if(try_check_current++<OCEM_TRY_CHECK_COMMAND){
 					send_command((char*)"SL",1000,0);
 				} else {
 					if(retry_current++<OCEM_MAX_COMMAND_RETRY){
 						DPRINT("[%s,%d] CHECK CURRENT RE-SUBMIT CURRENT '%f' remaning retry %d",dev.c_str(),slave_id,current_sp,OCEM_MAX_COMMAND_RETRY-retry_current);
+						int tmpret=retry_current;
 						setCurrentSP(current_sp,1000);
 						usleep(200000);
 						startCurrentRamp(1000);
 						try_check_current=0;
+						retry_current=tmpret;
 					} else {
 						DERR("## CHECK CURRENT cannot set current to %f",current_sp);
 						start_ramp=0;
@@ -118,7 +122,7 @@ void* OcemE642X::updateSchedule(){
 				}
 			}
 
-		} else if(start_pol&& (start_pol.mod_time()>1000*1000)){
+		} else if(start_pol&& (start_pol.mod_time()>OCEM_REFRESH_TIME)){
 			//POLARITY
 			if(polarity==pol_sp){
 				DPRINT("[%s,%d] CHECK POLARITY '%d' SWITCH COMMAND EXECUTED  ",dev.c_str(),slave_id,(int)polarity);
@@ -126,14 +130,18 @@ void* OcemE642X::updateSchedule(){
 			} else {
 				DPRINT("[%s,%d] CHECK POLARITY '%d' SWITCH",dev.c_str(),slave_id,(int)polarity);
 				try_check_pol++;
+				start_pol=1;
 
 				if(try_check_pol<OCEM_TRY_CHECK_COMMAND){
 					send_command((char*)"SL",1000,0);
 				} else {
 
 					if(retry_pol++<OCEM_MAX_COMMAND_RETRY){
+						int tmpret=retry_pol;
+
 						DPRINT("[%s,%d] CHECK POLARITY RE-SUBMIT POLARITY '%d' remaning retry %d",dev.c_str(),slave_id,pol_sp,OCEM_MAX_COMMAND_RETRY-retry_pol);
 						setPolarity(pol_sp,1000);
+						retry_pol=tmpret;
 					} else {
 						DERR("## CHECK POLARITY cannot set polarity to %d",pol_sp);
 						start_pol=0;
@@ -150,11 +158,13 @@ void* OcemE642X::updateSchedule(){
 			} else {
 				DPRINT("[%s,%d] CHECK STATE '%d' SWITCH",dev.c_str(),slave_id,(int)regulator_state);
 				try_check_state++;
-
+				start_state=1;
 				if(try_check_state<OCEM_TRY_CHECK_COMMAND){
 					send_command((char*)"SL",1000,0);
 				} else {
 					if(retry_state++<OCEM_MAX_COMMAND_RETRY){
+						int tmpret=retry_state;
+
 						if(state_sp==REGULATOR_STANDBY){
 							DPRINT("[%s,%d] CHECK STATE  RE-SUBMIT STATE 'STANDBY' remaning retry %d",dev.c_str(),slave_id,OCEM_MAX_COMMAND_RETRY-retry_state);
 
@@ -164,6 +174,7 @@ void* OcemE642X::updateSchedule(){
 
 							poweron(1000);
 						}
+						retry_state=tmpret;
 					} else {
 						DERR("## CHECK STATE cannot set state to %s",state_sp==REGULATOR_STANDBY?"STANDBY":(state_sp==REGULATOR_ON)?"ON":"UKNOWN");
 						start_state=0;
