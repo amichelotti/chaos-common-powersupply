@@ -96,12 +96,12 @@ void* OcemE642X::updateSchedule(){
 			float inst_delta=fabs(current_sp-inst_curr);
 			send_command((char*)"COR",1000,0);
 			if(inst_delta < delta_current_sp){
-				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f COMMAND STARTED OK, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
+				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f inst delta curr %f, COMMAND STARTED OK, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,inst_delta,retry_current,try_check_current);
 				start_ramp =0;
 
 				delta_current_sp=0;
 			} else {
-				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
+				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f,inst delta curr %f, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,inst_delta,retry_current,try_check_current);
 				start_ramp=1;
 				if(try_check_current++<OCEM_TRY_CHECK_COMMAND){
 					send_command((char*)"SL",1000,0);
@@ -1026,7 +1026,7 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
 		return OCEM_COMMAND_CURRENT_ERROR;
 	}
 	if(timeo_ms && (current.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
-		ERR("[%s,%d] Timeout getting current mod time:%ld",dev.c_str(),slave_id,current.mod_time());
+		ERR("[%s,%d] Timeout of %lld ms, getting current mod time:%lld",dev.c_str(),slave_id,timeo_ms,current.mod_time());
 
 		return OCEM_TIMEOUT_ERROR;
 	}
