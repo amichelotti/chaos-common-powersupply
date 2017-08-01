@@ -244,37 +244,7 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
 
 	return 1;
 
-#if 0
-	while(((ret_time=data->mod_time())<stamp)){
-		int ret;
 
-		if((ret=receive_data( buf, sizeof(buf),timeout,&tim))>0){
-
-			DPRINT("read again ");
-
-		} else {
-
-			if(((timeout>0) && ((common::debug::getUsTime()-stamp)>=(timeout*1000))) || (tim > 0)){
-				DPRINT("Timeout reading data type \"%s\" Start operation %10lu (duration %10llu) > %d timeout",data->get_name(),stamp,(common::debug::getUsTime()-stamp)/1000,timeout);
-				tim++;
-				break;
-			}
-		}
-
-	}
-
-	if(data->mod_time()>stamp){
-		DPRINT("[%d] data type \"%s\" has been updated at %10lu",slave_id,data->get_name(),data->mod_time());
-		return 1;
-	} else {
-		if(tim>0){
-			DERR("[%d] Timeout retrieving data \"%s\"",slave_id,data->get_name());
-			return POWER_SUPPLY_TIMEOUT;
-		}
-	}
-	DERR("Data is not updated yet");
-	return POWER_SUPPLY_READOUT_OUTDATED;
-#endif 
 }
 
 
@@ -346,8 +316,8 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvolta
 }
 
 OcemE642X::~OcemE642X(){
-	DPRINT("[%d] deinitializing",slave_id)
-    										deinit();
+	DPRINT("[%s,%d] deinitializing",dev.c_str(),slave_id);
+	deinit();
 }
 uint64_t OcemE642X::getFeatures() {
 	return POWER_SUPPLY_FEAT_MONOPOLAR;
@@ -835,12 +805,14 @@ int OcemE642X::deinit(){
 	DPRINT("[%s,%d] DEINITIALIZING",dev.c_str(),slave_id);
 	if(run){
 		run=0;
-		DPRINT("[%s,%d] STOPPING THREAD",dev.c_str(),slave_id);
+		DPRINT("[%s,%d] STOPPING THREAD 0x%p",dev.c_str(),slave_id,(void*)rpid);
 		pthread_join(rpid,(void**)&ret);
 	}
+	DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
+
 	ocem_prot->unRegisterSlave(slave_id);
 
-	ocem_prot.reset();
+	//ocem_prot.reset();
 	removeOcemProtocol(dev);
 	initialized=0;
 	return 0;
