@@ -1026,7 +1026,7 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
 		return OCEM_COMMAND_CURRENT_ERROR;
 	}
 	if(timeo_ms && (current.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
-		ERR("[%s,%d] Timeout of %lld ms, getting current mod time:%lld",dev.c_str(),slave_id,timeo_ms,current.mod_time());
+		ERR("[%s,%d] Timeout of %u ms, getting current mod time:%llu",dev.c_str(),slave_id,timeo_ms,current.mod_time()/1000);
 
 		return OCEM_TIMEOUT_ERROR;
 	}
@@ -1089,7 +1089,7 @@ int OcemE642X::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
 
 	*alrm = alarms;
 	if(timeo_ms && (alarms.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
-		ERR("[%s,%d] Timeout getting alarms mod time:%ld",dev.c_str(),slave_id,alarms.mod_time());
+		ERR("[%s,%d] Timeout of %u ms getting alarms mod time:%llu",dev.c_str(),slave_id,timeo_ms,alarms.mod_time()/1000);
 
 		return OCEM_TIMEOUT_ERROR;
 	}
@@ -1164,7 +1164,7 @@ int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
 	desc=ss.str();
 
 	if(timeo_ms && (regulator_state.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
-		ERR("[%s,%d] Timeout getting state mod time:%ld",dev.c_str(),slave_id,regulator_state.mod_time());
+		ERR("[%s,%d] Timeout of %u ms getting state mod time:%llu",dev.c_str(),slave_id,timeo_ms,regulator_state.mod_time()/1000);
 		//regulator_state = REGULATOR_UKN;
 
 		return OCEM_TIMEOUT_ERROR;

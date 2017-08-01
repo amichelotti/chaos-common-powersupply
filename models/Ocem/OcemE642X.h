@@ -73,7 +73,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#define OCEM_REFRESH_MS 2000
+#define OCEM_REFRESH_MS 1000
 #define OCEM_REFRESH_TIME OCEM_REFRESH_MS*1000U
 #define OCEM_DEFAULT_TIMEOUT_MS OCEM_REFRESH_MS*2
 #define OCEM_TIMEOUT_ERROR -100
