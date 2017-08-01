@@ -972,12 +972,14 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
 	if(retry_pol>=OCEM_MAX_COMMAND_RETRY){
 		ERR("[%s,%d] max number of retries performing polarity change to %d",dev.c_str(),slave_id,pol_sp);
 		retry_pol=0;
-		return OCEM_COMMAND_POL_ERROR;
+		return POWER_SUPPLY_COMMAND_ERROR;
 	}
-	if(timeo_ms && (polarity.mod_time()> std::max((timeo_ms * 1000),OCEM_REFRESH_TIME))){
-		ERR("[%s,%d] Timeout getting polarity mod time:%ld",dev.c_str(),slave_id,polarity.mod_time());
+	timeo_ms=std::max(timeo_ms,OCEM_DEFAULT_TIMEOUT_MS);
 
-		return OCEM_TIMEOUT_ERROR;
+	if(timeo_ms && (polarity.mod_time()> timeo_ms*1000)){
+		ERR("[%s,%d] Timeout of %u ms getting polarity mod time:%ld",dev.c_str(),slave_id,timeo_ms,polarity.mod_time()/1000);
+
+		return POWER_SUPPLY_TIMEOUT;
 	}
 	return 0;
 }
@@ -1023,14 +1025,14 @@ int  OcemE642X::getCurrentOutput(float* curr,uint32_t timeo_ms){
 	if(retry_current>=OCEM_MAX_COMMAND_RETRY){
 		ERR("[%s,%d] max number of retries performing set point current to %f",dev.c_str(),slave_id,current_sp);
 		retry_current=0;
-		return OCEM_COMMAND_CURRENT_ERROR;
+		return POWER_SUPPLY_COMMAND_ERROR;
 	}
 	timeo_ms=std::max(timeo_ms,OCEM_DEFAULT_TIMEOUT_MS);
 
 	if(timeo_ms && (current.mod_time()> timeo_ms*1000)){
 		ERR("[%s,%d] Timeout of %u ms, getting current mod time:%llu.",dev.c_str(),slave_id,timeo_ms,current.mod_time()/1000);
 
-		return OCEM_TIMEOUT_ERROR;
+		return POWER_SUPPLY_TIMEOUT;
 	}
 	return 0;
 }
@@ -1095,7 +1097,7 @@ int OcemE642X::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
 	if(timeo_ms && (alarms.mod_time()> timeo_ms*1000)){
 		ERR("[%s,%d] Timeout of %u ms getting alarms mod time:%llu",dev.c_str(),slave_id,timeo_ms,alarms.mod_time()/1000);
 
-		return OCEM_TIMEOUT_ERROR;
+		return POWER_SUPPLY_TIMEOUT;
 	}
 	return 0;
 }
@@ -1172,12 +1174,12 @@ int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
 		ERR("[%s,%d] Timeout of %u ms getting state mod time:%llu",dev.c_str(),slave_id,timeo_ms,regulator_state.mod_time()/1000);
 		//regulator_state = REGULATOR_UKN;
 
-		return OCEM_TIMEOUT_ERROR;
+		return POWER_SUPPLY_TIMEOUT;
 	}
 	if(retry_state>=OCEM_MAX_COMMAND_RETRY){
 		ERR("[%s,%d] max number of retries performing state change",dev.c_str(),slave_id);
 		retry_state=0;
-		return OCEM_COMMAND_STATE_ERROR;
+		return POWER_SUPPLY_COMMAND_ERROR;
 	}
 	return 0;
 }
