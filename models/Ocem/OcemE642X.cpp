@@ -101,8 +101,8 @@ void* OcemE642X::updateSchedule(){
 
 				delta_current_sp=0;
 			} else {
+				DPRINT("[%s,%d] CHECK CURRENT RAMP (mod time %lld us ago) current sp %f, inst curr %f, final delta current:%f, retry command %d, retry check %d.",dev.c_str(),slave_id,start_ramp.mod_time(),current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
 				start_ramp=1;
-				DPRINT("[%s,%d] CHECK CURRENT RAMP current sp %f, inst curr %f, final delta current:%f, retry command %d, retry check %d.",dev.c_str(),slave_id,current_sp,inst_curr,delta_current_sp,retry_current,try_check_current);
 				if(try_check_current++<OCEM_TRY_CHECK_COMMAND){
 					send_command((char*)"SL",1000,0);
 				} else {
