@@ -214,7 +214,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 	}
 	pthread_mutex_unlock(&unique_ocem_core_mutex);
 }
-OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
+/*OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int baudrate,int parity,int bits,int stop){
 	DPRINT("getting protocol for \"%s\" baudrate %d , parity %d bits %d stop %d",mydev.c_str(),baudrate,parity,bits,stop);
 	pthread_mutex_lock(&unique_ocem_core_mutex);
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
@@ -230,7 +230,36 @@ OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(std::string& mydev,int ba
 	pthread_mutex_unlock(&unique_ocem_core_mutex);
 
 	return unique_protocol[mydev];
+}*/
+ OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(const std::string& protname,common::misc::driver::AbstractChannel_psh channel){
+	DPRINT("getting protocol for \"%s\" and channel \"%s\"",protname.c_str(),channel->getUid().c_str());
+	pthread_mutex_lock(&unique_ocem_core_mutex);
+	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(channel->getUid());
+		if(i!=unique_protocol.end() && i->second.get()!=NULL){
+			pthread_mutex_unlock(&unique_ocem_core_mutex);
+			DPRINT("RETRIVING protocol \"%s\" channel \"%s\" @%p",protname.c_str(),i->second->getChannel()->getUid().c_str(),(void*)i->second.get());
+			return i->second;
+		}
+		if(protname == "OcemProtocol"){
+			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(channel));
+
+		} else if(protname == "OcemProtocolBuffered"){
+			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(channel));
+
+		} else {
+			//default is CFQ
+			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolScheduleCFQ(channel));
+
+		}
+		//    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+		DPRINT("creating NEW serial ocem protocol \"%s\" @%p",protname.c_str(),(void*)unique_protocol[channel->getUid()].get());
+
+		pthread_mutex_unlock(&unique_ocem_core_mutex);
+
+		return unique_protocol[channel->getUid()];
+
 }
+
 
 int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t timeout){
 
@@ -289,7 +318,10 @@ void OcemE642X::init_internal(){
 	retry_current=retry_pol=retry_state=0;
 
 }
-OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
+
+
+
+/*OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
 {
 
 	DPRINT("[%s,%d] CREATE @0x%p",_dev,_slave_id,this);
@@ -301,13 +333,15 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
 	initialized=0;
 	init_internal();
 
-}
+}*/
 
-OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
-	DPRINT("[%s,%d] CREATE 0x%p",_dev,_slave_id,this);
+OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractChannel_psh channel,int _slave_id,float maxcurr,float maxvoltage,OcemType type):protocol(protname),comm_channel(channel),slave_id(_slave_id),ocem_type(type){
+
+//OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
+	DPRINT("[%s,%d] OcemE642X CREATE 0x%p",channel->getUid().c_str(),_slave_id,this);
 	initialized=0;
-	ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
-
+	ocem_prot = getOcemProtocol(protname,channel);
+	dev=channel->getUid();
 	if(maxcurr>0)
 		forceMaxCurrent(maxcurr);
 	if(maxvoltage>0)
@@ -681,7 +715,7 @@ int OcemE642X::init(){
 		ret = ocem_prot->init();
 
 		DPRINT("[%s,%d] ocem protocol initialized ret=%d",dev.c_str(),slave_id,ret)
-	} else {
+	} /*else {
 		ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
 		if(ocem_prot){
 			ocem_prot->registerSlave(slave_id);
@@ -693,7 +727,7 @@ int OcemE642X::init(){
 			return -12;
 		}
 
-	}
+	}*/
 	if(ret!=0){
 		ERR("[%s,%d] CANNOT INITIALIZE SERIAL PORT",dev.c_str(),slave_id);
 		return ret;

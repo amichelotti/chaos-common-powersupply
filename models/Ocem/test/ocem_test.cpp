@@ -7,7 +7,8 @@
 //
 
 
-#include "common/powersupply/powersupply.h"
+#include <common/powersupply/powersupply.h>
+#include <common/misc/driver/ChannelFactory.h>
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
 #include <sys/time.h>
@@ -250,7 +251,8 @@ std::string ver;
 #endif
   //////
  
-
+   common::misc::driver::AbstractChannel_psh channel;
+   channel=common::misc::driver::ChannelFactory::getChannel(dev,9600,0,8,1);
 
   if(span){
     std::cout<<"finding device on the bus"<<std::endl;
@@ -258,7 +260,7 @@ std::string ver;
     int found=0;
    
     for(;id<32;id++){
-      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X(dev.c_str(),id,maxcurrent,maxvoltage);
+      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X("OcemProtocolScheduleCFQ",channel,id,maxcurrent,maxvoltage);
       if(ps==NULL){
 	std::cout<<"## cannot initialize resources"<<std::endl;
 	return -2;
@@ -286,8 +288,7 @@ std::string ver;
 
   
   printf("Connecting to slave %d, via \"%s\"... \n",slave_id,dev.c_str());
-
-  common::powersupply::OcemE642X *ps= new common::powersupply::OcemE642X(dev.c_str(),slave_id,maxcurrent,maxvoltage);
+  common::powersupply::OcemE642X *ps= new common::powersupply::OcemE642X("OcemProtocolScheduleCFQ",channel,slave_id,maxcurrent,maxvoltage);
 
   if(ps){
     std::cout<<"Initializing driver"<<std::endl;
@@ -414,7 +415,9 @@ std::string ver;
 	    printf("## device already open \"CLOSE\" before\n");
 	    continue;
 	  } else {
-	    ps= new common::powersupply::OcemE642X(val,atoi(val1));
+		printf("NOT IMPLEMENTED ANY MORE\n");
+		continue;
+		ps= new common::powersupply::OcemE642X("OcemProtocolScheduleCFQ",channel,slave_id,maxcurrent,maxvoltage);
 	    if(ps==NULL){
 	      printf("cannot allocate resources for \"%s:%s\"\n",val,val1);
 	      continue;
