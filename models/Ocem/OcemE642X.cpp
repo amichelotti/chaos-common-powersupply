@@ -292,7 +292,7 @@ void OcemE642X::init_internal(){
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
 {
 
-	DPRINT("CREATE %s id %d",_dev,_slave_id);
+	DPRINT("[%s,%d] CREATE @0x%p",_dev,_slave_id,this);
 	ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
 	max_current=0;
 	min_current=0;
@@ -304,7 +304,7 @@ OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,in
 }
 
 OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
-	DPRINT("CREATE %s id %d",_dev,_slave_id);
+	DPRINT("[%s,%d] CREATE 0x%p",_dev,_slave_id,this);
 	initialized=0;
 	ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
 
@@ -670,7 +670,7 @@ int OcemE642X::init(){
 	selector_state = SELECTOR_UKN;
 	polarity = POL_UKN;
 
-	DPRINT("INITIALIZING");
+	DPRINT("[%s,%d] INITIALIZING",dev.c_str(),slave_id);
 	current_sp=0;
 	ramps_sp=0;
 	pol_sp=0;
