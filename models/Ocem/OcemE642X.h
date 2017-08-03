@@ -260,7 +260,7 @@ protected:
 	 int ocemInitialization();
 public:
 	 std::string protocol;
-	 common::misc::driver::AbstractChannel_psh comm_channel;
+	 //common::misc::driver::AbstractChannel_psh comm_channel;
 	 OcemE642X(const std::string& protname,common::misc::driver::AbstractChannel_psh channel,int slave_id,float maxcurr,float maxvoltage,OcemType type=OCEM_NORMAL);
 	 //      OcemE642X(const char *dev,int slave_id,int baudrate=9600,int parity=0,int bits=8,int stop=1);
 	 ~OcemE642X();
