@@ -642,7 +642,7 @@ int OcemE642X::ocemInitialization(){
 	do{
 		DPRINT("[%s,%d] performing poll %d",dev.c_str(),slave_id,cnt);
 
-		ret=ocem_prot->OcemProtocol::poll(slave_id, buf, sizeof(buf),1000,&timeo);
+		ret=ocem_prot->poll(slave_id, buf, sizeof(buf),1000,&timeo);
 		DPRINT("[%s,%d] returned %d",dev.c_str(),slave_id,ret);
 
 		if(ret>0){
@@ -656,7 +656,7 @@ int OcemE642X::ocemInitialization(){
 	} while(cnt--);
 
 	DPRINT("[%s,%d] performing RMT",dev.c_str(),slave_id);
-	ret=ocem_prot->OcemProtocol::select(slave_id, "RMT",1000,&timeo);
+	ret=ocem_prot->select(slave_id, "RMT",1000,&timeo);
 	DPRINT("[%s,%d] returned %d",dev.c_str(),slave_id,ret);
 
 	sleep(3);
@@ -664,7 +664,7 @@ int OcemE642X::ocemInitialization(){
 	do{
 		DPRINT("[%s,%d] performing cleaning poll %d",dev.c_str(),slave_id,cnt);
 
-		ret=ocem_prot->OcemProtocol::poll(slave_id, buf, sizeof(buf),1000,&timeo);
+		ret=ocem_prot->poll(slave_id, buf, sizeof(buf),1000,&timeo);
 		DPRINT("[%s,%d] returned %d",dev.c_str(),slave_id,ret);
 		//at the beggining some Ocem generate crc error
 		if((ret>0) || (ret==common::serial::ocem::OcemProtocol::OCEM_POLL_ANSWER_CRC_FAILED)) {
@@ -686,7 +686,7 @@ int OcemE642X::ocemInitialization(){
 		DERR("[%d] no activity",slave_id);
 		return -3;
 	}
-	ocem_prot->OcemProtocol::select(slave_id, "SL",1000,&timeo);
+	ocem_prot->select(slave_id, "SL",1000,&timeo);
 
 	return 0;
 
