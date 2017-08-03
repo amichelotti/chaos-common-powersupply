@@ -737,11 +737,13 @@ int OcemE642X::init(){
 		ERR("[%s,%d] CANNOT INITIALIZE SERIAL PORT",dev.c_str(),slave_id);
 		return ret;
 	}
+	ocem_prot->start();
 
 	if(ocemInitialization()<0){
 		return -1000;
 	}
-	ocem_prot->start();
+
+
 	if(initialized==0){
 
 
