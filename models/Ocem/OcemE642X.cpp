@@ -246,9 +246,13 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 		} else if(protname == "OcemProtocolBuffered"){
 			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(channel));
 
-		} else {
+		} else if(protname == "OcemProtocolScheduleCFQ"){
 			//default is CFQ
 			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolScheduleCFQ(channel));
+
+		} else {
+			ERR("## exception bad ocem protocol specification");
+			throw std::logic_error("bad ocem protocol specification");
 
 		}
 		//    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
@@ -338,7 +342,7 @@ void OcemE642X::init_internal(){
 OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractChannel_psh channel,int _slave_id,float maxcurr,float maxvoltage,OcemType type):protocol(protname),slave_id(_slave_id),ocem_type(type){
 
 //OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
-	DPRINT("[%s,%d] OcemE642X CREATE 0x%p",channel->getUid().c_str(),_slave_id,this);
+	DPRINT("[%s,%d] OcemE642X constructor 0x%p",channel->getUid().c_str(),_slave_id,this);
 	initialized=0;
 	ocem_prot = getOcemProtocol(protname,channel);
 	dev=channel->getUid();
@@ -350,8 +354,9 @@ OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractC
 }
 
 OcemE642X::~OcemE642X(){
-	DPRINT("[%s,%d] deinitializing",dev.c_str(),slave_id);
+
 	deinit();
+	DPRINT("[%s,%d] destroy",dev.c_str(),slave_id);
 }
 uint64_t OcemE642X::getFeatures() {
 	return POWER_SUPPLY_FEAT_MONOPOLAR;
