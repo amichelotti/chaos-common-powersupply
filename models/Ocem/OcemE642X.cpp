@@ -848,7 +848,10 @@ int OcemE642X::force_update(uint32_t timeout){
 }
 int OcemE642X::deinit(){
 	int* ret;
-
+	if(initialized==0){
+		DPRINT("[%s,%d] ALREADY DEINITALIZED",dev.c_str(),slave_id);
+		return 0;
+	}
 	DPRINT("[%s,%d] DEINITIALIZING",dev.c_str(),slave_id);
 	if(run){
 		run=0;
@@ -859,8 +862,8 @@ int OcemE642X::deinit(){
 		DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
 
 		ocem_prot->unRegisterSlave(slave_id);
+		ocem_prot.reset();
 	}
-	ocem_prot.reset();
 	removeOcemProtocol(dev);
 	initialized=0;
 	return 0;
