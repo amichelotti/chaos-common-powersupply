@@ -360,9 +360,9 @@ OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractC
 }
 
 OcemE642X::~OcemE642X(){
+	DPRINT("[%s,%d] destroy",dev.c_str(),slave_id);
 
 	deinit();
-	DPRINT("[%s,%d] destroy",dev.c_str(),slave_id);
 }
 uint64_t OcemE642X::getFeatures() {
 	return POWER_SUPPLY_FEAT_MONOPOLAR;
