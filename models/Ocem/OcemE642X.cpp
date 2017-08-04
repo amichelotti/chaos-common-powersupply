@@ -864,7 +864,8 @@ int OcemE642X::deinit(){
 		DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
 		ocem_prot->unRegisterSlave(slave_id);
 	}
-	if(ocem_prot.use_count()==1){
+	if(ocem_prot.use_count()<=2){
+		// one in the static one in is ocem_prot
 		DPRINT("[%s,%d] Ocem Protocol can be deinitialized  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
 
 		ocem_prot->deinit();
