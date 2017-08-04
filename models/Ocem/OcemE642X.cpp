@@ -207,10 +207,16 @@ void* OcemE642X::updateSchedule(){
 void OcemE642X::removeOcemProtocol(std::string& mydev){
 	DPRINT(" removing protocol on \"%s\"",mydev.c_str());
 	pthread_mutex_lock(&unique_ocem_core_mutex);
+	ocem_prot.reset();
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
 	if(i!=unique_protocol.end()){
-		DPRINT("found removing ");
-		unique_protocol.erase(i);
+		if(i->second.use_count()==1){
+			DPRINT("found removing use count %ld",i->second.use_count());
+			unique_protocol.erase(i);
+		} else {
+			DPRINT("still in use cannot remove it use count %ld",i->second.use_count());
+
+		}
 	}
 	pthread_mutex_unlock(&unique_ocem_core_mutex);
 }
@@ -237,7 +243,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(channel->getUid());
 		if(i!=unique_protocol.end() && i->second.get()!=NULL){
 			pthread_mutex_unlock(&unique_ocem_core_mutex);
-			DPRINT("RETRIVING protocol \"%s\" channel \"%s\" @%p",protname.c_str(),i->second->getChannel()->getUid().c_str(),(void*)i->second.get());
+			DPRINT("RETRIVING protocol \"%s\" channel \"%s\" @%p usage count  %ld",protname.c_str(),i->second->getChannel()->getUid().c_str(),(void*)i->second.get(),i->second.use_count());
 			return i->second;
 		}
 		if(protname == "OcemProtocol"){
