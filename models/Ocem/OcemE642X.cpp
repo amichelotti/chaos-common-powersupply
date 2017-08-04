@@ -207,7 +207,7 @@ void* OcemE642X::updateSchedule(){
 void OcemE642X::removeOcemProtocol(std::string& mydev){
 	DPRINT(" removing protocol on \"%s\"",mydev.c_str());
 	pthread_mutex_lock(&unique_ocem_core_mutex);
-	ocem_prot.reset();
+
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
 	if(i!=unique_protocol.end()){
 		if(i->second.use_count()==1){
@@ -860,6 +860,7 @@ int OcemE642X::deinit(){
 
 		ocem_prot->unRegisterSlave(slave_id);
 	}
+	ocem_prot.reset();
 	removeOcemProtocol(dev);
 	initialized=0;
 	return 0;
