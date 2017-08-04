@@ -363,6 +363,8 @@ OcemE642X::~OcemE642X(){
 	DPRINT("[%s,%d] destroy",dev.c_str(),slave_id);
 
 	deinit();
+	removeOcemProtocol(dev);
+
 }
 uint64_t OcemE642X::getFeatures() {
 	return POWER_SUPPLY_FEAT_MONOPOLAR;
@@ -721,7 +723,7 @@ int OcemE642X::init(){
 	pol_sp=0;
 	state_sp=0;
 
-	if(ocem_prot){
+	if(ocem_prot.get()){
 		ocem_prot->registerSlave(slave_id);
 		ret = ocem_prot->init();
 
@@ -740,7 +742,7 @@ int OcemE642X::init(){
 
 	}*/
 	if(ret!=0){
-		ERR("[%s,%d] CANNOT INITIALIZE SERIAL PORT",dev.c_str(),slave_id);
+		ERR("[%s,%d] CANNOT INITIALIZE CHANNEL, TRY UNLOAD",dev.c_str(),slave_id);
 		return ret;
 	}
 	ocem_prot->start();
@@ -860,11 +862,16 @@ int OcemE642X::deinit(){
 	}
 	if(ocem_prot.get()){
 		DPRINT("[%s,%d] REMOVING SLAVE  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
-
 		ocem_prot->unRegisterSlave(slave_id);
-		ocem_prot.reset();
 	}
-	removeOcemProtocol(dev);
+	if(ocem_prot.use_count()==1){
+		DPRINT("[%s,%d] Ocem Protocol can be deinitialized  prot 0x%p",dev.c_str(),slave_id,ocem_prot.get());
+
+		ocem_prot->deinit();
+	} else {
+		DPRINT("[%s,%d] Ocem Protocol cannot be deinitialized  prot 0x%p in use %ld",dev.c_str(),slave_id,ocem_prot.get(),ocem_prot.use_count());
+
+	}
 	initialized=0;
 	return 0;
 }
