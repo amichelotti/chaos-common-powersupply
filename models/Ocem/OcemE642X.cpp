@@ -210,7 +210,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(mydev);
 	if(i!=unique_protocol.end()){
-		if(i->second.use_count()==1){
+		if(i->second.use_count()<=2){
 			DPRINT("found removing use count %ld",i->second.use_count());
 			unique_protocol.erase(i);
 		} else {
