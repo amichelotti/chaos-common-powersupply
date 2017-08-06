@@ -21,6 +21,64 @@
 using namespace common::powersupply;
 #define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%lx or selector 0x%x",alarms,selector_state);return 0;};
 #define MIN(x,y) ((x<y)?x:y)
+
+#include <common/misc/driver/ConfigDriverMacro.h>
+
+#ifdef CHAOS
+SimPSupply::SimPSupply(const chaos::common::data::CDataWrapper&config){
+
+	GET_PARAMETER_DO((&config),max_current,double,1){
+		this->max_current=max_current;
+
+	}
+	GET_PARAMETER_DO((&config),min_current,double,1){
+		this->min_current=min_current;
+
+	}
+	GET_PARAMETER_DO((&config),max_voltage,double,1){
+		this->max_voltage=max_voltage;
+	}
+	GET_PARAMETER_DO((&config),type,int32_t,1){
+		feats=(type);
+	}
+	GET_PARAMETER_DO((&config),slaveid,int32_t,1){
+		slave_id=slaveid;
+	}
+
+	GET_PARAMETER_DO((&config),current_adc,int32_t,0){
+		this->current_adc=(current_adc);
+	}
+	GET_PARAMETER_DO((&config),voltage_adc,int32_t,0){
+		this->voltage_adc=(voltage_adc);
+	}
+	GET_PARAMETER_DO((&config),write_latency_min,int32_t,0){
+		this->write_latency_min=(write_latency_min);
+	}
+
+	GET_PARAMETER_DO((&config),write_latency_max,int32_t,0){
+		this->write_latency_max=(write_latency_max);
+	}
+
+	GET_PARAMETER_DO((&config),read_latency_min,int32_t,0){
+		this->read_latency_min=(read_latency_min);
+	}
+
+	GET_PARAMETER_DO((&config),read_latency_max,int32_t,0){
+		this->read_latency_max=(read_latency_max);
+	}
+	GET_PARAMETER_DO((&config),update_delay,int32_t,0){
+		this->update_delay=(update_delay);
+	}
+	GET_PARAMETER_DO((&config),force_errors,int32_t,0){
+		this->force_errors=(force_errors);
+	}
+	GET_PARAMETER_DO((&config),readout_err,double,0){
+		this->readout_err=(readout_err);
+	}
+}
+
+#endif
+
 SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min_current,float _max_current,float _min_voltage,float _max_voltage,int _write_latency_min,int _write_latency_max,int _read_latency_min,int _read_latency_max,int _current_adc,int _voltage_adc,unsigned _update_delay,unsigned _force_errors,float _readout_err):dev(_dev),slave_id(_slave_id),write_latency_min(_write_latency_min),write_latency_max(_write_latency_max),read_latency_min(_read_latency_min),read_latency_max(_read_latency_max),max_current(_max_current),max_voltage(_max_voltage),current_adc(_current_adc),voltage_adc(_voltage_adc),update_delay(_update_delay),force_errors(_force_errors)
 {
 	feats=_feats;

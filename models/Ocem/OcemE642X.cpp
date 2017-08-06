@@ -10,12 +10,12 @@
 #endif
 
 #include <common/debug/core/debug.h>
-
+#include <common/misc/driver/ConfigDriverMacro.h>
 #include <math.h>
 
 #include "OcemE642X.h"
 using namespace common::powersupply;
-
+using namespace std;
 
 pthread_mutex_t OcemE642X::unique_ocem_core_mutex=PTHREAD_MUTEX_INITIALIZER;
 std::map<std::string,OcemE642X::OcemProtocol_psh > OcemE642X::unique_protocol;
@@ -237,36 +237,36 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 
 	return unique_protocol[mydev];
 }*/
- OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(const std::string& protname,common::misc::driver::AbstractChannel_psh channel){
+OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(const std::string& protname,common::misc::driver::AbstractChannel_psh channel){
 	DPRINT("getting protocol for \"%s\" and channel \"%s\"",protname.c_str(),channel->getUid().c_str());
 	pthread_mutex_lock(&unique_ocem_core_mutex);
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(channel->getUid());
-		if(i!=unique_protocol.end() && i->second.get()!=NULL){
-			pthread_mutex_unlock(&unique_ocem_core_mutex);
-			DPRINT("RETRIVING protocol \"%s\" channel \"%s\" @%p usage count  %ld",protname.c_str(),i->second->getChannel()->getUid().c_str(),(void*)i->second.get(),i->second.use_count());
-			return i->second;
-		}
-		if(protname == "OcemProtocol"){
-			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(channel));
-
-		} else if(protname == "OcemProtocolBuffered"){
-			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(channel));
-
-		} else if(protname == "OcemProtocolScheduleCFQ"){
-			//default is CFQ
-			unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolScheduleCFQ(channel));
-
-		} else {
-			ERR("## exception bad ocem protocol specification");
-			throw std::logic_error("bad ocem protocol specification");
-
-		}
-		//    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
-		DPRINT("creating NEW serial ocem protocol \"%s\" @%p",protname.c_str(),(void*)unique_protocol[channel->getUid()].get());
-
+	if(i!=unique_protocol.end() && i->second.get()!=NULL){
 		pthread_mutex_unlock(&unique_ocem_core_mutex);
+		DPRINT("RETRIVING protocol \"%s\" channel \"%s\" @%p usage count  %ld",protname.c_str(),i->second->getChannel()->getUid().c_str(),(void*)i->second.get(),i->second.use_count());
+		return i->second;
+	}
+	if(protname == "OcemProtocol"){
+		unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(channel));
 
-		return unique_protocol[channel->getUid()];
+	} else if(protname == "OcemProtocolBuffered"){
+		unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolBuffered(channel));
+
+	} else if(protname == "OcemProtocolScheduleCFQ"){
+		//default is CFQ
+		unique_protocol[channel->getUid()] =OcemProtocol_psh(new common::serial::ocem::OcemProtocolScheduleCFQ(channel));
+
+	} else {
+		ERR("## exception bad ocem protocol specification");
+		throw std::logic_error("bad ocem protocol specification");
+
+	}
+	//    unique_protocol[mydev] =OcemProtocol_psh(new common::serial::ocem::OcemProtocol(mydev.c_str(),POSIX_SERIAL_COMM_DEFAULT_MAX_BUFFER_WRITE_SIZE,baudrate,parity,bits,stop));
+	DPRINT("creating NEW serial ocem protocol \"%s\" @%p",protname.c_str(),(void*)unique_protocol[channel->getUid()].get());
+
+	pthread_mutex_unlock(&unique_ocem_core_mutex);
+
+	return unique_protocol[channel->getUid()];
 
 }
 
@@ -329,25 +329,38 @@ void OcemE642X::init_internal(){
 
 }
 
+#ifdef CHAOS
+OcemE642X::OcemE642X(::common::misc::driver::AbstractChannel_psh channel,const chaos::common::data::CDataWrapper&config){
 
-
-/*OcemE642X::OcemE642X(const char *_dev,int _slave_id,int _baudrate,int _parity,int _bits,int _stop): dev(_dev),baudrate(_baudrate),parity(_parity),bits(_bits),stop(_stop),slave_id(_slave_id)
-{
-
-	DPRINT("[%s,%d] CREATE @0x%p",_dev,_slave_id,this);
-	ocem_prot = getOcemProtocol(dev,baudrate,parity,bits,stop);
-	max_current=0;
-	min_current=0;
-	max_voltage=0;
-	min_voltage=0;
+	GET_PARAMETER_DO((&config),max_current,double,1){
+		if(max_current>0)
+				forceMaxCurrent(max_current);
+	}
+	GET_PARAMETER_DO((&config),protocol_name,string,0){
+		protocol=protocol_name;
+	}
+	GET_PARAMETER_DO((&config),max_voltage,double,0){
+		if(max_voltage>0)
+				forceMaxVoltage(max_voltage);
+	}
+	GET_PARAMETER_DO((&config),type,int32_t,0){
+		ocem_type=static_cast<common::powersupply::OcemE642X::OcemType>(type);
+	}
+	GET_PARAMETER_DO((&config),slaveid,int32_t,1){
+		slave_id=slaveid;
+	}
+	DPRINT("[%s,%d] OcemE642X constructor 0x%p",channel->getUid().c_str(),slaveid,this);
 	initialized=0;
+	ocem_prot = getOcemProtocol(protocol,channel);
+	dev=channel->getUid();
 	init_internal();
+}
 
-}*/
+#endif
 
 OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractChannel_psh channel,int _slave_id,float maxcurr,float maxvoltage,OcemType type):protocol(protname),slave_id(_slave_id),ocem_type(type){
 
-//OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
+	//OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
 	DPRINT("[%s,%d] OcemE642X constructor 0x%p",channel->getUid().c_str(),_slave_id,this);
 	initialized=0;
 	ocem_prot = getOcemProtocol(protname,channel);
