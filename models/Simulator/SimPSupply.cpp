@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 using namespace common::powersupply;
-#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%lx or selector 0x%x",alarms,selector_state);return 0;};
+#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%llx or selector 0x%x",alarms,selector_state);return 0;};
 #define MIN(x,y) ((x<y)?x:y)
 
 #include <common/misc/driver/ConfigDriverMacro.h>
@@ -153,7 +153,7 @@ void SimPSupply::run(){
 			}
 		}
 		if(start_ramp){
-			DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%lx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
+			DPRINT("start[%s %d] ramp, regulator 0x%x, force errors:%d, alarms 0x%llx",dev.c_str(),slave_id,regulator_state,force_errors,alarms);
 			if ((regulator_state == REGULATOR_ON)&&(std::abs(currSP-current)>0)){
 
 				if(currSP>current){
@@ -196,7 +196,7 @@ int SimPSupply::init(){
 	if(f){
 		DPRINT("reading state from file");
 		// get last state from file
-		fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%lu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
+		fscanf(f,"voltage:%d current:%d currS:%d pol:%d state:%d alarms:%llu",&voltage,&current,&currSP,&polarity,&regulator_state,&alarms);
 		fclose(f);
 	}
 
@@ -246,7 +246,7 @@ int SimPSupply::wait_read(){
 
 int SimPSupply::getSWVersion(std::string &ver,uint32_t timeo_ms){
 	char stringa[1024];
-	sprintf(stringa,"Driver:SimPSupply Feature:0x%lx current:[%f:%f] voltage:[%f:%f] curr_adc:%d volt_adc:%d current sensibility:%f\n",feats,min_current,max_current,min_voltage,max_voltage,current_adc,voltage_adc,current_sensibility);
+	sprintf(stringa,"Driver:SimPSupply Feature:0x%llx current:[%f:%f] voltage:[%f:%f] curr_adc:%d volt_adc:%d current sensibility:%f\n",feats,min_current,max_current,min_voltage,max_voltage,current_adc,voltage_adc,current_sensibility);
 
 	ver = stringa;
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
@@ -419,7 +419,7 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 
 	alarms = 0;
 	selector_state=0;
-	DPRINT("reset alarms 0x%lx",alrm);
+	DPRINT("reset alarms 0x%llx",alrm);
 
 	if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)){
 		DERR("timeout writing expired > %d ms",timeo_ms);
