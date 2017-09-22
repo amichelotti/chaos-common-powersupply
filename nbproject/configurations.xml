@@ -54,13 +54,10 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-fPIC -fPIC -fPIC -O3 -O2 -O2"/>
-        <element flagsID="1" commonFlags="-fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
-        <element flagsID="2" commonFlags="-fPIC -fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
-        <element flagsID="3" commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -O2"/>
-        <element flagsID="4" commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -O2 -O2"/>
-        <element flagsID="5"
-                 commonFlags="-fPIC -fPIC -fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
+        <element flagsID="0" commonFlags="-fPIC -fPIC -fPIC -O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC -fPIC -fPIC -O3 -fPIC -O2 -O2"/>
+        <element flagsID="2"
+                 commonFlags="-mtune=generic -march=x86-64 -O2 -fPIC -fstack-protector-strong"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -70,12 +67,6 @@
           <buildCommand>${MAKE} -f Makefile install</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>build/test_ocem_array</executablePath>
-          <ccTool>
-            <preprocessorList>
-              <Elem>CHAOS</Elem>
-              <Elem>NDEBUG</Elem>
-            </preprocessorList>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -83,16 +74,67 @@
         </preBuild>
       </makefileType>
       <item path="core/AbstractPowerSupply.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="3">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <folder path="0/core">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>../debug/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
             <pElem>../..</pElem>
-            <pElem>..</pElem>
-            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+            <pElem>../../chaosframework</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </folder>
@@ -109,41 +151,29 @@
       <folder path="0/models/Hazemeyer">
         <ccTool>
           <incDir>
-            <pElem>models/Hazemeyer</pElem>
-            <pElem>models</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr/detail</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>DEBUG</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="0/models/Ocem">
-        <ccTool>
-          <preprocessorList>
-            <Elem>OCEM_CORE_DEBUG</Elem>
-            <Elem>POWER_SUPPLY_DEFAULT_TIMEOUT=10000</Elem>
-            <Elem>SIMPSUPPLY_DEBUG</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="0/models/Ocem/test">
         <ccTool>
           <incDir>
-            <pElem>models/Ocem</pElem>
-            <pElem>models</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost</pElem>
           </incDir>
         </ccTool>
       </folder>
       <folder path="0/models/Simulator">
         <ccTool>
           <incDir>
-            <pElem>models/Simulator</pElem>
-            <pElem>models</pElem>
+            <pElem>../../chaosframework</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>CHAOS</Elem>
+            <Elem>DEBUG</Elem>
             <Elem>POWER_SUPPLY_DEFAULT_TIMEOUT=4000</Elem>
             <Elem>SIMPSUPPLY_DEBUG</Elem>
-            <Elem>common_powersupply_simulator_EXPORTS</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -151,56 +181,475 @@
             ex="false"
             tool="1"
             flavor2="4">
-        <ccTool flags="1">
-          <preprocessorList>
-            <Elem>hazemeyer_powersupply_EXPORTS</Elem>
-          </preprocessorList>
+        <ccTool flags="2">
+          <incDir>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>models/Hazemeyer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/pthread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost</pElem>
+            <pElem>../modbus/models/HAZEMEYER</pElem>
+            <pElem>core</pElem>
+            <pElem>../modbus/core</pElem>
+            <pElem>../debug/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/integer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/function</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/intrusive/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ptr_container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/unordered/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/tuple/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/functional/hash/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/circular_buffer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/csbl/memory</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
+            <pElem>../../chaosframework/chaos/common/batch_command</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/modbus</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+            <pElem>../../chaosframework</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Hazemeyer/test.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool flags="2">
+          <incDir>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost</pElem>
+            <pElem>models/Hazemeyer</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>core</pElem>
+            <pElem>../modbus/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/integer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/pthread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/function</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/intrusive/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ptr_container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/unordered/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/tuple/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/functional/hash/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/circular_buffer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/csbl/memory</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
+            <pElem>../../chaosframework/chaos/common/batch_command</pElem>
+            <pElem>../modbus/models/HAZEMEYER</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/modbus</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+            <pElem>../../chaosframework</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Ocem/OcemE642X.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="5">
-          <incDir>
-            <pElem>../..</pElem>
-            <pElem>..</pElem>
-            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
-            <pElem>.</pElem>
-            <pElem>models/Ocem</pElem>
-            <pElem>models</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>common_powersupply_ocem_EXPORTS</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="models/Ocem/OcemE642XSched.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="2">
           <incDir>
-            <pElem>.</pElem>
-            <pElem>../..</pElem>
-            <pElem>..</pElem>
-            <pElem>../../chaos-x86_64-dynamic-release/include</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>../debug/core</pElem>
+            <pElem>models/Ocem</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
+            <pElem>core</pElem>
+            <pElem>../serial/core</pElem>
+            <pElem>../serial/models/Ocem</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+            <pElem>../../chaosframework</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="models/Ocem/OcemE642XSched.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="1">
+          <incDir>
             <pElem>models/Ocem</pElem>
             <pElem>models</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>CHAOS</Elem>
+            <Elem>NDEBUG</Elem>
+            <Elem>OCEM_CORE_DEBUG</Elem>
+            <Elem>POWER_SUPPLY_DEFAULT_TIMEOUT=10000</Elem>
+            <Elem>SIMPSUPPLY_DEBUG</Elem>
             <Elem>common_powersupply_ocem_EXPORTS</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="models/Ocem/test/ocem_array.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool flags="2">
+          <incDir>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/program_options</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/function</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/program_options/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>models/Ocem/test</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>core</pElem>
+            <pElem>../serial/core</pElem>
+            <pElem>../serial/models/Ocem</pElem>
+            <pElem>../debug/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/pthread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/integer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/intrusive/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/functional/hash/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/csbl/memory</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/tuple/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/regex/v4</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/regex</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+            <pElem>../../chaosframework</pElem>
+            <pElem>models/Ocem</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Ocem/test/ocem_test.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="4">
+        <ccTool flags="2">
+          <incDir>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/system</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/impl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/regex/v4</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/front/euml</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/program_options</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/function</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/gregorian</pElem>
+            <pElem>models/Ocem/test</pElem>
+            <pElem>../../chaosframework/chaos/common/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/smart_ptr</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/exception/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/program_options/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time/posix_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/date_time</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/pthread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/regex</pElem>
+            <pElem>../../chaosframework/chaos/common/configuration</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/special_functions</pElem>
+            <pElem>../../chaosframework/chaos/common</pElem>
+            <pElem>core</pElem>
+            <pElem>models/Ocem</pElem>
+            <pElem>../serial/core</pElem>
+            <pElem>../serial/models/Ocem</pElem>
+            <pElem>../debug/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/config</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl/aux_/preprocessed/gcc</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/mpl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/type_traits/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/integer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/bind</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/atomic</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/format</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/optional</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/iterator/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/range/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/concept/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/algorithm/string/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/numeric/conversion</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/tools</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/policies</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/math/special_functions/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/intrusive/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/attributes</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/utility/type_dispatch</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/core</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/expressions</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/sources</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/log/keywords</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/move</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter/aux_</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/parameter</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/chrono</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ratio</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/functional/hash/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/thread/csbl/memory</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/tuple/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/regex/pending</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/ptr_container/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/unordered/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/circular_buffer</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/detail/impl</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/generic/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/ip</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/ip/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/local/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/asio/posix</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/fusion/container/vector</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/fusion/support</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/fusion/iterator</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/serialization</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/back</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/mpl_graph/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/mpl_graph</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/front/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/msm/front</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/proto</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/proto/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/proto/detail/preprocessed</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/proto/transform</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/utility</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/uuid</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/uuid/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/random/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/random</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/lockfree/detail</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/lockfree</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/multi_index</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/boost/multi_index/detail</pElem>
+            <pElem>../../chaosframework/chaos/common/exception</pElem>
+            <pElem>../../chaosframework/chaos/common/log</pElem>
+            <pElem>../../chaosframework/chaos/common/batch_command</pElem>
+            <pElem>../../chaosframework/chaos/common/data</pElem>
+            <pElem>../../chaosframework/chaos/common/data/cache</pElem>
+            <pElem>../../chaosframework/chaos/common/network</pElem>
+            <pElem>../../chaosframework/chaos/common/pqueue</pElem>
+            <pElem>../../chaosframework/chaos/common/async_central</pElem>
+            <pElem>../../chaosframework/chaos/common/pool</pElem>
+            <pElem>../../chaosframework/chaos/common/event/evt_desc</pElem>
+            <pElem>../../chaosframework/chaos/common/event</pElem>
+            <pElem>../../chaosframework/chaos/common/event/channel</pElem>
+            <pElem>../../chaosframework/chaos/common/direct_io</pElem>
+            <pElem>../../chaosframework/chaos/common/direct_io/channel</pElem>
+            <pElem>../../chaosframework/chaos/common/direct_io/impl</pElem>
+            <pElem>../../chaosframework/chaos/common/message</pElem>
+            <pElem>../../chaosframework/chaos/common/io</pElem>
+            <pElem>../../chaosframework/chaos/common/rpc</pElem>
+            <pElem>../../chaosframework/chaos/common/action</pElem>
+            <pElem>../../chaosframework/chaos/common/thread</pElem>
+            <pElem>../../chaosframework/chaos/common/data/entity_db</pElem>
+            <pElem>../../chaosframework/chaos/common/data/entity</pElem>
+            <pElem>../../chaosframework/chaos/ui_toolkit/HighLevelApi</pElem>
+            <pElem>../../chaosframework/chaos/ui_toolkit</pElem>
+            <pElem>../../chaosframework/chaos/common/bson/base</pElem>
+            <pElem>../../chaosframework/chaos/common/bson/platform</pElem>
+            <pElem>../../chaosframework/chaos/common/bson</pElem>
+            <pElem>../../chaosframework/chaos/common/bson/util</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include/mongoose</pElem>
+            <pElem>../../chaosframework</pElem>
+            <pElem>../../chaosframework/chaos-distrib-x86_64-Linux/include</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="models/Simulator/SimPSupply.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
     </conf>
