@@ -240,7 +240,7 @@ protected:
 	 int update_status(::common::debug::basic_timed*data ,char *cmd,uint32_t timeout);
 
 	 // static OcemProtocol_psh getOcemProtocol(std::string &dev,int baudrate=9600,int parity=0,int bits=8,int stop=1);
-	 static OcemProtocol_psh getOcemProtocol(const std::string& protname,::common::misc::driver::AbstractChannel_psh channel);
+	 static OcemProtocol_psh getOcemProtocol(const std::string& protname,::common::serial::AbstractSerialChannel_psh channel);
 	 static void removeOcemProtocol(std::string &dev);
 	 float max_current;
 	 float min_current;
@@ -263,10 +263,10 @@ public:
 	 std::string protocol;
 	 //common::misc::driver::AbstractChannel_psh comm_channel;
 #ifdef CHAOS
-	 OcemE642X(::common::misc::driver::AbstractChannel_psh channel,const chaos::common::data::CDataWrapper&config);
+	 OcemE642X(::common::serial::AbstractSerialChannel_psh channel,const chaos::common::data::CDataWrapper&config);
 
 #endif
-	 OcemE642X(const std::string& protname,::common::misc::driver::AbstractChannel_psh channel,int slave_id,float maxcurr,float maxvoltage,OcemType type=OCEM_NORMAL);
+	 OcemE642X(const std::string& protname,::common::serial::AbstractSerialChannel_psh channel,int slave_id,float maxcurr,float maxvoltage,OcemType type=OCEM_NORMAL);
 	 //      OcemE642X(const char *dev,int slave_id,int baudrate=9600,int parity=0,int bits=8,int stop=1);
 	 ~OcemE642X();
 
