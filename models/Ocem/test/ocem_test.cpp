@@ -8,7 +8,7 @@
 
 
 #include <common/powersupply/powersupply.h>
-#include <common/misc/driver/ChannelFactory.h>
+#include <common/serial/core/SerialChannelFactory.h>
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
 #include <sys/time.h>
@@ -251,8 +251,8 @@ std::string ver;
 #endif
   //////
  
-   common::misc::driver::AbstractChannel_psh channel;
-   channel=common::misc::driver::ChannelFactory::getChannel(dev,9600,0,8,1);
+   ::common::serial::AbstractSerialChannel_psh channel;
+   channel=::common::serial::SerialChannelFactory::getChannel(dev,9600,0,8,1);
 
   if(span){
     std::cout<<"finding device on the bus"<<std::endl;
@@ -260,7 +260,7 @@ std::string ver;
     int found=0;
    
     for(;id<32;id++){
-      common::powersupply::AbstractPowerSupply *ps= new common::powersupply::OcemE642X("OcemProtocolScheduleCFQ",channel,id,maxcurrent,maxvoltage);
+      ::common::powersupply::AbstractPowerSupply *ps= new ::common::powersupply::OcemE642X("OcemProtocolScheduleCFQ",channel,id,maxcurrent,maxvoltage);
       if(ps==NULL){
 	std::cout<<"## cannot initialize resources"<<std::endl;
 	return -2;

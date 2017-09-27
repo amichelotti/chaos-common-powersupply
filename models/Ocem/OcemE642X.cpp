@@ -237,7 +237,7 @@ void OcemE642X::removeOcemProtocol(std::string& mydev){
 
 	return unique_protocol[mydev];
 }*/
-OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(const std::string& protname,common::misc::driver::AbstractChannel_psh channel){
+OcemE642X::OcemProtocol_psh OcemE642X::getOcemProtocol(const std::string& protname,common::serial::AbstractSerialChannel_psh channel){
 	DPRINT("getting protocol for \"%s\" and channel \"%s\"",protname.c_str(),channel->getUid().c_str());
 	pthread_mutex_lock(&unique_ocem_core_mutex);
 	std::map<std::string,OcemProtocol_psh >::iterator i=unique_protocol.find(channel->getUid());
@@ -330,7 +330,7 @@ void OcemE642X::init_internal(){
 }
 
 #ifdef CHAOS
-OcemE642X::OcemE642X(::common::misc::driver::AbstractChannel_psh channel,const chaos::common::data::CDataWrapper&config){
+OcemE642X::OcemE642X(::common::serial::AbstractSerialChannel_psh channel,const chaos::common::data::CDataWrapper&config){
 
 	GET_PARAMETER_DO((&config),max_current,double,1){
 		if(max_current>0)
@@ -358,7 +358,7 @@ OcemE642X::OcemE642X(::common::misc::driver::AbstractChannel_psh channel,const c
 
 #endif
 
-OcemE642X::OcemE642X(const std::string& protname,common::misc::driver::AbstractChannel_psh channel,int _slave_id,float maxcurr,float maxvoltage,OcemType type):protocol(protname),slave_id(_slave_id),ocem_type(type){
+OcemE642X::OcemE642X(const std::string& protname,::common::serial::AbstractSerialChannel_psh channel,int _slave_id,float maxcurr,float maxvoltage,OcemType type):protocol(protname),slave_id(_slave_id),ocem_type(type){
 
 	//OcemE642X::OcemE642X(const char *_dev,int _slave_id,float maxcurr,float maxvoltage): dev(_dev),baudrate(9600),parity(0),bits(8),stop(1),slave_id(_slave_id){
 	DPRINT("[%s,%d] OcemE642X constructor 0x%p",channel->getUid().c_str(),_slave_id,this);
