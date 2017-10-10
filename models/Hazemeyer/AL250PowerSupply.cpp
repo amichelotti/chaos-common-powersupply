@@ -1,6 +1,9 @@
-#include "AL250PowerSupply.h"
+
 #include <common/debug/core/debug.h>
+
 #include <boost/thread/mutex.hpp>
+#include "AL250PowerSupply.h"
+#include <common/modbus/core/ModbusChannelFactory.h>
 #define IsInInterval(value,min,max)  ( ( value>=min ) && (value<=max) )  
 
 #define CHECK_IF_ALLOWED \
@@ -19,13 +22,52 @@ std::map<std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> AL250::mai
 
 AL250::AL250(const std::string Parameters, int sl) {
     this->ConnectionParameters=strdup(Parameters.c_str());
+    this->driverJsonConfig=NULL;
     this->Hardware=NULL; // new Hazemeyer::Corrector((char*)Parameters.c_str());
     this->slave=sl;
     this->CurrentSP=0;
     this->HwMaxCurrent=9.995;
     this->HwMinCurrent=-10;
+   
     
 }
+#ifdef CHAOS
+                AL250::AL250(::common::modbus::AbstractModbusChannel_psh channel,const chaos::common::data::CDataWrapper& config)
+                {
+                    GET_PARAMETER_TREE((&config),driver)
+                    {
+		
+
+                        GET_PARAMETER_DO(driver,slave,int32_t,1)
+                        {
+                            this->slave=slave;
+                        }
+                        GET_PARAMETER_DO((&config),HwMaxCurrent,double,0)
+                        {
+                            this->HwMaxCurrent=HwMaxCurrent;
+                        }
+                        else
+                        {
+                            this->HwMaxCurrent=9.995;
+                        }
+                        GET_PARAMETER_DO((&config),HwMinCurrent,double,0)
+                        {
+                            this->HwMinCurrent=HwMaxCurrent;
+                        }
+                        else
+                        {
+                            this->HwMinCurrent=-10;
+                        }
+                    }
+                    this->driverJsonConfig= ((chaos::common::data::CDataWrapper*)(&config))->clone();
+                    this->ConnectionParameters=NULL;
+                    this->Hardware=NULL; 
+                    this->CurrentSP=0;
+                    
+                    
+                }
+                
+#endif
 AL250::~AL250() { 
  //   DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
@@ -34,6 +76,7 @@ AL250::~AL250() {
     if(this->ConnectionParameters){
         free(this->ConnectionParameters);
     }
+    free(this->driverJsonConfig);
     this->ConnectionParameters=NULL;
 }
 int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
@@ -338,64 +381,128 @@ int AL250::init(){
 
     DPRINT( "slave %d initializing",slave);
 
-    std::string App(this->ConnectionParameters);
-     std::pair<map<std::string,AL250::ChannelPhysicalMap>::iterator,bool> pRet;
-    std::string SerialDev;
-    index=App.find_first_of(',');
-    if (index == string::npos)
+    if (this->ConnectionParameters != NULL)
     {
-        this->initDone=false;
-        DERR("error bad input parameters %s",App.c_str());
-        return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
-    }
-    SerialDev.insert(0,App,0,index);
-   
-      
-    Elem.driverPointer=this->Hardware;
-    //    std::pair<const std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
-    pRet=AL250::mainUnitTable.insert(std::make_pair(SerialDev,Elem));
-    if (pRet.second) //new element
-    {
-         
-        this->Hardware = new Hazemeyer::Corrector( App.c_str());
-        pRet.first->second.driverPointer=this->Hardware;
-        DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%p",this->Hardware);
-        ret=this->Hardware->Connect();
-        if (!ret){
-            DERR("offline");
-            return POWER_SUPPLY_OFFLINE;
-        }
-    }
-    else
-    {
-        DPRINT( "already existing, using: @0x%p",pRet.first->second.driverPointer);
-        this->Hardware=pRet.first->second.driverPointer;
-    }
-    
-    pRet.first->second.ConnectedChannels[this->slave]=true;
-    this->printStaticTableContent();
- 
-  
-    this->minCurrent=this->HwMinCurrent;
-    this->maxCurrent=this->HwMaxCurrent;
-   
-    if (this->slave == 0){
-        DPRINT("Turning on MainUnit");
-        ret=this->Hardware->TurnOnMainUnit();
-    } else{
-        DPRINT("Turning on sending channel on slave %d",slave);
+        std::string App(this->ConnectionParameters);
 
-        ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
+         std::pair<map<std::string,AL250::ChannelPhysicalMap>::iterator,bool> pRet;
+        std::string SerialDev;
+        index=App.find_first_of(',');
+        if (index == string::npos)
+        {
+            this->initDone=false;
+            DERR("error bad input parameters %s",App.c_str());
+            return POWER_SUPPLY_BAD_INPUT_PARAMETERS;
+        }
+        SerialDev.insert(0,App,0,index);
+
+
+        Elem.driverPointer=this->Hardware;
+        //    std::pair<const std::string,AL250::ChannelPhysicalMap> Pair(SerialDev,Elem);
+        pRet=AL250::mainUnitTable.insert(std::make_pair(SerialDev,Elem));
+        if (pRet.second) //new element
+        {
+
+            this->Hardware = new Hazemeyer::Corrector( App.c_str());
+            pRet.first->second.driverPointer=this->Hardware;
+            DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%p",this->Hardware);
+            ret=this->Hardware->Connect();
+            if (!ret){
+                DERR("offline");
+                return POWER_SUPPLY_OFFLINE;
+            }
+        }
+        else
+        {
+            DPRINT( "already existing, using: @0x%p",pRet.first->second.driverPointer);
+            this->Hardware=pRet.first->second.driverPointer;
+        }
+
+        pRet.first->second.ConnectedChannels[this->slave]=true;
+        this->printStaticTableContent();
+
+
+        this->minCurrent=this->HwMinCurrent;
+        this->maxCurrent=this->HwMaxCurrent;
+
+        if (this->slave == 0){
+            DPRINT("Turning on MainUnit");
+            ret=this->Hardware->TurnOnMainUnit();
+        } else{
+            DPRINT("Turning on sending channel on slave %d",slave);
+
+            ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
+        }
+
+         if(ret!=true){
+            DERR("[%d] command error",slave);
+            initDone=false;
+            return POWER_SUPPLY_COMMAND_ERROR;
+        }
+    
+    
     }
-    
-     if(ret!=true){
-        DERR("[%d] command error",slave);
-        initDone=false;
-        return POWER_SUPPLY_COMMAND_ERROR;
+    #ifdef CHAOS
+    else //JSon Driver Initialization
+    {
+          std::pair<map<std::string,AL250::ChannelPhysicalMap>::iterator,bool> pRet;
+          std::string SerialDev;
+          
+          GET_PARAMETER_TREE((this->driverJsonConfig),driver)
+          {
+            GET_PARAMETER_DO(driver,serdev,string,1)
+            {
+                SerialDev=serdev;
+            }
+             Elem.driverPointer=this->Hardware;
+             pRet=AL250::mainUnitTable.insert(std::make_pair(SerialDev,Elem));
+             if ( pRet.second) //new element
+                {
+                   ::common::modbus::AbstractModbusChannel_psh llchan=::common::modbus::ModbusChannelFactory::getChannel(*this->driverJsonConfig);
+                  this->Hardware = new Hazemeyer::Corrector(llchan, this->driverJsonConfig);
+                  pRet.first->second.driverPointer=this->Hardware;
+                  DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%p",this->Hardware);
+                  ret=this->Hardware->Connect();
+                  if (!ret)
+                  {
+                      DERR("offline");
+                      return POWER_SUPPLY_OFFLINE;
+                  }
+                }
+                else
+                {
+                    DPRINT( "already existing, using: @0x%p",pRet.first->second.driverPointer);
+                    this->Hardware=pRet.first->second.driverPointer;
+                }
+                pRet.first->second.ConnectedChannels[this->slave]=true;
+                this->printStaticTableContent();
+                this->minCurrent=this->HwMinCurrent;
+                this->maxCurrent=this->HwMaxCurrent;
+
+                if (this->slave == 0)
+                {
+                    DPRINT("Turning on MainUnit");
+                    ret=this->Hardware->TurnOnMainUnit();
+                } else
+                {
+                    DPRINT("Turning on sending channel on slave %d",slave);
+                    ret=this->Hardware->SendChannelCommand(this->slave-1,Hazemeyer::Corrector::CHANNEL_ON);
+                }
+
+                if(ret!=true)
+                {
+                   DERR("[%d] command error",slave);
+                   initDone=false;
+                   return POWER_SUPPLY_COMMAND_ERROR;
+                }
+                initDone=true;
+                return 0;
+             
+        }
+         initDone=false;
+         return POWER_SUPPLY_BAD_INPUT_PARAMETERS; 
     }
-    
-    
-    
+    #endif
     initDone=true;
     return 0;
 }
