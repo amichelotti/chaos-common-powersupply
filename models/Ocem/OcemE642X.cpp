@@ -67,9 +67,9 @@ std::map<std::string,OcemE642X::OcemProtocol_psh > OcemE642X::unique_protocol;
 		int _ret;								\
 		uint64_t last=(common::debug::getUsTime()-cmdw.mod_time());		\
 		if(last<OCEM_REFRESH_TIME) {		\
-			DPRINT("[%s,%d] NOT APPLY (too near %lu ago) command \"%s\" timeout %d",dev.c_str(),slave_id, last,# cmdw,_timeo);	\
+			DPRINT("[%s,%d] NOT APPLY (too near %llu ago) command \"%s\" timeout %d",dev.c_str(),slave_id, last,# cmdw,_timeo);	\
 			update_status(500,10);}					\
-			else{DPRINT("[%s,%d] apply command \"%s\" last command %lu us ago timeout %d",dev.c_str(),slave_id, # cmdw,last,_timeo); cmdw=2; \
+			else{DPRINT("[%s,%d] apply command \"%s\" last command %llu us ago timeout %d",dev.c_str(),slave_id, # cmdw,last,_timeo); cmdw=2; \
 			if((_ret=update_status((common::debug::basic_timed*)&value,(char*)# cmdw,_timeo))<=0){ \
 				DERR("[%s,%d] cmd \"%s\" data is not in sync, ret %d",dev.c_str(),slave_id,# cmdw,_ret);		\
 				return _ret;							\
@@ -187,13 +187,13 @@ void* OcemE642X::updateSchedule(){
 			uint64_t t=common::debug::getUsTime();
 			if(current.mod_time()>OCEM_REFRESH_TIME){
 				if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
-					DPRINT("[%s,%d] REFRESH ANALOGIC, because current has been modified %lu ms ago",dev.c_str(),slave_id,current.mod_time()/1000);
+					DPRINT("[%s,%d] REFRESH ANALOGIC, because current has been modified %llu ms ago",dev.c_str(),slave_id,current.mod_time()/1000);
 					send_command((char*)"SA",1000,0);
 				}
 			}
 			if(regulator_state.mod_time()>(OCEM_REFRESH_TIME)){
 				if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
-					DPRINT("[%s,%d] REFRESH LOGIC  because state has been modified %lu ms",dev.c_str(),slave_id,regulator_state.mod_time()/1000);
+					DPRINT("[%s,%d] REFRESH LOGIC  because state has been modified %llu ms",dev.c_str(),slave_id,regulator_state.mod_time()/1000);
 					send_command((char*)"SL",1000,0);
 				}
 			}
@@ -279,7 +279,7 @@ int OcemE642X::update_status(common::debug::basic_timed*data ,char *cmd,uint32_t
 		CMD_WRITE(cmd,timeout);
 	}
 	update_status(600,200);
-	DPRINT("[%s,%d] data type \"%s\" last update at %10lu us ago",dev.c_str(),slave_id,data->get_name(),(common::debug::getUsTime()- data->mod_time()));
+	DPRINT("[%s,%d] data type \"%s\" last update at %10llu us ago",dev.c_str(),slave_id,data->get_name(),(common::debug::getUsTime()- data->mod_time()));
 
 	return 1;
 
@@ -400,12 +400,12 @@ int OcemE642X::updateInternalData(char * stringa){
 			if((chtype == 'I')&&(channelnum<OCEM_INPUT_CHANNELS)){
 				ichannel[channelnum] = ocem_channel(channelmin,channelmax);
 
-				DPRINT("[%s,%d] setting input channel %d at %.10lu us to (%d,%d)",dev.c_str(),slave_id,channelnum,  ichannel[channelnum].mod_time(), ichannel[channelnum].get().min, ichannel[channelnum].get().max);
+				DPRINT("[%s,%d] setting input channel %d at %.10llu us to (%d,%d)",dev.c_str(),slave_id,channelnum,  ichannel[channelnum].mod_time(), ichannel[channelnum].get().min, ichannel[channelnum].get().max);
 				parsed++;
 			} else if((chtype == 'O')&&(channelnum<OCEM_OUTPUT_CHANNELS)){
 				ochannel[channelnum] = ocem_channel(channelmin,channelmax);
 
-				DPRINT("[%s,%d] setting output channel %d at %.10lu us to (%d,%d)",dev.c_str(),slave_id,channelnum,  ochannel[channelnum].mod_time(), ochannel[channelnum].get().min, ochannel[channelnum].get().max);
+				DPRINT("[%s,%d] setting output channel %d at %.10llu us to (%d,%d)",dev.c_str(),slave_id,channelnum,  ochannel[channelnum].mod_time(), ochannel[channelnum].get().min, ochannel[channelnum].get().max);
 				parsed++;
 			} else {
 				DERR("[%s,%d] error parsing PRG",dev.c_str(),slave_id);
@@ -608,7 +608,7 @@ int OcemE642X::update_status(uint32_t timeout,int msxpoll){
 		totPollTime+= common::debug::getUsTime()-tstart;
 		if(ret>0){
 			updated+=ret;
-			DPRINT("[%s,%d] Checking result %d, tot Poll time %.10lu us",dev.c_str(),slave_id,ret,totPollTime);
+			DPRINT("[%s,%d] Checking result %d, tot Poll time %.10llu us",dev.c_str(),slave_id,ret,totPollTime);
 
 		}
 		if(msxpoll)
@@ -700,7 +700,7 @@ int OcemE642X::ocemInitialization(){
 
 		usleep(500000);
 		cnt++;
-		if((ret==common::serial::ocem::OcemProtocol::OCEM_NO_TRAFFIC)){
+		if(ret==common::serial::ocem::OcemProtocol::OCEM_NO_TRAFFIC){
 			DPRINT("[%s,%d] NO traffic",dev.c_str(),slave_id);
 			result++;
 			break;
@@ -928,7 +928,7 @@ int OcemE642X::send_receive(char*cmd,char*buf,int size,uint32_t timeos,uint32_t 
 			tstart= common::debug::getUsTime();
 			ret = receive_data( buf, size,timeop,timeo);
 			totPollTime+= common::debug::getUsTime()-tstart;
-			DPRINT("[%s,%d] checking result %d, tot Poll time %.10lu us, polling tim %.10lu ms max poll time %u ms, timeout %d",dev.c_str(),slave_id,ret,totPollTime,(totPollTime/1000),timeop,*timeo);
+			DPRINT("[%s,%d] checking result %d, tot Poll time %.10llu us, polling tim %.10llu ms max poll time %u ms, timeout %d",dev.c_str(),slave_id,ret,totPollTime,(totPollTime/1000),timeop,*timeo);
 		} while((ret<=0)&& (*timeo==0)&& (totPollTime/1000)<(unsigned)timeop);
 	}
 	return ret;
@@ -1021,7 +1021,7 @@ int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
 	timeo_ms=std::max(timeo_ms,OCEM_DEFAULT_TIMEOUT_MS);
 
 	if(timeo_ms && (polarity.mod_time()> timeo_ms*1000)){
-		ERR("[%s,%d] Timeout of %u ms getting polarity mod time:%ld",dev.c_str(),slave_id,timeo_ms,polarity.mod_time()/1000);
+		ERR("[%s,%d] Timeout of %u ms getting polarity mod time:%lld",dev.c_str(),slave_id,timeo_ms,polarity.mod_time()/1000);
 
 		return POWER_SUPPLY_TIMEOUT;
 	}

@@ -10,6 +10,7 @@
 
 #include <common/powersupply/core/AbstractPowerSupply.h>
 #include <common/modbus/models/HAZEMEYER/HazemeyerLib.h>
+#include <common/misc/driver/ConfigDriverMacro.h>
 #include <map>
 #include <vector>
 #include <string>
@@ -77,6 +78,12 @@ public:
              * is mapped on a different power supply unit. ch 0 refers to Main
              */
             AL250(const std::string Parameters, int sl=0);
+            #ifdef CHAOS
+                AL250(::common::modbus::AbstractModbusChannel_psh channel,const chaos::common::data::CDataWrapper&config);
+            #endif
+            
+            
+            
             ~AL250();
             /**
              * Polarity is set only on the setpoint software emulated. Nothing
@@ -158,6 +165,7 @@ public:
             
             
         private:
+            chaos::common::data::CDataWrapper *driverJsonConfig;
             char* ConnectionParameters;
             unsigned short int slave;
             Hazemeyer::Corrector  *Hardware;
