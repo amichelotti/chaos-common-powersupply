@@ -189,7 +189,7 @@ static void printCommandHelp(){
     std::cout<<"\tQUIT                   : quit program"<<std::endl;
 
 }
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 
 std::string ver;
