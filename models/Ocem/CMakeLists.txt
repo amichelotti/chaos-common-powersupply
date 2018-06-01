@@ -12,7 +12,7 @@ SET(libs boost_program_options boost_thread boost_system boost_regex boost_atomi
 ENDIF()
 
 ADD_LIBRARY(${PROJECT_NAME} STATIC ${PowerSupply_src} ${power_src})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} common_serial_ocem  common_powersupply common_debug ${libs})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} common_serial_ocem  common_powersupply common_debug common_serial ${libs})
 
 SET(PowerSupplyOcem_test_src test/ocem_test.cpp )
 

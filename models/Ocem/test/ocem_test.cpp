@@ -56,7 +56,7 @@ void raw_test(common::serial::ocem::OcemProtocol*oc){
     return;
   }
   printRawCommandHelp();
-  while(gets(stringa)){
+  while(fgets(stringa,sizeof(stringa),stdin)){
       uint64_t tm;
       char *t=stringa;
       boost::smatch match;
@@ -403,7 +403,7 @@ std::string ver;
     char stringa[1024];
     char cmd[256],val[256],val1[256];
     printf("waiting commands (HELP for command list)\n");
-    while(gets(stringa)){
+    while(fgets(stringa,sizeof(stringa),stdin)){
       int ret;
       uint64_t tm;
       char *t=stringa;

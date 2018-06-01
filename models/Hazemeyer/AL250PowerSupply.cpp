@@ -4,6 +4,7 @@
 #include <boost/thread/mutex.hpp>
 #include "AL250PowerSupply.h"
 #include <common/modbus/core/ModbusChannelFactory.h>
+#include <chaos/common/data/CDataWrapper.h>
 #define IsInInterval(value,min,max)  ( ( value>=min ) && (value<=max) )  
 
 #define CHECK_IF_ALLOWED \

@@ -20,6 +20,14 @@
 #else
 #define NODE_OPERATION_NOT_SUPPORTED -10000
 #endif
+
+namespace chaos {
+  namespace common{
+    namespace data{
+      class CDataWrapper;
+    }
+  }
+}
 /*
 
 */

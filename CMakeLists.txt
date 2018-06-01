@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(common_powersupply)
+find_package(chaos MODULE REQUIRED)
+include_directories(${chaos_INCLUDE_DIRS})
+
 ADD_DEFINITIONS(-fPIC)
 SET(core_src core/AbstractPowerSupply.cpp)
-
+include_directories(../../ ${CMAKE_INSTALL_PREFIX}/include)
 ADD_LIBRARY(${PROJECT_NAME} STATIC ${core_src})
 INSTALL_TARGETS(/lib ${PROJECT_NAME})
 INSTALL(FILES core/AbstractPowerSupply.h DESTINATION include/common/powersupply/core)
