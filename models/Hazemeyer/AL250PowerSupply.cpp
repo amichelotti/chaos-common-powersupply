@@ -23,7 +23,6 @@ std::map<std::string,AL250::ChannelPhysicalMap,common::CompareStdStr> AL250::mai
 
 AL250::AL250(const std::string Parameters, int sl) {
     this->ConnectionParameters=strdup(Parameters.c_str());
-    this->driverJsonConfig=NULL;
     this->Hardware=NULL; // new Hazemeyer::Corrector((char*)Parameters.c_str());
     this->slave=sl;
     this->CurrentSP=0;
@@ -60,7 +59,6 @@ AL250::AL250(const std::string Parameters, int sl) {
                             this->HwMinCurrent=-10;
                         }
                     }
-                    this->driverJsonConfig= ((chaos::common::data::CDataWrapper*)(&config))->clone();
                     this->ConnectionParameters=NULL;
                     this->Hardware=NULL; 
                     this->CurrentSP=0;
@@ -77,7 +75,6 @@ AL250::~AL250() {
     if(this->ConnectionParameters){
         free(this->ConnectionParameters);
     }
-    free(this->driverJsonConfig);
     this->ConnectionParameters=NULL;
 }
 int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
@@ -449,7 +446,7 @@ int AL250::init(){
           std::pair<map<std::string,AL250::ChannelPhysicalMap>::iterator,bool> pRet;
           std::string SerialDev;
           
-          GET_PARAMETER_TREE((this->driverJsonConfig),driver)
+          GET_PARAMETER_TREE((driverJsonConfig),driver)
           {
             GET_PARAMETER_DO(driver,serdev,string,1)
             {
@@ -459,8 +456,8 @@ int AL250::init(){
              pRet=AL250::mainUnitTable.insert(std::make_pair(SerialDev,Elem));
              if ( pRet.second) //new element
                 {
-                   ::common::modbus::AbstractModbusChannel_psh llchan=::common::modbus::ModbusChannelFactory::getChannel(*this->driverJsonConfig);
-                  this->Hardware = new Hazemeyer::Corrector(llchan, this->driverJsonConfig);
+                   ::common::modbus::AbstractModbusChannel_psh llchan=::common::modbus::ModbusChannelFactory::getChannel(*driverJsonConfig);
+                  this->Hardware = new Hazemeyer::Corrector(llchan, driverJsonConfig.get());
                   pRet.first->second.driverPointer=this->Hardware;
                   DPRINT("connecting of a new Hazemeyer::Corrector:@ 0x%p",this->Hardware);
                   ret=this->Hardware->Connect();

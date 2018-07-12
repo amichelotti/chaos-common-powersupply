@@ -173,7 +173,7 @@ public:
             
             
         private:
-            chaos::common::data::CDataWrapper *driverJsonConfig;
+            ChaosUniquePtr<chaos::common::data::CDataWrapper>driverJsonConfig;
             char* ConnectionParameters;
             unsigned short int slave;
             Hazemeyer::Corrector  *Hardware;
