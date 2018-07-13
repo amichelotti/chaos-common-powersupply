@@ -18,7 +18,9 @@
 #include <boost/regex.hpp>
 #include <string>
 #ifdef CHAOS
-#include <chaos/ui_toolkit/ChaosUIToolkit.h>
+#include <chaos_metadata_service_client/ChaosMetadataServiceClient.h>
+using namespace chaos::metadata_service_client;
+
 #endif
  namespace po=boost::program_options;
 
@@ -203,16 +205,16 @@ std::string ver;
  
 #ifdef CHAOS
     
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("dev,d", po::value<std::string>(&dev), "The serial device /dev/ttyxx");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("id", po::value<int>(&slave_id), "slave destination ID, ");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("dev,d", po::value<std::string>(&dev), "The serial device /dev/ttyxx");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("id", po::value<int>(&slave_id), "slave destination ID, ");
       
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("timeout,t", po::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("timeout,t", po::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
 
-      chaos::ui::ChaosUIToolkit::getInstance()->init(argc, argv);
+      ChaosMetadataServiceClient::getInstance()->init(argc, argv);
 
       
    
