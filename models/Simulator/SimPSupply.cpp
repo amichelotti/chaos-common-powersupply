@@ -432,6 +432,9 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 int SimPSupply::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
 	*alrm = alarms;
+	if(alarms){
+		DPRINT("alarms active:x%llx",alarms);
+	}
 	if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
 		DERR("timeout reading expired > %d ms",timeo_ms);
 
