@@ -20,6 +20,14 @@
 #else
 #define NODE_OPERATION_NOT_SUPPORTED -10000
 #endif
+
+namespace chaos {
+  namespace common{
+    namespace data{
+      class CDataWrapper;
+    }
+  }
+}
 /*
 
 */
@@ -165,7 +173,7 @@ public:
             
             
         private:
-            chaos::common::data::CDataWrapper *driverJsonConfig;
+            ChaosUniquePtr<chaos::common::data::CDataWrapper>driverJsonConfig;
             char* ConnectionParameters;
             unsigned short int slave;
             Hazemeyer::Corrector  *Hardware;

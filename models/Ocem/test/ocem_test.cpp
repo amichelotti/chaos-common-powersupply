@@ -18,7 +18,9 @@
 #include <boost/regex.hpp>
 #include <string>
 #ifdef CHAOS
-#include <chaos/ui_toolkit/ChaosUIToolkit.h>
+#include <chaos_metadata_service_client/ChaosMetadataServiceClient.h>
+using namespace chaos::metadata_service_client;
+
 #endif
  namespace po=boost::program_options;
 
@@ -56,7 +58,7 @@ void raw_test(common::serial::ocem::OcemProtocol*oc){
     return;
   }
   printRawCommandHelp();
-  while(gets(stringa)){
+  while(fgets(stringa,sizeof(stringa),stdin)){
       uint64_t tm;
       char *t=stringa;
       boost::smatch match;
@@ -189,7 +191,7 @@ static void printCommandHelp(){
     std::cout<<"\tQUIT                   : quit program"<<std::endl;
 
 }
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 
 std::string ver;
@@ -203,16 +205,16 @@ std::string ver;
  
 #ifdef CHAOS
     
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("dev,d", po::value<std::string>(&dev), "The serial device /dev/ttyxx");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("id", po::value<int>(&slave_id), "slave destination ID, ");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("dev,d", po::value<std::string>(&dev), "The serial device /dev/ttyxx");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("id", po::value<int>(&slave_id), "slave destination ID, ");
       
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
-      chaos::ui::ChaosUIToolkit::getInstance()->getGlobalConfigurationInstance()->addOption("timeout,t", po::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("maxcurr", po::value<float>(&maxcurrent), "max current");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("maxvolt", po::value<float>(&maxvoltage), "max voltage");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("span", po::value<bool>(&span), "span to fin id");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("interactive,i", po::value<bool>(&interactive), "interactive");
+      ChaosMetadataServiceClient::getInstance()->getGlobalConfigurationInstance()->addOption("timeout,t", po::value<int>(&default_timeout)->default_value(DEFAULT_TIMEOUT), "timeout in ms ");
 
-      chaos::ui::ChaosUIToolkit::getInstance()->init(argc, argv);
+      ChaosMetadataServiceClient::getInstance()->init(argc, argv);
 
       
    
@@ -403,7 +405,7 @@ std::string ver;
     char stringa[1024];
     char cmd[256],val[256],val1[256];
     printf("waiting commands (HELP for command list)\n");
-    while(gets(stringa)){
+    while(fgets(stringa,sizeof(stringa),stdin)){
       int ret;
       uint64_t tm;
       char *t=stringa;
