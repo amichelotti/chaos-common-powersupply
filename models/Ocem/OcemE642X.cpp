@@ -202,6 +202,7 @@ void* OcemE642X::updateSchedule(){
 	}
 
 	DPRINT("[%d] EXITING SLAVE UPDATE THREAD",slave_id);
+	return 0;
 }
 
 void OcemE642X::removeOcemProtocol(std::string& mydev){
