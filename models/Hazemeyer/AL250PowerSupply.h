@@ -14,12 +14,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#ifdef CHAOS
-#include <chaos/common/chaos_constants.h>
-#define NODE_OPERATION_NOT_SUPPORTED chaos::ErrorCode::EC_NODE_OPERATION_NOT_SUPPORTED
-#else
 #define NODE_OPERATION_NOT_SUPPORTED -10000
-#endif
 
 namespace chaos {
   namespace common{
