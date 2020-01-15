@@ -226,7 +226,7 @@ int SimPSupply::wait_write(){
 		usleep(write_latency_max);
 	}
 	int wait = (rand()*1.0/RAND_MAX)*write_latency_max + write_latency_min;
-	DPRINT("wait write %d us",wait);
+	//DPRINT("wait write %d us",wait);
 	usleep(wait);
 	return wait;
 }
@@ -237,7 +237,7 @@ int SimPSupply::wait_read(){
 		usleep(read_latency_max);
 	}
 	int wait = (rand()*1.0/RAND_MAX)*read_latency_max + read_latency_min;
-	DPRINT("wait read %d us",wait);
+	//DPRINT("wait read %d us",wait);
 
 	usleep(wait);
 	return wait;
