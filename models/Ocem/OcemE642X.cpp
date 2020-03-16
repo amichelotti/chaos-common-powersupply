@@ -193,7 +193,7 @@ void* OcemE642X::updateSchedule(){
 			}
 			if(regulator_state.mod_time()>(OCEM_REFRESH_TIME)){
 				if((ocem_prot->getWriteSize(slave_id)==0)&&(ocem_prot->getReadSize(slave_id)==0)){
-					DPRINT("[%s,%d] REFRESH LOGIC  because state has been modified %llu ms",dev.c_str(),slave_id,regulator_state.mod_time()/1000);
+					DPRINT("[%s,%d] REFRESH LOGIC  because state has been modified %lu ms",dev.c_str(),slave_id,regulator_state.mod_time()/1000);
 					send_command((char*)"SL",1000,0);
 				}
 			}
@@ -929,7 +929,7 @@ int OcemE642X::send_receive(char*cmd,char*buf,int size,uint32_t timeos,uint32_t 
 			tstart= common::debug::getUsTime();
 			ret = receive_data( buf, size,timeop,timeo);
 			totPollTime+= common::debug::getUsTime()-tstart;
-			DPRINT("[%s,%d] checking result %d, tot Poll time %.10llu us, polling tim %.10lu ms max poll time %u ms, timeout %d",dev.c_str(),slave_id,ret,totPollTime,(totPollTime/1000),timeop,*timeo);
+			DPRINT("[%s,%d] checking result %d, tot Poll time %.10lu us, polling tim %.10lu ms max poll time %u ms, timeout %d",dev.c_str(),slave_id,ret,totPollTime,(totPollTime/1000),timeop,*timeo);
 		} while((ret<=0)&& (*timeo==0)&& (totPollTime/1000)<(unsigned)timeop);
 	}
 	return ret;
