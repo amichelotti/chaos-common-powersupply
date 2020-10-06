@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 using namespace common::powersupply;
-#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%llx or selector 0x%x",alarms,selector_state);return 0;};
+#define CHECK_STATUS if((selector_state!=0)|| (alarms!=0)){DPRINT("INHIBITED because alarm 0x%lx or selector 0x%x",alarms,selector_state);return 0;};
 #define MIN(x,y) ((x<y)?x:y)
 
 #include <common/misc/driver/ConfigDriverMacro.h>
