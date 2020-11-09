@@ -208,7 +208,7 @@ int SimPSupply::init(){
 	if(running==false){
 		running = true;
 		m_thread = boost::thread(&SimPSupply::run,this);
-		DPRINT("[%s,%d] INIT ( @0x%px) state 0x%x current=%f",dev.c_str(),slave_id,&current,regulator_state,current*current_sensibility);
+	
 	}
 	return 0;
 }
