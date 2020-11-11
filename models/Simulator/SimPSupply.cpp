@@ -7,6 +7,8 @@
 //
 #ifdef SIMPSUPPLY_DEBUG
 #define DEBUG
+#else
+#undef DEBUG
 #endif
 #include <common/debug/core/debug.h>
 #include <math.h>
