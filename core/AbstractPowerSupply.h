@@ -269,13 +269,13 @@ namespace common {
              @brief initialize and poweron the power supply
              @return 0 if success
              */
-            virtual int init()=0;
+            virtual int initPS()=0;
             
             /**
              @brief de-initialize the power supply and close the communication
              @return 0 if success
              */
-            virtual int deinit()=0;
+            virtual int deinitPS()=0;
             
             /**
              @brief returns the SW/FW version of the driver/FW

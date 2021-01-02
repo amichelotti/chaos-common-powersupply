@@ -71,7 +71,7 @@ AL250::~AL250() {
  //   DPRINT("ALEDEBUG before sem");
     boost::mutex::scoped_lock lock(io_mux);
  //   DPRINT("ALEDEBUG after sem");
-    this->deinit();
+    this->deinitPS();
     if(this->ConnectionParameters){
         free(this->ConnectionParameters);
     }
@@ -369,7 +369,7 @@ int AL250::startCurrentRamp(uint32_t timeo_ms) {
     ret= (ret== true)? 0 : POWER_SUPPLY_COMMAND_ERROR;
     return ret;
 }
-int AL250::init(){
+int AL250::initPS(){
     AL250::ChannelPhysicalMap Elem;
     bool ret=false;
     size_t index=0;
@@ -504,7 +504,7 @@ int AL250::init(){
     initDone=true;
     return 0;
 }
-int AL250::deinit() {
+int AL250::deinitPS() {
     std::string key;
     std::vector<bool> *instances;
     std::string App(this->ConnectionParameters);

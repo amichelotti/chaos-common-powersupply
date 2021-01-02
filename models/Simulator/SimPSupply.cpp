@@ -118,7 +118,7 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min
 
 SimPSupply::~SimPSupply(){
 
-	deinit();
+	deinitPS();
 }
 
 void SimPSupply::update_state(){
@@ -187,7 +187,7 @@ void SimPSupply::run(){
 	DPRINT("Closing SimSupply service");
 
 }
-int SimPSupply::init(){
+int SimPSupply::initPS(){
 	char buf[2048];
 	FILE *f;
 	*buf = 0;
@@ -215,7 +215,7 @@ int SimPSupply::init(){
 	return 0;
 }
 
-int SimPSupply::deinit(){
+int SimPSupply::deinitPS(){
 	running = false;
 	m_thread.join();
 	update_state();

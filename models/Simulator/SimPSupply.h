@@ -208,8 +208,8 @@ namespace common{
             virtual int standby(uint32_t timeo_ms=0);
             virtual int getState(int* state,std::string&,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             
-            virtual int init();
-            virtual int deinit();
+            virtual int initPS();
+            virtual int deinitPS();
             virtual uint64_t getFeatures() ;
             
             

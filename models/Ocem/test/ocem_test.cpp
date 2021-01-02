@@ -269,7 +269,7 @@ std::string ver;
 	
       }
       std::cout<<"Trying address:"<<id<<std::endl;
-      if(ps->init()==0){
+      if(ps->initPS()==0){
     	  std::cout<<"found:"<<id<<std::endl;
     	  found ++;
       }
@@ -295,7 +295,7 @@ std::string ver;
   if(ps){
     std::cout<<"Initializing driver"<<std::endl;
 
-    if(ps->init()!=0){
+    if(ps->initPS()!=0){
       printf("## cannot initialise power supply\n");
       return -1;
     }
@@ -425,7 +425,7 @@ std::string ver;
 	      continue;
 	    } else {
 	      printf("Connecting to slave %s, via \"%s\"... \n",val1,val);
-	      if(ps->init()!=0){
+	      if(ps->initPS()!=0){
 		printf("## cannot initialise power supply on \"%s:%s\"\n",val,val1);
 		delete ps;
 		ps = NULL;
