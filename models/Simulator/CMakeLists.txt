@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(common_powersupply_simulator)
 #     -DOCEM_CORE_DEBUG
-ADD_DEFINITIONS(-DSIMPSUPPLY_DEBUG -DPOWER_SUPPLY_DEFAULT_TIMEOUT=4000)
+ADD_DEFINITIONS(-DPOWER_SUPPLY_DEFAULT_TIMEOUT=4000)
 
 set(power_src SimPSupply.cpp)
 IF(FrameworkLib)

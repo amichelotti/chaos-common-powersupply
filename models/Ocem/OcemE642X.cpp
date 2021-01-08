@@ -376,7 +376,7 @@ OcemE642X::OcemE642X(const std::string& protname,::common::serial::AbstractSeria
 OcemE642X::~OcemE642X(){
 	DPRINT("[%s,%d] destroy",dev.c_str(),slave_id);
 
-	deinit();
+	deinitPS();
 	removeOcemProtocol(dev);
 
 }
@@ -720,7 +720,7 @@ int OcemE642X::ocemInitialization(){
 }
 
 /////////
-int OcemE642X::init(){
+int OcemE642X::initPS(){
 	int ret=-1;
 	char buf[2048];
 	int cnt,max,min;
@@ -862,7 +862,7 @@ int OcemE642X::force_update(uint32_t timeout){
 
 	return 0;
 }
-int OcemE642X::deinit(){
+int OcemE642X::deinitPS(){
 	int* ret;
 	if(initialized==0){
 		DPRINT("[%s,%d] ALREADY DEINITALIZED",dev.c_str(),slave_id);
