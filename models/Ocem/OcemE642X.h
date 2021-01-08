@@ -309,8 +309,8 @@ public:
 	 virtual int standby(uint32_t timeo_ms=0);
 	 virtual int getState(int* state,std::string&,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
 
-	 virtual int init();
-	 virtual int deinit();
+	 virtual int initPS();
+	 virtual int deinitPS();
 
 
 	 /** OCEM E642 commands ***/

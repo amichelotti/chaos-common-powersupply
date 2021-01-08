@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
     AL250 Unit2("/dev/ttyr0f,2,9600,N,8,1",1);
   //  cout << Unit2.getConnectionParameters() << endl;
     
-    Unit.init();
-    Unit2.init();
+    Unit.initPS();
+    Unit2.initPS();
     
     cout << Unit.getConnectionParameters() << endl;
     cout << Unit2.getConnectionParameters() << endl;

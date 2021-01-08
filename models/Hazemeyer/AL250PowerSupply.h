@@ -142,8 +142,8 @@ public:
             int standby(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int poweron(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int getState(int* state,std::string& desc,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
-            int init();
-            int deinit();
+            int initPS();
+            int deinitPS();
             int getSWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {version = "AL250SW"; return DEFAULT_NOT_ALLOWED;}
             int getHWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {version = "AL250HW"; return DEFAULT_NOT_ALLOWED;}
             int getCurrentSensibility(float *sens);
