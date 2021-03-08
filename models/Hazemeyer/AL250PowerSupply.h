@@ -96,7 +96,7 @@ public:
              * @return 
              */
             int setPolarity(int pol,uint32_t timeo_ms=0){   return 0;}
-            int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            int getPolarity(int* pol,int*polsp=NULL,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             /**
              * SET POINT is only Software Emulated. The Hardware doesn't have
              * nor ramps nor set points. It just sets currents when you ask, with a 
@@ -141,7 +141,7 @@ public:
             int shutdown(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int standby(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int poweron(uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
-            int getState(int* state,std::string& desc,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            int getState(int* state,std::string& desc,int*state_sp=NULL,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             int initPS();
             int deinitPS();
             int getSWVersion(std::string& version,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT) {version = "AL250SW"; return DEFAULT_NOT_ALLOWED;}
