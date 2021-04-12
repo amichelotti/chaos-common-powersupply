@@ -131,7 +131,7 @@ static int test_stbyon( common::powersupply::AbstractPowerSupply  *ps, int times
 			return ret;
 		}
 		do{
-		  if((ret=ps->getState(&stat,state,default_timeout*5))<0){
+		  if((ret=ps->getState(&stat,state,NULL,default_timeout*5))<0){
 			  printf("\n## error retrieving State, ret %d\n",ret);
 			return ret;
 		   }
@@ -144,7 +144,7 @@ static int test_stbyon( common::powersupply::AbstractPowerSupply  *ps, int times
 					return ret;
 		}
 		do{
-				  if((ret=ps->getState(&stat,state,default_timeout))<0){
+				  if((ret=ps->getState(&stat,state,NULL,default_timeout))<0){
 					  printf("\n## error retrieving State, ret %d\n",ret);
 					return ret;
 				   }
@@ -322,10 +322,10 @@ std::string ver;
       if((ret=ps->getCurrentSP(&sp,default_timeout))<0){
 	printf("\n## error retrieving current set point, ret %d\n",ret);
       }
-      if((ret=ps->getPolarity(&pol,default_timeout))<0){
+      if((ret=ps->getPolarity(&pol,NULL,default_timeout))<0){
 	printf("\n## error retrieving polarity, ret %d\n",ret);
       }
-      if((ret=ps->getState(&stat,state,default_timeout))<0){
+      if((ret=ps->getState(&stat,state,NULL,default_timeout))<0){
 	printf("\n## error retrieving State, ret %d\n",ret);
       }
       if((ret=ps->getAlarms(&ev,default_timeout))<0){
@@ -551,7 +551,7 @@ std::string ver;
 	} else if(!strcmp(cmd,"GETSTATE")){
 	  int stat;
 	  std::string desc;
-	  if( (ret=ps->getState(&stat,desc,default_timeout))<0){
+	  if( (ret=ps->getState(&stat,desc,NULL,default_timeout))<0){
 	    printf("## error getting state ret %d\n",ret);
 	    continue;
 	  } else {
@@ -560,7 +560,7 @@ std::string ver;
 	} else if(!strcmp(cmd,"GETPOL")){
 	  int stat;
 
-	  if( (ret=ps->getPolarity(&stat,default_timeout))<0){
+	  if( (ret=ps->getPolarity(&stat,NULL,default_timeout))<0){
 	    printf("## error getting polarity ret %d\n",ret);
 	    continue;
 	  } else {

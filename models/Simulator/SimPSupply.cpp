@@ -93,6 +93,7 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min
 	selector_state=0;
 	voltage = 0;
 	current =0;
+	polsp=0;
 	if(min_current<0){
 		polarity=1;
 	} else {
@@ -277,10 +278,11 @@ int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
 
 	}
 	polarity=pol;
+	polsp=pol;
 	return 0;
 }
 
-int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
+int SimPSupply::getPolarity(int* pol,int* _polsp,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
 		DERR("timeout reading expired > %d ms",timeo_ms);
@@ -293,6 +295,9 @@ int SimPSupply::getPolarity(int* pol,uint32_t timeo_ms){
 		*pol = polarity;
 	} else if(feats&POWER_SUPPLY_FEAT_BIPOLAR){
 		*pol=(current<0)?-1:1;
+	}
+	if(_polsp){
+		*_polsp=polsp;
 	}
 
 	return 0;
@@ -493,7 +498,7 @@ int SimPSupply::standby(uint32_t timeo_ms){
 }
 
 
-int  SimPSupply::getState(int* state,std::string &desc,uint32_t timeo_ms){
+int  SimPSupply::getState(int* state,std::string &desc,int* statesp,uint32_t timeo_ms){
 	boost::mutex::scoped_lock lock;
 
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)){
@@ -534,6 +539,9 @@ int  SimPSupply::getState(int* state,std::string &desc,uint32_t timeo_ms){
 	if(alarms!=0){
 		*state |= POWER_SUPPLY_STATE_ALARM;
 		desc += "Alarm ";
+	}
+	if(statesp){
+		*statesp=*state;
 	}
 	return 0;
 }

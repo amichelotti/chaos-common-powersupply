@@ -1001,8 +1001,11 @@ int OcemE642X::setPolarity(int pol,uint32_t timeo_ms){
 	return 0;
 }
 
-int OcemE642X::getPolarity(int* pol,uint32_t timeo_ms){
+int OcemE642X::getPolarity(int* pol,int* _polsp, uint32_t timeo_ms){
 
+	if(_polsp){
+		*_polsp=pol_sp;
+	}
 #if 0
 	*pol = (polarity == POL_POS)?1:(polarity == POL_NEG)?-1:0;
 	GET_VALUE(polarity,timeo_ms,POL);
@@ -1174,7 +1177,7 @@ int OcemE642X::standby(uint32_t timeo_ms){
 }
 
 
-int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
+int  OcemE642X::getState(int* state,std::string &desc,int*statesp,uint32_t timeo_ms){
 	*state = 0;
 	std::stringstream ss;
 	//  GET_VALUE(regulator_state,timeo_ms,SL);
@@ -1225,6 +1228,9 @@ int  OcemE642X::getState(int* state,std::string &desc,uint32_t timeo_ms){
 		ERR("[%s,%d] max number of retries performing state change",dev.c_str(),slave_id);
 		retry_state=0;
 		return POWER_SUPPLY_COMMAND_ERROR;
+	}
+	if(statesp){
+		*statesp=state_sp;
 	}
 	return 0;
 }

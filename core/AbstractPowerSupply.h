@@ -57,6 +57,8 @@ namespace common {
          \brief Power supply function error return codes
          */
         enum PowerSupplyError{
+            POWER_SUPPLY_OUT_OF_SET=1, // the driver function detects out of set
+
             POWER_SUPPLY_BAD_INPUT_PARAMETERS=-300, /// parameters not correct
             POWER_SUPPLY_BAD_OUT_OF_RANGE_PARAMETERS, /// parameters out of range
             POWER_SUPPLY_TIMEOUT,   /// timeout during operation
@@ -69,8 +71,7 @@ namespace common {
             POWER_SUPPLY_COMMAND_ERROR, /// an error occur during a command
             POWER_SUPPLY_RECEIVE_ERROR,/// an error occur during read of data
             POWER_SUPPLY_COMMAND_IN_BAD_STATE,
-            POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY
-            
+            POWER_SUPPLY_ERROR_SETTING_CHANNEL_SENSIBILITY            
         };
         
         /**
@@ -154,10 +155,12 @@ namespace common {
             /**
              @brief gets the current polarity
              @param pol returns the polarity if >0 positive current polarity, if <0 negative current polarity, =0 circuit is open, no current
+             @param polsp returns the polarity setpoint (if supported) if >0 positive current polarity, if <0 negative current polarity, =0 circuit is open, no current
+
              @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
              @return 0 if success or an error code
              */
-            virtual int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+            virtual int getPolarity(int* pol,int*polsp=NULL, uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
             
             /**
              @brief sets the current set point
@@ -258,11 +261,13 @@ namespace common {
             /**
              @brief gets the power supply state
              @param state returns a bit field of PowerSupplyStates
+             @param statesp returns a bit field of PowerSupplyStates Setpoint
+
              @param desc return a string description
              @param timeo_ms timeout in ms for the completion of the operation (0 wait indefinitively)
              @return 0 if success or an error code
              */
-            virtual int getState(int* state,std::string& desc,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
+            virtual int getState(int* state,std::string& desc,int*statesp=NULL,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT)=0;
             
             
             /**

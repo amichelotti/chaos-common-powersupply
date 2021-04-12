@@ -146,6 +146,7 @@ namespace common{
             unsigned update_delay;
             uint64_t feats;
             float readout_err;
+            int polsp;
         public:
 #ifdef CHAOS
             SimPSupply(const chaos::common::data::CDataWrapper&config);
@@ -157,7 +158,7 @@ namespace common{
             
             
             virtual int setPolarity(int pol,uint32_t timeo_ms=0);
-            virtual int getPolarity(int* pol,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getPolarity(int* pol,int*polsp=NULL,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             
             virtual int setCurrentSP(float current,uint32_t timeo_ms=0);
             virtual int getCurrentSP(float* current,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
@@ -206,7 +207,7 @@ namespace common{
             virtual int shutdown(uint32_t timeo_ms=0);
             virtual int poweron(uint32_t timeo_ms=0);
             virtual int standby(uint32_t timeo_ms=0);
-            virtual int getState(int* state,std::string&,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
+            virtual int getState(int* state,std::string&,int* statesp=NULL,uint32_t timeo_ms=POWER_SUPPLY_DEFAULT_TIMEOUT);
             
             virtual int initPS();
             virtual int deinitPS();
