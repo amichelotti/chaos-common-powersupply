@@ -273,7 +273,7 @@ public:
 
 
 	 virtual int setPolarity(int pol,uint32_t timeo_ms=0);
-	 virtual int getPolarity(int* pol,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
+	 virtual int getPolarity(int* pol,int*polsp=NULL,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
 
 	 virtual int setCurrentSP(float current,uint32_t timeo_ms=0);
 	 virtual int getCurrentSP(float* current,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
@@ -307,7 +307,7 @@ public:
 	  virtual int shutdown(uint32_t timeo_ms=0);
 	 virtual int poweron(uint32_t timeo_ms=0);
 	 virtual int standby(uint32_t timeo_ms=0);
-	 virtual int getState(int* state,std::string&,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
+	 virtual int getState(int* state,std::string&,int* statesp=NULL,uint32_t timeo_ms=OCEM_DEFAULT_TIMEOUT_MS);
 
 	 virtual int initPS();
 	 virtual int deinitPS();

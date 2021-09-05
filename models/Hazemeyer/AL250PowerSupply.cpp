@@ -77,7 +77,7 @@ AL250::~AL250() {
     }
     this->ConnectionParameters=NULL;
 }
-int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
+int AL250::getPolarity(int* pol, int*polsp,uint32_t timeo_ms) {
    int32_t  iData=0;
     double data;
     bool ret;
@@ -85,7 +85,7 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     boost::mutex::scoped_lock lock(io_mux);
 //    DPRINT("ALEDEBUG after sem");
     //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
-
+    
     //DPRINT("called getPolarity for slave %d\n",this->slave);
     if (this->slave == 0)
     {
@@ -99,6 +99,10 @@ int AL250::getPolarity(int* pol, uint32_t timeo_ms) {
     else
     {
        ret=this->Hardware->ReadChannelCurrent(this->slave-1,&data);
+    }
+    if(polsp){
+        /// READ POLARITY SP IF SUPPORTED
+        *polsp=(data > 0)? 1:-1;
     }
     if (ret)
     {
@@ -625,7 +629,7 @@ int AL250::getVoltageSensibility(float* sens) {
     return 0;
 }
 
-int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
+int AL250::getState(int* state, std::string& desc, int* statesp,uint32_t timeo_ms ) {
   //  DPRINT("ALEDEBUG before sem");
    
     boost::mutex::scoped_lock lock(io_mux);
@@ -715,6 +719,10 @@ int AL250::getState(int* state, std::string& desc, uint32_t timeo_ms ) {
         }
     }
     *state = stCode;
+    if(statesp){
+        //TODO: replace with real state SP read (if supported)
+        *statesp=*state;
+    }
     return 0;
 }
 void AL250::printStaticTableContent() {
