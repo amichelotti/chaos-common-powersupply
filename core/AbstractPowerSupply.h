@@ -131,6 +131,8 @@ namespace common {
             POWER_SUPPLY_FEAT_MONOPOLAR=0x1, /// monopolar
             POWER_SUPPLY_FEAT_BIPOLAR=0x2, /// bipolar
             POWER_SUPPLY_FEAT_PULSED=0x4, /// pulsed
+            POWER_SUPPLY_FEAT_MONOPOLAR_FIXED=0x8, /// monopolar fixed polarity
+
             POWER_SUPPLY_FEAT_UKN /// it's not possible to know the type
         };
         /**
