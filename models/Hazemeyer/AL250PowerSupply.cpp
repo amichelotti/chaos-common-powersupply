@@ -12,7 +12,7 @@
         DERR("command not allowed on master");\
         return DEFAULT_NOT_ALLOWED;}
 
-static boost::mutex io_mux;
+static ChaosMutex io_mux;
 
 
 using namespace common::powersupply;
@@ -69,7 +69,7 @@ AL250::AL250(const std::string Parameters, int sl) {
 #endif
 AL250::~AL250() { 
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
  //   DPRINT("ALEDEBUG after sem");
     this->deinitPS();
     if(this->ConnectionParameters){
@@ -82,7 +82,7 @@ int AL250::getPolarity(int* pol, int*polsp,uint32_t timeo_ms) {
     double data;
     bool ret;
 //    DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
 //    DPRINT("ALEDEBUG after sem");
     //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
     
@@ -118,7 +118,7 @@ int AL250::getCurrentOutput(float* current, uint32_t timeo_ms) {
     int32_t iData=0;
     double data;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
   //  DPRINT("ALEDEBUG after sem");
 
 
@@ -161,7 +161,7 @@ int AL250::getVoltageOutput(float* volt, uint32_t timeo_ms ) {
     int32_t iData=0;
     double data;
 //    DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
  //   DPRINT("ALEDEBUG after sem");
 
     //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
@@ -199,7 +199,7 @@ int AL250::getAlarms(uint64_t* alrm, uint32_t timeo_ms ) {
     Hazemeyer::Corrector::ReadReg  MainFaults=Hazemeyer::Corrector::GENERAL_FAULTS;
     bool ret, centralUnitFault=false;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
  //   DPRINT("ALEDEBUG after sem");
 
     //this->Hardware->setModbusReadTimeout(timeo_ms*1000);
@@ -259,7 +259,7 @@ int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
     
     int ret;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
  //   DPRINT("ALEDEBUG after sem");
 
 
@@ -278,7 +278,7 @@ int AL250::resetAlarms(uint64_t alrm,uint32_t timeo_ms) {
 int AL250::shutdown(uint32_t timeo_ms ) {
     int ret;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
 
 //    DPRINT("ALEDEBUG after sem");
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
@@ -296,7 +296,7 @@ int AL250::shutdown(uint32_t timeo_ms ) {
 int AL250::poweron(uint32_t timeo_ms){
     int ret;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
 
   //  DPRINT("ALEDEBUG after sem");
 
@@ -315,7 +315,7 @@ int AL250::poweron(uint32_t timeo_ms){
 int AL250::standby(uint32_t timeo_ms) {
     int ret;
  //   DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
 
  //   DPRINT("ALEDEBUG after sem");
     //  this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
@@ -365,7 +365,7 @@ int AL250::startCurrentRamp(uint32_t timeo_ms) {
     bool ret;
     DPRINT( "slave %d starting ramp",slave);
     CHECK_IF_ALLOWED;
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
     
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
 
@@ -378,7 +378,7 @@ int AL250::initPS(){
     bool ret=false;
     size_t index=0;
     //DPRINT("ALEDEBUG before sem");
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
    // DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d initializing",slave);
@@ -513,7 +513,7 @@ int AL250::deinitPS() {
     std::vector<bool> *instances;
     std::string App(this->ConnectionParameters);
     //DPRINT("ALEDEBUG before sem");
-   boost::mutex::scoped_lock lock(io_mux);
+   ChaosLockGuard lock(io_mux);
    // DPRINT("ALEDEBUG after sem");
 
     DPRINT( "slave %d deinitializinh",slave);
@@ -632,7 +632,7 @@ int AL250::getVoltageSensibility(float* sens) {
 int AL250::getState(int* state, std::string& desc, int* statesp,uint32_t timeo_ms ) {
   //  DPRINT("ALEDEBUG before sem");
    
-    boost::mutex::scoped_lock lock(io_mux);
+    ChaosLockGuard lock(io_mux);
   //  DPRINT("ALEDEBUG after sem");
     //this->Hardware->setModbusWriteTimeout(timeo_ms*1000);
     Hazemeyer::Corrector::ReadReg Reg;

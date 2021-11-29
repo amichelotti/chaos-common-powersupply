@@ -268,7 +268,6 @@ int SimPSupply::getHWVersion(std::string&version,uint32_t timeo_ms){
 int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
 	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,(float)current*current_sensibility);
 
-	boost::mutex::scoped_lock lock;
 	if(feats&POWER_SUPPLY_FEAT_BIPOLAR)
 		return 0;
 
@@ -283,7 +282,7 @@ int SimPSupply::setPolarity(int pol,uint32_t timeo_ms){
 }
 
 int SimPSupply::getPolarity(int* pol,int* _polsp,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
 		DERR("timeout reading expired > %d ms",timeo_ms);
 
@@ -304,7 +303,7 @@ int SimPSupply::getPolarity(int* pol,int* _polsp,uint32_t timeo_ms){
 }
 
 int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	CHECK_STATUS;
 	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,(float)curr);
 
@@ -322,7 +321,7 @@ int SimPSupply::setCurrentSP(float curr,uint32_t timeo_ms){
 
 
 int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)) {
 		DERR("timeout reading expired > %d ms",timeo_ms);
@@ -334,7 +333,7 @@ int SimPSupply::getCurrentSP(float* curr,uint32_t timeo_ms){
 }
 
 int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	DPRINT("[%s,%d]get current state 0x%x, polarity %d current=%f",dev.c_str(),slave_id,regulator_state,polarity,(float)current*current_sensibility);
 
 	if(regulator_state== REGULATOR_STANDBY){
@@ -355,7 +354,7 @@ int  SimPSupply::getCurrentOutput(float* curr,uint32_t timeo_ms){
 	return 0;
 }
 int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)){
 		DERR("timeout reading expired > %d ms",timeo_ms);
@@ -368,7 +367,7 @@ int  SimPSupply::getVoltageOutput(float* volt,uint32_t timeo_ms){
 }
 
 int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility);
 
 	CHECK_STATUS;
@@ -388,7 +387,7 @@ int SimPSupply::startCurrentRamp(uint32_t timeo_ms){
 
 
 int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 
 	if(asup<min_current || asup > max_current){
 		DERR("bad input parameters asup %f\n",asup);
@@ -422,7 +421,7 @@ int SimPSupply::setCurrentRampSpeed(float asup,float asdown,uint32_t timeo_ms){
 
 
 int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 
 	alarms = 0;
 	selector_state=0;
@@ -437,7 +436,7 @@ int SimPSupply::resetAlarms(uint64_t alrm,uint32_t timeo_ms){
 }
 
 int SimPSupply::getAlarms(uint64_t*alrm,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	*alrm = alarms;
 	if(alarms){
 		DPRINT("alarms active:x%lx",alarms);
@@ -464,7 +463,7 @@ int SimPSupply::shutdown(uint32_t timeo_ms){
 int SimPSupply::poweron(uint32_t timeo_ms){
 	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility*1.0);
 
-	boost::mutex::scoped_lock lock;
+	
 	CHECK_STATUS;
 	if((polarity == 0)&& (min_current>=0)){
 		DERR("cannot go in poweron with open state");
@@ -485,7 +484,7 @@ uint64_t SimPSupply::getFeatures() {
 }
 
 int SimPSupply::standby(uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
+	
 	DPRINT("[%s,%d] state 0x%x current=%f",dev.c_str(),slave_id,regulator_state,current*current_sensibility*1.0);
 
 	if((wait_write()>(timeo_ms*1000))&&(timeo_ms>0)) {
@@ -499,7 +498,6 @@ int SimPSupply::standby(uint32_t timeo_ms){
 
 
 int  SimPSupply::getState(int* state,std::string &desc,int* statesp,uint32_t timeo_ms){
-	boost::mutex::scoped_lock lock;
 
 	if((wait_read()>(timeo_ms*1000))&&(timeo_ms>0)){
 		DERR("timeout reading expired > %d ms",timeo_ms);
