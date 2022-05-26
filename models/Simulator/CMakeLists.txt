@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 project(common_powersupply_simulator)
 #     -DOCEM_CORE_DEBUG
 ADD_DEFINITIONS(-DPOWER_SUPPLY_DEFAULT_TIMEOUT=4000)
