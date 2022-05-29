@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 project(common_powersupply)
 find_package(chaos MODULE REQUIRED)
 include_directories(${chaos_INCLUDE_DIRS})
