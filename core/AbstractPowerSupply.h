@@ -122,6 +122,7 @@ namespace common {
             POWER_SUPPLY_STATE_LOCAL=0x40, /// the powersupply in in local mode
             POWER_SUPPLY_STATE_MAINUNIT_NOT_ON=0x80, /// powersupply main unit not on
             POWER_SUPPLY_STATE_TRIGGER_ARMED=0x100, /// powersupply trigger armed
+            POWER_SUPPLY_STATE_SHUTDOWN=0x200, /// powersupply shutdown
 
             POWER_SUPPLY_STATE_UKN /// it's not possible to know the state (no answer)
         };
