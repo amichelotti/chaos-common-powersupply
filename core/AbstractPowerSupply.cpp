@@ -60,3 +60,5 @@ int fitData(calibdata_t *calibration_data,int size,double sp,double& readout_exp
 uint64_t AbstractPowerSupply::getFeatures(){
     return POWER_SUPPLY_FEAT_UKN;
 }
+bool AbstractPowerSupply::isBypass() const {return false;}
+
