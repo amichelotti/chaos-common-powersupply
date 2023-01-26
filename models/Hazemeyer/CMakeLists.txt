@@ -5,7 +5,7 @@ ADD_DEFINITIONS(-DDEBUG -fPIC)
 IF(FrameworkLib)
 SET(libs chaos_common ${FrameworkLib})
 ELSE()
-SET(libs pthread boost_system boost_regex )
+SET(libs pthread boost_system  )
 ENDIF()
 
 

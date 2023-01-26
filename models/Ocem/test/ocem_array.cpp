@@ -10,7 +10,7 @@
 
 #include "common/powersupply/powersupply.h"
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
