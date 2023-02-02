@@ -368,6 +368,8 @@ namespace common {
              */
             virtual int forceMaxVoltage(float max)=0;
             virtual uint64_t getFeatures() ;
+
+            virtual bool isBypass() const;
             
         };
         

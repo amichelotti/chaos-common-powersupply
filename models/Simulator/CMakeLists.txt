@@ -7,7 +7,7 @@ set(power_src SimPSupply.cpp)
 IF(FrameworkLib)
 SET(libs chaos_common ${FrameworkLib})
 ELSE()
-SET(libs boost_program_options boost_thread boost_system boost_regex boost_atomic pthread)
+SET(libs boost_program_options boost_thread boost_system boost_atomic pthread)
 ENDIF()
 
 ADD_LIBRARY(${PROJECT_NAME} STATIC ${PowerSupply_src} ${power_src})

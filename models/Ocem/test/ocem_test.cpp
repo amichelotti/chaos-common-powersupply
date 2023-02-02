@@ -10,12 +10,11 @@
 #include <common/powersupply/powersupply.h>
 #include <common/serial/core/SerialChannelFactory.h>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <common/debug/core/debug.h>
-#include <boost/regex.hpp>
+#include <regex>
 #include <string>
 #ifdef CHAOS
 #include <chaos_metadata_service_client/ChaosMetadataServiceClient.h>
@@ -28,7 +27,6 @@ using namespace chaos::metadata_service_client;
 
 
 static int default_timeout = DEFAULT_TIMEOUT;
-using boost::regex;
 
 static char* convToUpper(char*str){
   char *b = str;
@@ -52,7 +50,7 @@ static void printRawCommandHelp(){
 }
 void raw_test(common::serial::ocem::OcemProtocol*oc){
   char stringa[1024];
-  boost::regex cmd_match("^(\\w+) (\\d+)(\\s+(.+)|)");
+  std::regex cmd_match("^(\\w+) (\\d+)(\\s+(.+)|)");
   if(oc->init()!=0 ){
     printf("## cannot initialize protocol\n");
     return;
@@ -61,11 +59,12 @@ void raw_test(common::serial::ocem::OcemProtocol*oc){
   while(fgets(stringa,sizeof(stringa),stdin)){
       uint64_t tm;
       char *t=stringa;
-      boost::smatch match;
+      std::smatch match;
       convToUpper(t);
 
       tm = common::debug::getUsTime();
-      if(boost::regex_match(std::string(t),match,cmd_match,boost::match_perl)){
+	  std::string lines(t);
+      if(std::regex_match(lines,match,cmd_match)){
 	int ret;
           std::string op=match[1];
 	std::string ids=match[2];

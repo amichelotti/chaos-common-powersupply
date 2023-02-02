@@ -14,7 +14,7 @@
 #include <math.h>
 
 #include "SimPSupply.h"
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <sstream>
@@ -103,10 +103,10 @@ SimPSupply::SimPSupply(const char *_dev,int _slave_id,uint64_t _feats,float _min
 	alarms = 0;
 	currSP=0;
 	start_ramp=0;
-	boost::regex rp("\\/");
+	std::regex rp("\\/");
 	std::stringstream sm;
 
-	std::string rep=boost::regex_replace(dev, rp,std::string("_"));
+	std::string rep=std::regex_replace(dev, rp,std::string("_"));
 	sm<<"SimPSupplyState_" << rep << "_"<<slave_id<<".txt";
 	state_name = sm.str();
 	ramp_speed_up=5.0/voltage_sensibility;
